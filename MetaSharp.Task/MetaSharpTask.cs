@@ -16,15 +16,15 @@ namespace MetaSharp.Tasks {
         public ITaskItem[] OutputFiles { get; set; }
 
         public bool Execute() {
-            for(int i = 0; i < InputFiles.Length; i++)
-                File.WriteAllText(OutputFiles[i].ItemSpec,
-                  ProcessXyzFile(
-                    File.ReadAllText(InputFiles[i].ItemSpec)));
+            for(int i = 0; i < InputFiles.Length; i++) {
+                if(InputFiles[i].ItemSpec.EndsWith(".meta.cs"))
+                    File.WriteAllText(OutputFiles[i].ItemSpec, ProcessXyzFile(File.ReadAllText(InputFiles[i].ItemSpec)));
+            }
             return true;
         }
 
         private string ProcessXyzFile(string xyzFileContents) {
-            return xyzFileContents;
+            return "/*---" + xyzFileContents + "*/";
         }
     }
 }
