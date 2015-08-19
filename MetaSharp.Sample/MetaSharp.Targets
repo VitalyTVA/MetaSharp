@@ -7,7 +7,7 @@
   <Target Name="GenerateToolOutput">
     <MetaSharpTask
         InputFiles="@(Compile)"
-        OutputFiles="@(Compile->'$(IntermediateOutputPath)%(FileName)%(Extension).g.cs')">
+        OutputFiles="@(Compile->'$(IntermediateOutputPath)%(FileName).g.i.cs')">
 
       <Output TaskParameter="OutputFiles" ItemName="Compile" />
     </MetaSharpTask>

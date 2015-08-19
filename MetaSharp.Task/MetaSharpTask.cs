@@ -17,15 +17,17 @@ namespace MetaSharp.Tasks {
 
         public bool Execute() {
             for(int i = 0; i < InputFiles.Length; i++) {
-                if(InputFiles[i].ItemSpec.EndsWith(".meta.cs"))
-                    File.WriteAllText(OutputFiles[i].ItemSpec, ProcessXyzFile(File.ReadAllText(InputFiles[i].ItemSpec)));
+                if(InputFiles[i].ItemSpec.EndsWith(".meta.cs")) {
+                    var text = ProcessXyzFile(File.ReadAllText(InputFiles[i].ItemSpec), Path.GetFileName(InputFiles[i].ItemSpec));
+                    File.WriteAllText(OutputFiles[i].ItemSpec, text);
+                }
             }
-            OutputFiles = OutputFiles.Where(x => x.ItemSpec.EndsWith(".meta.cs")).ToArray();
+            OutputFiles = OutputFiles.Where(x => x.ItemSpec.Contains(".meta")).ToArray();
             return true;
         }
 
-        private string ProcessXyzFile(string xyzFileContents) {
-            return "/*---" + xyzFileContents + "*/";
+        private string ProcessXyzFile(string xyzFileContents, string fileName) {
+            return "namespace Gen { public class " + fileName.Replace('.', '_') + " { public const int Count = " + xyzFileContents.Split('\r').Length + "; } }";
         }
     }
 }
