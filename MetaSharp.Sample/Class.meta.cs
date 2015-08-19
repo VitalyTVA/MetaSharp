@@ -9,7 +9,7 @@ namespace MetaSharp.Sample
     public class Class1
     {
 
-        public void Do() {
+        public void Do() { 
             var t = typeof(Gen.Class_meta_cs);
         }
     }
