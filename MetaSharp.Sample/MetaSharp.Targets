@@ -1,10 +1,17 @@
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
-    <CoreCompileDependsOn>$(CoreCompileDependsOn);AddToolOutput</CoreCompileDependsOn>
+    <CoreCompileDependsOn>$(CoreCompileDependsOn);GenerateToolOutput</CoreCompileDependsOn>
   </PropertyGroup>
-  <Target Name="AddToolOutput">
-    <ItemGroup>
-      <Compile Include="HiddenFile.cs" />
-    </ItemGroup>
+  
+  <UsingTask TaskName="MetaSharp.Tasks.MetaSharpTask" AssemblyFile="..\Bin\Debug\MetaSharp.Task.dll" />
+  
+  <Target Name="GenerateToolOutput" Inputs="@(Compile)" Outputs="@(Compile->'$(IntermediateOutputPath)%(FileName)%(Extension).g.cs')">
+    <MetaSharpTask
+        InputFiles="@(Compile)"
+        OutputFiles="@(Compile->'$(IntermediateOutputPath)%(FileName)%(Extension).g.cs')">
+
+      <Output TaskParameter="OutputFiles" ItemName="Compile" />
+    </MetaSharpTask>
   </Target>
+ 
 </Project>
