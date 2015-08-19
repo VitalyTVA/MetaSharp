@@ -17,7 +17,7 @@ namespace MetaSharp.Tasks {
 
         public bool Execute() {
             for(int i = 0; i < InputFiles.Length; i++) {
-                if(InputFiles[i].ItemSpec.EndsWith(".meta.cs"))
+                //if(InputFiles[i].ItemSpec.EndsWith(".meta.cs"))
                     File.WriteAllText(OutputFiles[i].ItemSpec, ProcessXyzFile(File.ReadAllText(InputFiles[i].ItemSpec)));
             }
             return true;
