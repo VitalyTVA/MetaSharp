@@ -28,8 +28,6 @@ namespace MetaSharp.Tasks {
                 if(InputFiles[i].ItemSpec.EndsWith(".meta.cs")) {
                     trees.Add(SyntaxFactory.ParseSyntaxTree(File.ReadAllText(InputFiles[i].ItemSpec)));
                     files.Add(InputFiles[i].ItemSpec);
-                    //var text = ProcessXyzFile(File.ReadAllText(InputFiles[i].ItemSpec), Path.GetFileName(InputFiles[i].ItemSpec));
-                    //File.WriteAllText(OutputFiles[i].ItemSpec, text);
                 }
             }
 
@@ -41,6 +39,24 @@ namespace MetaSharp.Tasks {
                 options: new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary),
                 syntaxTrees: trees
             );
+            var errors = compilation.GetDiagnostics().Where(x => x.Severity == DiagnosticSeverity.Error).ToArray();
+            if(errors.Any()) {
+                foreach(var error in errors) {
+                    BuildEngine.LogErrorEvent(new BuildErrorEventArgs(
+                        subcategory: "MetaSharp",
+                        code: error.Id,
+                        file: files.Single(),
+                        lineNumber: error.Location.GetLineSpan().StartLinePosition.Line + 1,
+                        columnNumber: error.Location.GetLineSpan().StartLinePosition.Character + 1,
+                        endLineNumber: error.Location.GetLineSpan().EndLinePosition.Line + 1,
+                        endColumnNumber: error.Location.GetLineSpan().EndLinePosition.Character + 1,
+                        message: error.GetMessage(),
+                        helpKeyword: string.Empty,
+                        senderName: "MetaSharp"
+                        ));
+                }
+                return false;
+            }
             Assembly compiledAssembly;
             using(var stream = new MemoryStream()) {
                 var compileResult = compilation.Emit(stream);
@@ -52,10 +68,6 @@ namespace MetaSharp.Tasks {
             OutputFiles = files.Select(x => new TaskItem(Path.Combine(IntermediateOutputPath, x.Replace(".meta.cs", ".meta.g.i.cs")))).ToArray();
             File.WriteAllText(OutputFiles.Single().ItemSpec, result);
             return true;
-        }
-
-        private string ProcessXyzFile(string xyzFileContents, string fileName) {
-            return "namespace Gen { public class " + fileName.Replace('.', '_') + " { public const int Count = " + xyzFileContents.Split('\r').Length + "; } }";
         }
     }
 }
