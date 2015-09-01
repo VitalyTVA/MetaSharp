@@ -1,8 +1,12 @@
 ﻿using Microsoft.Build.Framework;
+using Microsoft.Build.Utilities;
+using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 
 namespace MetaSharp.Tasks {
@@ -12,17 +16,41 @@ namespace MetaSharp.Tasks {
 
         [Required]
         public ITaskItem[] InputFiles { get; set; }
+        [Required]
+        public string IntermediateOutputPath { get; set; }
         [Output]
         public ITaskItem[] OutputFiles { get; set; }
 
         public bool Execute() {
+            List<SyntaxTree> trees = new List<SyntaxTree>();
+            List<string> files = new List<string>();
             for(int i = 0; i < InputFiles.Length; i++) {
                 if(InputFiles[i].ItemSpec.EndsWith(".meta.cs")) {
-                    var text = ProcessXyzFile(File.ReadAllText(InputFiles[i].ItemSpec), Path.GetFileName(InputFiles[i].ItemSpec));
-                    File.WriteAllText(OutputFiles[i].ItemSpec, text);
+                    trees.Add(SyntaxFactory.ParseSyntaxTree(File.ReadAllText(InputFiles[i].ItemSpec)));
+                    files.Add(InputFiles[i].ItemSpec);
+                    //var text = ProcessXyzFile(File.ReadAllText(InputFiles[i].ItemSpec), Path.GetFileName(InputFiles[i].ItemSpec));
+                    //File.WriteAllText(OutputFiles[i].ItemSpec, text);
                 }
             }
-            OutputFiles = OutputFiles.Where(x => x.ItemSpec.Contains(".meta")).ToArray();
+
+            var compilation = CSharpCompilation.Create(
+                "meta.dll",
+                references: new[] {
+                    MetadataReference.CreateFromFile(typeof(object).Assembly.Location),
+                },
+                options: new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary),
+                syntaxTrees: trees
+            );
+            Assembly compiledAssembly;
+            using(var stream = new MemoryStream()) {
+                var compileResult = compilation.Emit(stream);
+                compiledAssembly = Assembly.Load(stream.GetBuffer());
+            }
+            var result = (string)compiledAssembly.GetTypes().Single()
+                .GetMethod("Do", BindingFlags.Static | BindingFlags.Public).Invoke(null, null);
+
+            OutputFiles = files.Select(x => new TaskItem(Path.Combine(IntermediateOutputPath, x.Replace(".meta.cs", ".meta.g.i.cs")))).ToArray();
+            File.WriteAllText(OutputFiles.Single().ItemSpec, result);
             return true;
         }
 

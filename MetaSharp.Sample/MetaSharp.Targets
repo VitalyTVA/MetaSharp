@@ -6,8 +6,7 @@
   <UsingTask TaskName="MetaSharp.Tasks.MetaSharpTask" AssemblyFile="..\Bin\Debug\MetaSharp.Task.dll" />
   <Target Name="GenerateToolOutput">
     <MetaSharpTask
-        InputFiles="@(Compile)"
-        OutputFiles="@(Compile->'$(IntermediateOutputPath)%(FileName).g.i.cs')">
+        InputFiles="@(Compile)" IntermediateOutputPath="$(IntermediateOutputPath)">
 
       <Output TaskParameter="OutputFiles" ItemName="Compile" />
     </MetaSharpTask>
