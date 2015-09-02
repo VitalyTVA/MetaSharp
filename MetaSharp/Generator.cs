@@ -18,7 +18,7 @@ namespace MetaSharp {
     //TODO include other files
     //TODO reference other assemblies
 
-    //TODO ADT, immutable objects, DProps, ViewModels, MonadTransfomers, Templates
+    //TODO ADT, immutable objects, DProps, ViewModels, MonadTransfomers, Templates, Localization
     public static class Generator {
         public static GeneratorResult Generate(ImmutableArray<string> files, Environment environment, ImmutableArray<string> references) {
             var trees = files.ToImmutableDictionary(x => SyntaxFactory.ParseSyntaxTree(environment.ReadText(x)), x => x);
