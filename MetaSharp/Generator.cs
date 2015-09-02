@@ -17,6 +17,7 @@ namespace MetaSharp {
     //TODO generate stub types
     //TODO include other files
     //TODO reference other assemblies
+    //TODO use SourceText with SyntaxFactory
 
     //TODO ADT, immutable objects, DProps, ViewModels, MonadTransfomers, Templates, Localization
     public static class Generator {
