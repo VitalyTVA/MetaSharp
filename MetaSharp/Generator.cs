@@ -28,10 +28,10 @@ namespace MetaSharp {
                         id: error.Id,
                         file: files.Single(),
                         message: error.GetMessage(),
-                        lineNumber: span.StartLinePosition.Line + 1,
-                        columnNumber: span.StartLinePosition.Character + 1,
-                        endLineNumber: span.EndLinePosition.Line + 1,
-                        endColumnNumber: span.EndLinePosition.Character + 1
+                        lineNumber: span.StartLinePosition.Line,
+                        columnNumber: span.StartLinePosition.Character,
+                        endLineNumber: span.EndLinePosition.Line,
+                        endColumnNumber: span.EndLinePosition.Character
                         );
                 })
                 .ToImmutableArray();
@@ -49,7 +49,7 @@ namespace MetaSharp {
             var outputFiles = files
                 .Select(file => {
                     var outputPath = Path.Combine(environment.IntermediateOutputPath, file.Replace(".meta.cs", ".meta.g.i.cs"));
-                    environment.WriteText(outputPath);
+                    environment.WriteText(outputPath, result);
                     return outputPath;
                 })
                 .ToImmutableArray();
@@ -65,8 +65,8 @@ namespace MetaSharp {
         }
     }
     public class GeneratorError {
-        readonly string Id, File, Message;
-        readonly int LineNumber, ColumnNumber, EndLineNumber, EndColumnNumber;
+        public readonly string Id, File, Message;
+        public readonly int LineNumber, ColumnNumber, EndLineNumber, EndColumnNumber;
         public GeneratorError(string id, string file, string message, int lineNumber, int columnNumber, int endLineNumber, int endColumnNumber) {
             Id = id;
             File = file;
@@ -78,11 +78,11 @@ namespace MetaSharp {
         }
     }
     public class Environment {
-        public Func<string, string> ReadText { get; }
-        public Func<string, string> WriteText { get; }
-        public Func<Stream, Assembly> LoadAssembly { get; }
-        public string IntermediateOutputPath { get; } 
-        public Environment(Func<string, string> readText, Func<string, string> writeText, Func<Stream, Assembly> loadAssembly, string intermediateOutputPath) {
+        public readonly Func<string, string> ReadText;
+        public readonly Action<string, string> WriteText;
+        public readonly Func<MemoryStream, Assembly> LoadAssembly;
+        public readonly string IntermediateOutputPath; 
+        public Environment(Func<string, string> readText, Action<string, string> writeText, Func<MemoryStream, Assembly> loadAssembly, string intermediateOutputPath) {
             ReadText = readText;
             WriteText = writeText;
             LoadAssembly = loadAssembly;
