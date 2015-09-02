@@ -18,6 +18,7 @@ namespace MetaSharp {
     //TODO include other files
     //TODO reference other assemblies
     //TODO use SourceText with SyntaxFactory
+    //TODO use SourceReferenceResolver?
 
     //TODO ADT, immutable objects, DProps, ViewModels, MonadTransfomers, Templates, Localization
     public static class Generator {
