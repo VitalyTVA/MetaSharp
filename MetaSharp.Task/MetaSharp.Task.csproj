@@ -101,9 +101,9 @@
     <Analyzer Include="..\packages\Microsoft.CodeAnalysis.Analyzers.1.0.0\analyzers\dotnet\cs\Microsoft.CodeAnalysis.CSharp.Analyzers.dll" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\MetaSharp\MetaSharp.csproj">
+    <ProjectReference Include="..\MetaSharp\MetaSharp.Generator.csproj">
       <Project>{f20745eb-b266-4c27-a692-f241ea1e3fb7}</Project>
-      <Name>MetaSharp</Name>
+      <Name>MetaSharp.Generator</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

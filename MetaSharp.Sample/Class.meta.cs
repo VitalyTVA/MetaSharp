@@ -6,7 +6,7 @@ namespace MetaSharp.Sample {
             return $@"
 namespace Gen {{
     public static class {name} {{
-        public static void Bla() {{
+        public static void Bla2() {{
         }}
     }}
 }}
