@@ -39,6 +39,14 @@ namespace MetaSharp.Tasks {
                 options: new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary),
                 syntaxTrees: trees
             );
+
+            //var model = compilation.GetSemanticModel(compilation.SyntaxTrees.Single());
+            //model.SyntaxTree
+
+            var tree = compilation.GlobalNamespace.GetNamespaceMembers().ElementAt(0).GetNamespaceMembers().ElementAt(0).GetTypeMembers().Single().Locations.Single().SourceTree;
+            if(tree == compilation.SyntaxTrees.Single()) {
+            }
+
             var errors = compilation.GetDiagnostics().Where(x => x.Severity == DiagnosticSeverity.Error).ToArray();
             if(errors.Any()) {
                 foreach(var error in errors) {
