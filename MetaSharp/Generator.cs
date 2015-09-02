@@ -9,6 +9,16 @@ using System.Reflection;
 using System.Text;
 
 namespace MetaSharp {
+    //TODO Conditional
+    //TODO other environment constants (OutputPath, etc.)
+    //TODO g.cs/g.i.cs/designer.cs and explicit file name modes
+    //TODO automatically generate namespace and usings based on usings above and under namespace
+    //TODO non-cs files generation
+    //TODO generate stub types
+    //TODO include other files
+    //TODO reference other assemblies
+
+    //TODO ADT, immutable objects, DProps, ViewModels, MonadTransfomers, Templates
     public static class Generator {
         public static GeneratorResult Generate(ImmutableArray<string> files, Environment environment, ImmutableArray<string> references) {
             var trees = files.ToImmutableDictionary(x => SyntaxFactory.ParseSyntaxTree(environment.ReadText(x)), x => x);
