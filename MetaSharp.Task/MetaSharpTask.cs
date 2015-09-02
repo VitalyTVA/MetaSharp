@@ -2,6 +2,7 @@
 using Microsoft.Build.Utilities;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -43,8 +44,14 @@ namespace MetaSharp.Tasks {
             //var model = compilation.GetSemanticModel(compilation.SyntaxTrees.Single());
             //model.SyntaxTree
 
-            var tree = compilation.GlobalNamespace.GetNamespaceMembers().ElementAt(0).GetNamespaceMembers().ElementAt(0).GetTypeMembers().Single().Locations.Single().SourceTree;
+            var type = compilation.GlobalNamespace.GetNamespaceMembers().ElementAt(0).GetNamespaceMembers().ElementAt(0).GetTypeMembers().Single();
+            var tree = type.Locations.Single().SourceTree;
             if(tree == compilation.SyntaxTrees.Single()) {
+            }
+            var node = compilation.SyntaxTrees.Single().GetRoot().DescendantNodes().OfType<ClassDeclarationSyntax>().First();
+            var model = compilation.GetSemanticModel(compilation.SyntaxTrees.Single());
+            var symbol = model.GetDeclaredSymbol(node);
+            if(symbol == type) {
             }
 
             var errors = compilation.GetDiagnostics().Where(x => x.Severity == DiagnosticSeverity.Error).ToArray();
