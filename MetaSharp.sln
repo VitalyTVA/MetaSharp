@@ -7,6 +7,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MetaSharp.Task", "MetaSharp
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MetaSharp.Generator", "MetaSharp\MetaSharp.Generator.csproj", "{F20745EB-B266-4C27-A692-F241EA1E3FB7}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MetaSharp.Test", "MetaSharp.Test\MetaSharp.Test.csproj", "{35326999-EEC9-4A53-8F14-EEA954F87F6B}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -21,6 +23,10 @@ Global
 		{F20745EB-B266-4C27-A692-F241EA1E3FB7}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F20745EB-B266-4C27-A692-F241EA1E3FB7}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{F20745EB-B266-4C27-A692-F241EA1E3FB7}.Release|Any CPU.Build.0 = Release|Any CPU
+		{35326999-EEC9-4A53-8F14-EEA954F87F6B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{35326999-EEC9-4A53-8F14-EEA954F87F6B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{35326999-EEC9-4A53-8F14-EEA954F87F6B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{35326999-EEC9-4A53-8F14-EEA954F87F6B}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
