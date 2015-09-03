@@ -17,13 +17,19 @@ namespace MetaSharp {
         public static IEnumerable<T> Tail<T>(this IEnumerable<T> source) {
             return source.Skip(1);
         }
-        public static string ConcatStrings(this IEnumerable<string> source, string delimeter = "\r\n") {
-            var builder = new StringBuilder(source.FirstOrDefault());
-            foreach(var text in source.Tail()) {
-                builder.Append(delimeter);
-                builder.Append(text);
+        public static IEnumerable<T> InsertDelimeter<T>(this IEnumerable<T> source, T delimeter) {
+            var en = source.GetEnumerator();
+            if(en.MoveNext())
+                yield return en.Current;
+            while(en.MoveNext()) {
+                yield return delimeter;
+                yield return en.Current;
             }
-            return builder.ToString();
+        }
+        public static string ConcatStrings(this IEnumerable<string> source) {
+            return source
+                .Aggregate(new StringBuilder(), (builder, text) => builder.Append(text))
+                .ToString();
         }
     }
 }

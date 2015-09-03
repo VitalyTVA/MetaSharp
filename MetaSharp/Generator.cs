@@ -32,6 +32,7 @@ namespace MetaSharp {
         const string DefaultInputFileEnd = DefaultSuffix + CShaprFileExtension;
         const string DefaultOutputFileEnd_IntellisenseVisible = DefaultSuffix + ".g.i" + CShaprFileExtension;
         const string DefaultAssemblyName = "meta.dll";
+        const string NewLine = "\r\n";
 
         public static bool IsMetaShaprtFile(string fileName) {
             return fileName.EndsWith(DefaultInputFileEnd);
@@ -72,9 +73,14 @@ namespace MetaSharp {
 
             var resultBuilder = new StringBuilder();
             var result = compiledAssembly.DefinedTypes
-                .SelectMany(type => type.DeclaredMethods)
-                .Where(method => method.IsPublic)
-                .Select(method => (string)method.Invoke(null, null))
+                .Select(type => {
+                    return type.DeclaredMethods
+                        .Where(method => method.IsPublic)
+                        .Select(method => (string)method.Invoke(null, null))
+                        .InsertDelimeter(NewLine);
+                })
+                .InsertDelimeter(Enumerable.Repeat(NewLine, 2))
+                .SelectMany(x => x)
                 .ConcatStrings();
 
             var outputFiles = files
