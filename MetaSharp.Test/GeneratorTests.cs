@@ -5,22 +5,56 @@ using System.Reflection;
 using Xunit;
 
 namespace MetaSharp.Test {
-    public class GeneratorTests {
+    public class HelloWorldTests : GeneratorTestsBase {
         [Fact]
         public void HelloWorld() {
             var input = @"
-namespace MetaSharp.Sample {
-    public static class Class1 {
-        public static string Do() {
+namespace MetaSharp.HelloWorld {
+    public static class HelloWorldGenerator {
+        public static string SayHello() {
              return ""Hello World!"";
         }
     }
 }
 ";
             var output = "Hello World!";
+            AssertSingleFileSimpleOutput(input, output);
+        }
+        [Fact]
+        public void HelloWorld_NonPublicClass() {
+            var input = @"
+namespace MetaSharp.HelloWorld.NonPublicClass {
+    static class HelloWorldGenerator_NonPublicClass {
+        public static string SayHelloAgain() {
+             return ""Hello World!"";
+        }
+    }
+}
+";
+            var output = "Hello World!";
+            AssertSingleFileSimpleOutput(input, output);
+        }
+        [Fact]
+        public void HelloWorld_NonPublicMethod() {
+            var input = @"
+namespace MetaSharp.HelloWorld.NonPublicClass {
+    static class HelloWorldGenerator_NonPublicClass {
+        internal static string SayHelloAgain() {
+             return ""Hello World!"";
+        }
+    }
+}
+";
+            var output = "Hello World!";
+            AssertSingleFileSimpleOutput(input, output);
+        }
+        static void AssertSingleFileSimpleOutput(string input, string output) {
             AssertSingleFile(input, output);
         }
 
+
+    }
+    public class GeneratorTestsBase {
         class TestEnvironment {
             public readonly Dictionary<string, string> Files;
             public readonly Environment Environment;
@@ -29,7 +63,7 @@ namespace MetaSharp.Sample {
                 Environment = environment;
             }
         }
-        static void AssertSingleFile(string input, string output) {
+        protected static void AssertSingleFile(string input, string output) {
             const string inputFileName = "file.meta.cs";
             const string outputFileName = "obj\\file.meta.g.i.cs";
 

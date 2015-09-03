@@ -65,8 +65,7 @@ namespace MetaSharp {
                 compiledAssembly = environment.LoadAssembly(stream);
             }
             var result = (string)compiledAssembly.DefinedTypes.Single()
-                .GetDeclaredMethod("Do").Invoke(null, null);
-
+                .DeclaredMethods.Single().Invoke(null, null);
 
             var outputFiles = files
                 .Select(file => {
