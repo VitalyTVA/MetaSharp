@@ -22,6 +22,7 @@ namespace MetaSharp {
     //TODO reference other assemblies
     //TODO use SourceText with SyntaxFactory
     //TODO use SourceReferenceResolver?
+    //TODO option to insert delimeters between output from different classes and methods
 
     //TODO ADT, immutable objects, DProps, ViewModels, MonadTransfomers, Templates, Localization, Aspects
     //TODO binary output - drawing images??
@@ -52,7 +53,7 @@ namespace MetaSharp {
                     var span = error.Location.GetLineSpan();
                     return new GeneratorError(
                         id: error.Id,
-                        file: files.Single(),
+                        file: files.Single(),//TODO
                         message: error.GetMessage(),
                         lineNumber: span.StartLinePosition.Line,
                         columnNumber: span.StartLinePosition.Character,
@@ -70,8 +71,8 @@ namespace MetaSharp {
             }
 
             var resultBuilder = new StringBuilder();
-            var result = compiledAssembly.DefinedTypes.Single()//TODO
-                .DeclaredMethods
+            var result = compiledAssembly.DefinedTypes
+                .SelectMany(type => type.DeclaredMethods)
                 .Where(method => method.IsPublic)
                 .Select(method => (string)method.Invoke(null, null))
                 .ConcatStrings();

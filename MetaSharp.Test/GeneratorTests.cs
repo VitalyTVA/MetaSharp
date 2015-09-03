@@ -38,8 +38,8 @@ namespace MetaSharp.HelloWorld.NonPublicClass {
         [Fact]
         public void NonPublicMethod() {
             var input = @"
-namespace MetaSharp.HelloWorld.NonPublicClass {
-    static class HelloWorldGenerator_NonPublicClass {
+namespace MetaSharp.HelloWorld.NonPublicMethod {
+    static class HelloWorldGenerator_NonPublicMethod {
         internal static string SayHelloAgain() {
              return ""Hello World!"";
         }
@@ -70,7 +70,6 @@ namespace MetaSharp.HelloWorld {
             var output = "Hello World!\r\nHello World Again!";
             AssertSingleFileSimpleOutput(input, output);
         }
-
         [Fact]
         public void CompilationError() {
             var input = @"
@@ -87,6 +86,30 @@ namespace MetaSharp.HelloWorld {
                     error => AssertError(error, "CS1002", "; expected", 4, 34),
                     error => AssertError(error, "CS1513", "} expected", 7, 1));
             });
+        }
+        [Fact]
+        public void SeveralClasses() {
+            var input = @"
+namespace MetaSharp.HelloWorld {
+    public static class HelloWorldGenerator {
+        public static string SayHello() {
+             return ""Hello World!"";
+        }
+    }
+    public static class HelloWorldGenerator2 {
+        public static string SayHelloAgain() {
+             return ""Hello World Again!"";
+        }
+        public static string SayHelloOneMoreTime() {
+             return ""Hello World One More Time!"";
+        }
+    }
+}
+";
+            var output = @"Hello World!
+Hello World Again!
+Hello World One More Time!";
+            AssertSingleFileSimpleOutput(input, output);
         }
 
         static void AssertSingleFileSimpleOutput(string input, string output) {
