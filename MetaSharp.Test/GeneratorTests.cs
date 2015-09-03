@@ -71,6 +71,24 @@ namespace MetaSharp.HelloWorld {
             AssertSingleFileSimpleOutput(input, output);
         }
 
+        [Fact]
+        public void CompilationError() {
+            var input = @"
+namespace MetaSharp.HelloWorld {
+    public static class HelloWorldGenerator {
+        public static string SayHello() {
+             return ""Hello World!""
+        }
+    
+}
+";
+            AssertSingleFileErrors(input, errors => {
+                Assert.Collection(errors, 
+                    error => AssertError(error, "CS1002", "; expected", 4, 34),
+                    error => AssertError(error, "CS1513", "} expected", 7, 1));
+            });
+        }
+
         static void AssertSingleFileSimpleOutput(string input, string output) {
             AssertSingleFileOutput(input, output);
         }
@@ -90,23 +108,40 @@ namespace MetaSharp.HelloWorld {
                 Environment = environment;
             }
         }
-        protected static void AssertSingleFileResult(string input, Action<GeneratorResult, TestEnvironment> assertion) {
-            const string inputFileName = "file.meta.cs";
+        const string SingleInputFileName = "file.meta.cs";
+        static void AssertSingleFileResult(string input, Action<GeneratorResult, TestEnvironment> assertion) {
             var testEnvironment = CreateEnvironment();
-            testEnvironment.Environment.WriteText(inputFileName, input);
-            var result = Generator.Generate(ImmutableArray.Create(inputFileName), testEnvironment.Environment, PlatformEnvironment.DefaultReferences);
-            Assert.Equal(input, testEnvironment.ReadText(inputFileName));
+            testEnvironment.Environment.WriteText(SingleInputFileName, input);
+            var result = Generator.Generate(ImmutableArray.Create(SingleInputFileName), testEnvironment.Environment, PlatformEnvironment.DefaultReferences);
+            Assert.Equal(input, testEnvironment.ReadText(SingleInputFileName));
             assertion(result, testEnvironment);
         }
         protected static void AssertSingleFileOutput(string input, string output) {
             AssertSingleFileResult(input, (result, testEnvironment) => {
                 Assert.Empty(result.Errors);
 
-                const string outputFileName = "obj\\file.meta.g.i.cs";
-                Assert.Equal<string>(ImmutableArray.Create(outputFileName), result.Files);
+                const string SingleOutputFileName = "obj\\file.meta.g.i.cs";
+                Assert.Equal<string>(ImmutableArray.Create(SingleOutputFileName), result.Files);
                 Assert.Equal(2, testEnvironment.FileCount);
-                Assert.Equal(output, testEnvironment.ReadText(outputFileName));
+                Assert.Equal(output, testEnvironment.ReadText(SingleOutputFileName));
             });
+        }
+        protected static void AssertSingleFileErrors(string input, Action<ImmutableArray<GeneratorError>> assertErrors) {
+            AssertSingleFileResult(input, (result, testEnvironment) => {
+                Assert.NotEmpty(result.Errors);
+                Assert.All(result.Errors, error => Assert.Equal(SingleInputFileName, error.File));
+                Assert.Equal(1, testEnvironment.FileCount);
+                Assert.Empty(result.Files);
+                assertErrors(result.Errors);
+            });
+        }
+        protected static void AssertError(GeneratorError error, string id, string message, int lineNumber, int columnNumber) {
+            Assert.Equal(id, error.Id);
+            Assert.Equal(message, error.Message);
+            Assert.Equal(lineNumber, error.LineNumber);
+            Assert.Equal(columnNumber, error.ColumnNumber);
+            Assert.Equal(lineNumber, error.EndLineNumber);
+            Assert.Equal(columnNumber, error.EndColumnNumber);
         }
 
         static TestEnvironment CreateEnvironment() {
