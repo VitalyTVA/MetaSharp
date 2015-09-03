@@ -70,7 +70,7 @@ namespace MetaSharp {
             }
 
             var resultBuilder = new StringBuilder();
-            var result = compiledAssembly.DefinedTypes.Single()
+            var result = compiledAssembly.DefinedTypes.Single()//TODO
                 .DeclaredMethods
                 .Where(method => method.IsPublic)
                 .Select(method => (string)method.Invoke(null, null))

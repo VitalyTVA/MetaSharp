@@ -1,4 +1,5 @@
 ﻿using MetaSharp.Tasks;
+using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Reflection;
@@ -71,33 +72,43 @@ namespace MetaSharp.HelloWorld {
         }
 
         static void AssertSingleFileSimpleOutput(string input, string output) {
-            AssertSingleFile(input, output);
+            AssertSingleFileOutput(input, output);
         }
 
 
     }
     public class GeneratorTestsBase {
-        class TestEnvironment {
-            public readonly Dictionary<string, string> Files;
+        protected class TestEnvironment {
             public readonly Environment Environment;
+
+            readonly Dictionary<string, string> files;
+            public int FileCount => files.Count;
+            public string ReadText(string fileName) => files[fileName];
+
             public TestEnvironment(Dictionary<string, string> files, Environment environment) {
-                Files = files;
+                this.files = files;
                 Environment = environment;
             }
         }
-        protected static void AssertSingleFile(string input, string output) {
+        protected static void AssertSingleFileResult(string input, Action<GeneratorResult, TestEnvironment> assertion) {
             const string inputFileName = "file.meta.cs";
-            const string outputFileName = "obj\\file.meta.g.i.cs";
-
             var testEnvironment = CreateEnvironment();
             testEnvironment.Environment.WriteText(inputFileName, input);
             var result = Generator.Generate(ImmutableArray.Create(inputFileName), testEnvironment.Environment, PlatformEnvironment.DefaultReferences);
-            Assert.Empty(result.Errors);
-            Assert.Equal<string>(ImmutableArray.Create(outputFileName), result.Files);
-            Assert.Equal(2, testEnvironment.Files.Count);
-            Assert.Equal(input, testEnvironment.Files[inputFileName]);
-            Assert.Equal(output, testEnvironment.Files[outputFileName]);
+            Assert.Equal(input, testEnvironment.ReadText(inputFileName));
+            assertion(result, testEnvironment);
         }
+        protected static void AssertSingleFileOutput(string input, string output) {
+            AssertSingleFileResult(input, (result, testEnvironment) => {
+                Assert.Empty(result.Errors);
+
+                const string outputFileName = "obj\\file.meta.g.i.cs";
+                Assert.Equal<string>(ImmutableArray.Create(outputFileName), result.Files);
+                Assert.Equal(2, testEnvironment.FileCount);
+                Assert.Equal(output, testEnvironment.ReadText(outputFileName));
+            });
+        }
+
         static TestEnvironment CreateEnvironment() {
             var files = new Dictionary<string, string>();
             var environment = PlatformEnvironment.Create(
