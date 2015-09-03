@@ -20,7 +20,7 @@ namespace MetaSharp {
     //TODO use SourceText with SyntaxFactory
     //TODO use SourceReferenceResolver?
 
-    //TODO ADT, immutable objects, DProps, ViewModels, MonadTransfomers, Templates, Localization
+    //TODO ADT, immutable objects, DProps, ViewModels, MonadTransfomers, Templates, Localization, Aspects
     public static class Generator {
         public static GeneratorResult Generate(ImmutableArray<string> files, Environment environment, ImmutableArray<string> references) {
             var trees = files.ToImmutableDictionary(x => SyntaxFactory.ParseSyntaxTree(environment.ReadText(x)), x => x);
