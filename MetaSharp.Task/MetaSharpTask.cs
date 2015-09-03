@@ -28,7 +28,7 @@ namespace MetaSharp.Tasks {
                 .Select(x => x.ItemSpec)
                 .Where(x => x.EndsWith(".meta.cs"))
                 .ToImmutableArray();
-            var references = ImmutableArray.Create(typeof(object).Assembly.Location);
+            var references = PlatformEnvironment.DefaultReferences;
             var result = Generator.Generate(files, CreateEnvironment(), references);
             if(result.Errors.Any()) {
                 foreach(var error in result.Errors) {
@@ -67,11 +67,20 @@ namespace MetaSharp.Tasks {
                         );
         }
         Environment CreateEnvironment() {
-            return new Environment(
+            return PlatformEnvironment.Create(
                 readText: fileName => File.ReadAllText(fileName),
                 writeText: (fileName, text) => File.WriteAllText(fileName, text),
-                loadAssembly: memoryStream => Assembly.Load(memoryStream.GetBuffer()),
                 intermediateOutputPath: IntermediateOutputPath);
         }
+    }
+    public static class PlatformEnvironment {
+        public static Environment Create(Func<string, string> readText, Action<string, string> writeText, string intermediateOutputPath) {
+            return new Environment(
+                readText: readText, 
+                writeText: writeText,
+                loadAssembly: stream => Assembly.Load(stream.GetBuffer()),
+                intermediateOutputPath: intermediateOutputPath);
+        }
+        public static readonly ImmutableArray<string> DefaultReferences = ImmutableArray.Create(typeof(object).Assembly.Location);
     }
 }
