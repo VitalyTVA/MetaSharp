@@ -22,12 +22,21 @@ namespace MetaSharp {
 
     //TODO ADT, immutable objects, DProps, ViewModels, MonadTransfomers, Templates, Localization, Aspects
     public static class Generator {
+        const string DefaultSuffix = "meta";
+        const string CShaprFileExtension = ".cs";
+        const string DefaultInputFileEnd = DefaultSuffix + CShaprFileExtension;
+        const string DefaultOutputFileEnd_IntellisenseVisible = DefaultSuffix + ".g.i" + CShaprFileExtension;
+        const string DefaultAssemblyName = "meta.dll";
+
+        public static bool IsMetaShaprtFile(string fileName) {
+            return fileName.EndsWith(DefaultInputFileEnd);
+        }
 
         public static GeneratorResult Generate(ImmutableArray<string> files, Environment environment, ImmutableArray<string> references) {
             var trees = files.ToImmutableDictionary(x => SyntaxFactory.ParseSyntaxTree(environment.ReadText(x)), x => x);
 
             var compilation = CSharpCompilation.Create(
-                "meta.dll",
+                DefaultAssemblyName,
                 references: references.Select(x => MetadataReference.CreateFromFile(x)),
                 options: new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary),
                 syntaxTrees: trees.Keys
@@ -61,7 +70,7 @@ namespace MetaSharp {
 
             var outputFiles = files
                 .Select(file => {
-                    var outputPath = Path.Combine(environment.IntermediateOutputPath, file.Replace(".meta.cs", ".meta.g.i.cs"));
+                    var outputPath = Path.Combine(environment.IntermediateOutputPath, file.Replace(DefaultInputFileEnd, DefaultOutputFileEnd_IntellisenseVisible));
                     environment.WriteText(outputPath, result);
                     return outputPath;
                 })
