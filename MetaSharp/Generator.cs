@@ -9,6 +9,9 @@ using System.Reflection;
 using System.Text;
 
 namespace MetaSharp {
+    //TODO exceptions in generator methods
+    //TODO non static classes
+    //TODO several output files
     //TODO Conditional
     //TODO other environment constants (OutputPath, etc.)
     //TODO g.cs/g.i.cs/designer.cs and explicit file name modes
@@ -21,6 +24,7 @@ namespace MetaSharp {
     //TODO use SourceReferenceResolver?
 
     //TODO ADT, immutable objects, DProps, ViewModels, MonadTransfomers, Templates, Localization, Aspects
+    //TODO binary output - drawing images??
     public static class Generator {
         const string DefaultSuffix = "meta";
         const string CShaprFileExtension = ".cs";
@@ -64,8 +68,13 @@ namespace MetaSharp {
                 var compileResult = compilation.Emit(stream);
                 compiledAssembly = environment.LoadAssembly(stream);
             }
-            var result = (string)compiledAssembly.DefinedTypes.Single()
-                .DeclaredMethods.Single().Invoke(null, null);
+
+            var resultBuilder = new StringBuilder();
+            var result = compiledAssembly.DefinedTypes.Single()
+                .DeclaredMethods
+                .Where(method => method.IsPublic)
+                .Select(method => (string)method.Invoke(null, null))
+                .ConcatStrings();
 
             var outputFiles = files
                 .Select(file => {

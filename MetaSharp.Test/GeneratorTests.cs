@@ -7,7 +7,7 @@ using Xunit;
 namespace MetaSharp.Test {
     public class HelloWorldTests : GeneratorTestsBase {
         [Fact]
-        public void HelloWorld() {
+        public void Default() {
             var input = @"
 namespace MetaSharp.HelloWorld {
     public static class HelloWorldGenerator {
@@ -21,7 +21,7 @@ namespace MetaSharp.HelloWorld {
             AssertSingleFileSimpleOutput(input, output);
         }
         [Fact]
-        public void HelloWorld_NonPublicClass() {
+        public void NonPublicClass() {
             var input = @"
 namespace MetaSharp.HelloWorld.NonPublicClass {
     static class HelloWorldGenerator_NonPublicClass {
@@ -35,7 +35,7 @@ namespace MetaSharp.HelloWorld.NonPublicClass {
             AssertSingleFileSimpleOutput(input, output);
         }
         [Fact]
-        public void HelloWorld_NonPublicMethod() {
+        public void NonPublicMethod() {
             var input = @"
 namespace MetaSharp.HelloWorld.NonPublicClass {
     static class HelloWorldGenerator_NonPublicClass {
@@ -45,9 +45,31 @@ namespace MetaSharp.HelloWorld.NonPublicClass {
     }
 }
 ";
-            var output = "Hello World!";
+            var output = string.Empty;
             AssertSingleFileSimpleOutput(input, output);
         }
+        [Fact]
+        public void SeveralMethods() {
+            var input = @"
+using System;
+namespace MetaSharp.HelloWorld {
+    public static class HelloWorldGenerator {
+        public static string SayHello() {
+             return ""Hello World!"";
+        }
+        public static string SayHelloAgain() {
+             return ""Hello World Again!"";
+        }
+        static string EpicFail() {
+             throw new NotImplementedException();
+        }
+    }
+}
+";
+            var output = "Hello World!\r\nHello World Again!";
+            AssertSingleFileSimpleOutput(input, output);
+        }
+
         static void AssertSingleFileSimpleOutput(string input, string output) {
             AssertSingleFile(input, output);
         }
