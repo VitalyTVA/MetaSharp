@@ -9,7 +9,7 @@ using Xunit;
 using MetaSharp.Utils;
 
 namespace MetaSharp.Test {
-    public class HelloWorldTests : GeneratorTestsBase {
+    public class  HelloWorldTests : GeneratorTestsBase {
         [Fact]
         public void IsMetaSharpFile() {
             Assert.True(Generator.IsMetaSharpFile("file.meta.cs"));
@@ -221,6 +221,36 @@ namespace MetaSharp.HelloAgain {
                 ImmutableArray.Create(new TestFile(name2, input2), new TestFile(name1, input1)),
                 ImmutableArray.Create(
                     new TestFile(GetOutputFileName(name1), "Hello World!"), 
+                    new TestFile(GetOutputFileName(name2), "Hello Again!")
+                )
+            );
+        }
+        [Fact]
+        public void PartialDefinitions() {
+            var input1 = @"
+namespace MetaSharp.HelloWorld {
+    public static partial class HelloWorldGenerator {
+        public static string SayHello() {
+             return ""Hello World!"";
+        }
+    }
+}
+";
+            var input2 = @"
+namespace MetaSharp.HelloWorld {
+    partial class HelloWorldGenerator {
+        public static string SayHelloAgain() {
+             return ""Hello Again!"";
+        }
+    }
+}
+";
+            var name1 = "file1.meta.cs";
+            var name2 = "file2.meta.cs";
+            AssertMultipleFilesOutput(
+                ImmutableArray.Create(new TestFile(name2, input2), new TestFile(name1, input1)),
+                ImmutableArray.Create(
+                    new TestFile(GetOutputFileName(name1), "Hello World!"),
                     new TestFile(GetOutputFileName(name2), "Hello Again!")
                 )
             );

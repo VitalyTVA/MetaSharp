@@ -13,6 +13,8 @@ using System.Reflection;
 using System.Text;
 
 namespace MetaSharp {
+    //TODO class without members at all
+    //TODO use internal method
     //TODO exceptions in generator methods
     //TODO non static classes
     //TODO methods with arguments
@@ -30,6 +32,21 @@ namespace MetaSharp {
     //TODO ADT, immutable objects, DProps, ViewModels, MonadTransfomers, Templates, Localization, Aspects
     //TODO binary output - drawing images??
     public static class Generator {
+        class MethodId {
+            public readonly string Name, Type;
+            public MethodId(string name, string type) {
+                Name = name;
+                Type = type;
+            }
+            public override bool Equals(object obj) {
+                var other = obj as MethodId;
+                return other != null && other.Name == Name && other.Type == Type;
+            }
+            public override int GetHashCode() {
+                return Name.GetHashCode() ^ Type.GetHashCode();
+            }
+        }
+
         const string DefaultSuffix = "meta";
         const string CShaprFileExtension = ".cs";
         const string DefaultInputFileEnd = DefaultSuffix + CShaprFileExtension;
@@ -59,7 +76,7 @@ namespace MetaSharp {
                 .Select(error => {
                     var span = error.Location.GetLineSpan();
                     return error.ToGeneratorError(
-                        file: trees[error.Location.SourceTree], 
+                        file: trees[error.Location.SourceTree],
                         span: error.Location.GetLineSpan());
                 })
                 .ToImmutableArray();
@@ -71,15 +88,20 @@ namespace MetaSharp {
                 compiledAssembly = environment.LoadAssembly(stream);
             }
 
-            var typeTreeMap = compilation
-                .GetSymbolsWithName(name => true, SymbolFilter.Type)
-                .Cast<INamedTypeSymbol>()
-                .ToImmutableDictionary(type => type.FullName(), type => type.Locations.Single().SourceTree); //TODO multiple locations
+            var methodTreeMap = compilation
+                .GetSymbolsWithName(name => true, SymbolFilter.Member)
+                //.Where(member => member.Kind == SymbolKind.Method)
+                .Cast<IMethodSymbol>()
+                .ToImmutableDictionary(
+                    method => new MethodId(method.Name, method.ContainingType.FullName()), 
+                    method => method.Locations.Single() 
+                );
 
             var outputFiles = compiledAssembly.DefinedTypes
-                .GroupBy(type => typeTreeMap[type.FullName])
+                .SelectMany(type => type.DeclaredMethods)
+                .GroupBy(method => methodTreeMap[GetMethodId(method)].SourceTree)
                 .Select(grouping => {
-                    var result = GenerateOutput(grouping);
+                    var result = GenerateOutput(grouping, methodId => methodTreeMap[methodId].GetLineSpan().StartLinePosition.Line);
                     var inputFile = trees[grouping.Key];
                     var outputFile = Path.Combine(environment.IntermediateOutputPath, inputFile.ReplaceEnd(DefaultInputFileEnd, DefaultOutputFileEnd_IntellisenseVisible));
                     environment.WriteText(outputFile, result);
@@ -89,17 +111,34 @@ namespace MetaSharp {
             return new GeneratorResult(outputFiles, ImmutableArray<GeneratorError>.Empty);
         }
 
-        static string GenerateOutput(IEnumerable<System.Reflection.TypeInfo> types) {
-            return types
-                .Select(type => {
-                    return type.DeclaredMethods
-                        .Where(method => method.IsPublic)
+        static MethodId GetMethodId(MethodInfo method) {
+            return new MethodId(method.Name, method.DeclaringType.FullName);
+        }
+
+        static string GenerateOutput(IEnumerable<MethodInfo> methods, Func<MethodId, int> getLine) {
+            return methods
+                .Where(method => method.IsPublic)
+                .GroupBy(method => method.DeclaringType)
+                .Select(grouping => {
+                    return grouping
+                        .OrderBy(method => getLine(GetMethodId(method)))
                         .Select(method => (string)method.Invoke(null, null))
                         .InsertDelimeter(NewLine);
                 })
-                .InsertDelimeter(Enumerable.Repeat(NewLine, 2))
-                .SelectMany(x => x)
-                .ConcatStrings();
+            .InsertDelimeter(Enumerable.Repeat(NewLine, 2))
+            .SelectMany(x => x)
+            .ConcatStrings();
+
+            //return types
+            //    .Select(type => {
+            //        return type.DeclaredMethods
+            //            .Where(method => method.IsPublic)
+            //            .Select(method => (string)method.Invoke(null, null))
+            //            .InsertDelimeter(NewLine);
+            //    })
+            //    .InsertDelimeter(Enumerable.Repeat(NewLine, 2))
+            //    .SelectMany(x => x)
+            //    .ConcatStrings();
         }
 
         static GeneratorError ToGeneratorError(this Diagnostic error, string file, FileLinePositionSpan span) {
