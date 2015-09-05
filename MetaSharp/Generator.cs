@@ -4,6 +4,7 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using System;
+using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.IO;
 using System.Linq;
@@ -76,8 +77,25 @@ namespace MetaSharp {
                 compiledAssembly = environment.LoadAssembly(stream);
             }
 
-            var resultBuilder = new StringBuilder();
-            var result = compiledAssembly.DefinedTypes
+            var typeTreeMap = compilation
+                .GetSymbolsWithName(name => true, SymbolFilter.Type)
+                .Cast<INamedTypeSymbol>()
+                .ToImmutableDictionary(type => type.Name, type => type.Locations.Single().SourceTree); //TODO namespace, multiple locations
+
+            var outputFiles = compiledAssembly.DefinedTypes
+                .GroupBy(type => typeTreeMap[type.Name])
+                .Select(grouping => {
+                    var result = GenerateOutput(grouping);
+                    var inputFile = trees[grouping.Key];
+                    var outputFile = Path.Combine(environment.IntermediateOutputPath, inputFile.Replace(DefaultInputFileEnd, DefaultOutputFileEnd_IntellisenseVisible));//TODO replace end
+                    environment.WriteText(outputFile, result);
+                    return outputFile;
+                })
+                .ToImmutableArray();
+            return new GeneratorResult(outputFiles, ImmutableArray<GeneratorError>.Empty);
+        }
+        static string GenerateOutput(IEnumerable<System.Reflection.TypeInfo> types) {
+            return types
                 .Select(type => {
                     return type.DeclaredMethods
                         .Where(method => method.IsPublic)
@@ -87,15 +105,6 @@ namespace MetaSharp {
                 .InsertDelimeter(Enumerable.Repeat(NewLine, 2))
                 .SelectMany(x => x)
                 .ConcatStrings();
-
-            var outputFiles = files
-                .Select(file => {
-                    var outputPath = Path.Combine(environment.IntermediateOutputPath, file.Replace(DefaultInputFileEnd, DefaultOutputFileEnd_IntellisenseVisible));
-                    environment.WriteText(outputPath, result);
-                    return outputPath;
-                })
-                .ToImmutableArray();
-            return new GeneratorResult(outputFiles, ImmutableArray<GeneratorError>.Empty);
         }
     }
     public class GeneratorResult {

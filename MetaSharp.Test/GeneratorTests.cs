@@ -188,6 +188,36 @@ namespace MetaSharp.HelloWorld {
                 }
             );
         }
+        [Fact]
+        public void MultipleFileOutput() {
+            var input1 = @"
+namespace MetaSharp.HelloWorld {
+    public static class HelloWorldGenerator {
+        public static string SayHello() {
+             return ""Hello World!"";
+        }
+    }
+}
+";
+            var input2 = @"
+namespace MetaSharp.HelloWorld {
+    public static class HelloWorldGenerator2 {
+        public static string SayHelloAgain() {
+             return ""Hello Again!"";
+        }
+    }
+}
+";
+            var name1 = "file1.meta.cs";
+            var name2 = "file2.meta.cs";
+            AssertMultipleFilesOutput(
+                ImmutableArray.Create(new TestFile(name1, input1), new TestFile(name2, input2)),
+                ImmutableArray.Create(
+                    new TestFile(GetOutputFileName(name1), "Hello World!"), 
+                    new TestFile(GetOutputFileName(name2), "Hello Again!")
+                )
+            );
+        }
 
         static void AssertSingleFileSimpleOutput(string input, string output) {
             AssertSingleFileOutput(input, GetFullSimpleOutput(output));
