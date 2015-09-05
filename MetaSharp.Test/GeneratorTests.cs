@@ -212,7 +212,7 @@ namespace MetaSharp.HelloAgain {
             var name1 = "file1.meta.cs";
             var name2 = "file2.meta.cs";
             AssertMultipleFilesOutput(
-                ImmutableArray.Create(new TestFile(name1, input1), new TestFile(name2, input2)),
+                ImmutableArray.Create(new TestFile(name2, input2), new TestFile(name1, input1)),
                 ImmutableArray.Create(
                     new TestFile(GetOutputFileName(name1), "Hello World!"), 
                     new TestFile(GetOutputFileName(name2), "Hello Again!")
@@ -260,7 +260,7 @@ namespace MetaSharp.HelloAgain {
         protected static void AssertMultipleFilesOutput(ImmutableArray<TestFile> input, ImmutableArray<TestFile> output, string intermediateOutputPath = DefaultIntermediateOutputPath) {
             AssertMultipleFilesResult(input, (result, testEnvironment) => {
                 Assert.Empty(result.Errors);
-                Assert.Equal<string>(output.Select(x => x.Name).ToImmutableArray(), result.Files);
+                Assert.Equal<string>(output.OrderBy(x => x.Name).Select(x => x.Name).ToImmutableArray(), result.Files);
                 Assert.Equal(input.Length + output.Length, testEnvironment.FileCount);
                 AssertFiles(output, testEnvironment);
             }, intermediateOutputPath);
