@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.IO;
 using System.Linq;
 using System.Reflection;
 using Xunit;
@@ -206,7 +207,7 @@ namespace MetaSharp.HelloWorld {
         protected static void AssertSingleFileOutput(string input, string output) {
             AssertMultipleFilesOutput(
                 ImmutableArray.Create(new TestFile(SingleInputFileName, input)),
-                ImmutableArray.Create(new TestFile("obj\\file.meta.g.i.cs", output))
+                ImmutableArray.Create(new TestFile(GetOutputFileName(SingleInputFileName), output))
             );
         }
         protected static void AssertSingleFileErrors(string input, Action<ImmutableArray<GeneratorError>> assertErrors) {
@@ -225,6 +226,10 @@ namespace MetaSharp.HelloWorld {
             Assert.Equal(columnNumber, error.ColumnNumber);
             Assert.Equal(lineNumber, error.EndLineNumber);
             Assert.Equal(columnNumber, error.EndColumnNumber);
+        }
+
+        protected static string GetOutputFileName(string input, string intermediateOutputPath = DefaultIntermediateOutputPath) {
+            return Path.Combine(intermediateOutputPath, input.ReplaceEnd(".meta.cs", ".meta.g.i.cs"));
         }
 
         static TestEnvironment CreateEnvironment(string intermediateOutputPath) {
