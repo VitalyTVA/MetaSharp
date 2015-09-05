@@ -95,7 +95,7 @@ namespace MetaSharp {
                     method => method.Locations.Single()
                 );
 
-            var outputFileMethodsMap = compiledAssembly.DefinedTypes
+            var fileMethodsMap = compiledAssembly.DefinedTypes
                 .SelectMany(type => environment.GetAllMethods(type.AsType()).Where(method => (method.IsPublic || method.IsAssembly) && !method.IsSpecialName))
                 .GroupBy(method => methodTreeMap[GetMethodId(method)].SourceTree)
                 .ToImmutableDictionary(
@@ -105,7 +105,7 @@ namespace MetaSharp {
 
             var outputFiles = files
                 .Select(inputFile => {
-                    var methods = outputFileMethodsMap.GetValueOrDefault(inputFile, ImmutableArray<MethodInfo>.Empty);
+                    var methods = fileMethodsMap.GetValueOrDefault(inputFile, ImmutableArray<MethodInfo>.Empty);
                     var result = methods.Any() ? GenerateOutput(methods) : string.Empty;
                     var outputFile = Path.Combine(environment.IntermediateOutputPath, inputFile.ReplaceEnd(DefaultInputFileEnd, DefaultOutputFileEnd_IntellisenseVisible));
                     environment.WriteText(outputFile, result);
