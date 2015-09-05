@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -8,6 +9,9 @@ namespace MetaSharp {
     public static class LinqExtensions {
         public static IEnumerable<T> Yield<T>(this T item) {
             yield return item;
+        }
+        public static ImmutableArray<T> YieldToImmutable<T>(this T item) {
+            return ImmutableArray.Create(item);
         }
         public static void ForEach<T>(this IEnumerable<T> source, Action<T> action) {
             foreach(var item in source) {

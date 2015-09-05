@@ -144,11 +144,32 @@ namespace MetaSharp.HelloWorld {
             var output = "Hello World!";
             AssertSingleFileSimpleOutput(input, output);
         }
-
-        static void AssertSingleFileSimpleOutput(string input, string output) {
-            AssertSingleFileOutput(input, output);
+        [Fact]
+        public void NonDefaultIntermediateOutputPathAndFileName() {
+            var input = @"
+namespace MetaSharp.HelloWorld {
+    public static class HelloWorldGenerator {
+        public static string SayHello() {
+             return ""Hello World!"";
+        }
+    }
+}
+";
+            var output = "Hello World!";
+            var name = "file123.meta.cs";
+            AssertMultipleFilesOutput(
+                new TestFile(name, input).YieldToImmutable(),
+                new TestFile(GetOutputFileName(name, "obf123"), output).YieldToImmutable(),
+                "obf123"
+            );
         }
 
+        static void AssertSingleFileSimpleOutput(string input, string output) {
+            AssertSingleFileOutput(input, GetFullSimpleOutput(output));
+        }
+        static string GetFullSimpleOutput(string output) {
+            return output;
+        }
 
     }
     public class TestFile {
@@ -176,7 +197,7 @@ namespace MetaSharp.HelloWorld {
         static void AssertMultipleFilesResult(ImmutableArray<TestFile> input, Action<GeneratorResult, TestEnvironment> assertion, string intermediateOutputPath) {
             var testEnvironment = CreateEnvironment(intermediateOutputPath);
             input.ForEach(file => testEnvironment.Environment.WriteText(file.Name, file.Text));
-            var result = Generator.Generate(ImmutableArray.Create(SingleInputFileName), testEnvironment.Environment, PlatformEnvironment.DefaultReferences);
+            var result = Generator.Generate(input.Select(file => file.Name).ToImmutableArray(), testEnvironment.Environment, PlatformEnvironment.DefaultReferences);
             AssertFiles(input, testEnvironment);
             assertion(result, testEnvironment);
         }
@@ -206,8 +227,8 @@ namespace MetaSharp.HelloWorld {
         const string SingleInputFileName = "file.meta.cs";
         protected static void AssertSingleFileOutput(string input, string output) {
             AssertMultipleFilesOutput(
-                ImmutableArray.Create(new TestFile(SingleInputFileName, input)),
-                ImmutableArray.Create(new TestFile(GetOutputFileName(SingleInputFileName), output))
+                new TestFile(SingleInputFileName, input).YieldToImmutable(),
+                new TestFile(GetOutputFileName(SingleInputFileName), output).YieldToImmutable()
             );
         }
         protected static void AssertSingleFileErrors(string input, Action<ImmutableArray<GeneratorError>> assertErrors) {
