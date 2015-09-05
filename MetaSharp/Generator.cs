@@ -1,7 +1,9 @@
-﻿using Microsoft.CodeAnalysis;
+﻿#define TEST
+#define TEST
+using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 using System;
-using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.IO;
 using System.Linq;
@@ -33,13 +35,16 @@ namespace MetaSharp {
         const string DefaultOutputFileEnd_IntellisenseVisible = DefaultSuffix + ".g.i" + CShaprFileExtension;
         const string DefaultAssemblyName = "meta.dll";
         const string NewLine = "\r\n";
+        const string ConditionalConstant = "METASHARP";
 
         public static bool IsMetaShaprtFile(string fileName) {
             return fileName.EndsWith(DefaultInputFileEnd);
         }
 
         public static GeneratorResult Generate(ImmutableArray<string> files, Environment environment, ImmutableArray<string> references) {
-            var trees = files.ToImmutableDictionary(x => SyntaxFactory.ParseSyntaxTree(environment.ReadText(x)), x => x);
+            var parseOptions = CSharpParseOptions.Default.WithPreprocessorSymbols(ConditionalConstant);
+            var trees = files.ToImmutableDictionary(x => SyntaxFactory.ParseSyntaxTree(environment.ReadText(x), parseOptions), x => x);
+
 
             var compilation = CSharpCompilation.Create(
                 DefaultAssemblyName,

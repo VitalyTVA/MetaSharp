@@ -126,6 +126,22 @@ Hello World Again!
 Hello World One More Time!";
             AssertSingleFileSimpleOutput(input, output);
         }
+        [Fact]
+        public void ConditionalSymbol() {
+            var input = @"
+#if METASHARP
+namespace MetaSharp.HelloWorld {
+    public static class HelloWorldGenerator {
+        public static string SayHello() {
+             return ""Hello World!"";
+        }
+    }
+}
+#endif
+";
+            var output = "Hello World!";
+            AssertSingleFileSimpleOutput(input, output);
+        }
 
         static void AssertSingleFileSimpleOutput(string input, string output) {
             AssertSingleFileOutput(input, output);
