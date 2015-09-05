@@ -20,8 +20,7 @@ namespace MetaSharp.HelloWorld {
     }
 }
 ";
-            var output = "Hello World!";
-            AssertSingleFileSimpleOutput(input, output);
+            AssertSingleFileSimpleOutput(input, "Hello World!");
         }
         [Fact]
         public void NullOutput() {
@@ -34,8 +33,7 @@ namespace MetaSharp.HelloWorld {
     }
 }
 ";
-            var output = "";
-            AssertSingleFileSimpleOutput(input, output);
+            AssertSingleFileSimpleOutput(input, string.Empty);
         }
         [Fact]
         public void NonPublicClass() {
@@ -48,8 +46,7 @@ namespace MetaSharp.HelloWorld.NonPublicClass {
     }
 }
 ";
-            var output = "Hello World!";
-            AssertSingleFileSimpleOutput(input, output);
+            AssertSingleFileSimpleOutput(input, "Hello World!");
         }
         [Fact]
         public void NonPublicMethod() {
@@ -62,8 +59,7 @@ namespace MetaSharp.HelloWorld.NonPublicMethod {
     }
 }
 ";
-            var output = string.Empty;
-            AssertSingleFileSimpleOutput(input, output);
+            AssertSingleFileSimpleOutput(input, string.Empty);
         }
         [Fact]
         public void SeveralMethods() {
@@ -83,8 +79,7 @@ namespace MetaSharp.HelloWorld {
     }
 }
 ";
-            var output = "Hello World!\r\nHello World Again!";
-            AssertSingleFileSimpleOutput(input, output);
+            AssertSingleFileSimpleOutput(input, "Hello World!\r\nHello World Again!");
         }
         [Fact]
         public void CompilationError() {
@@ -141,8 +136,7 @@ namespace MetaSharp.HelloWorld {
 }
 #endif
 ";
-            var output = "Hello World!";
-            AssertSingleFileSimpleOutput(input, output);
+            AssertSingleFileSimpleOutput(input, "Hello World!");
         }
         [Fact]
         public void NonDefaultIntermediateOutputPathAndFileName() {
