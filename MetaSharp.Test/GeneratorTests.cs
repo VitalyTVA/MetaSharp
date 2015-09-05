@@ -94,8 +94,8 @@ namespace MetaSharp.HelloWorld {
 ";
             AssertSingleFileErrors(input, errors => {
                 Assert.Collection(errors, 
-                    error => AssertError(error, "CS1002", "; expected", 4, 34),
-                    error => AssertError(error, "CS1513", "} expected", 7, 1));
+                    error => AssertError(error, SingleInputFileName, "CS1002", "; expected", 4, 34),
+                    error => AssertError(error, SingleInputFileName, "CS1513", "} expected", 7, 1));
             });
         }
         [Fact]
@@ -157,6 +157,25 @@ namespace MetaSharp.HelloWorld {
                 path
             );
         }
+//        [Fact]
+//        public void MultipleFileErrors() {
+//            var input = @"
+//namespace MetaSharp.HelloWorld {
+//    public static class HelloWorldGenerator {
+//        public static string SayHello() {
+//             return ""Hello World!"";
+//        }
+//    }
+//}
+//";
+//            var name = "file123.meta.cs";
+//            var path = "obf123";
+//            AssertMultipleFilesOutput(
+//                new TestFile(name, input).YieldToImmutable(),
+//                new TestFile(GetOutputFileName(name, path), "Hello World!").YieldToImmutable(),
+//                path
+//            );
+//        }
 
         static void AssertSingleFileSimpleOutput(string input, string output) {
             AssertSingleFileOutput(input, GetFullSimpleOutput(output));
@@ -218,7 +237,7 @@ namespace MetaSharp.HelloWorld {
 
 
 
-        const string SingleInputFileName = "file.meta.cs";
+        protected const string SingleInputFileName = "file.meta.cs";
         protected static void AssertSingleFileOutput(string input, string output) {
             AssertMultipleFilesOutput(
                 new TestFile(SingleInputFileName, input).YieldToImmutable(),
@@ -229,12 +248,12 @@ namespace MetaSharp.HelloWorld {
             AssertMultipleFilesErrors(
                 ImmutableArray.Create(new TestFile(SingleInputFileName, input)),
                 errors => {
-                    Assert.All(errors, error => Assert.Equal(SingleInputFileName, error.File));
                     assertErrors(errors);
                 }
             );
         }
-        protected static void AssertError(GeneratorError error, string id, string message, int lineNumber, int columnNumber) {
+        protected static void AssertError(GeneratorError error, string file, string id, string message, int lineNumber, int columnNumber) {
+            Assert.Equal(file, error.File);
             Assert.Equal(id, error.Id);
             Assert.Equal(message, error.Message);
             Assert.Equal(lineNumber, error.LineNumber);
