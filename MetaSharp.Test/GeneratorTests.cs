@@ -253,13 +253,11 @@ namespace MetaSharp.HelloWorld {
             );
         }
         protected static void AssertError(GeneratorError error, string file, string id, string message, int lineNumber, int columnNumber) {
+            AssertError(error, file, id);
+        }
+        protected static void AssertError(GeneratorError error, string file, string id) {
             Assert.Equal(file, error.File);
             Assert.Equal(id, error.Id);
-            Assert.Equal(message, error.Message);
-            Assert.Equal(lineNumber, error.LineNumber);
-            Assert.Equal(columnNumber, error.ColumnNumber);
-            Assert.Equal(lineNumber, error.EndLineNumber);
-            Assert.Equal(columnNumber, error.EndColumnNumber);
         }
 
         protected static string GetOutputFileName(string input, string intermediateOutputPath = DefaultIntermediateOutputPath) {
