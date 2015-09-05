@@ -56,17 +56,20 @@ namespace MetaSharp.HelloWorld.NonPublicClass {
             AssertSingleFileSimpleOutput(input, "Hello World!");
         }
         [Fact]
-        public void NonPublicMethod() {
+        public void NonPublicMethods() {
             var input = @"
 namespace MetaSharp.HelloWorld.NonPublicMethod {
     static class HelloWorldGenerator_NonPublicMethod {
-        internal static string SayHelloAgain() {
+        internal static string SayHello() {
              return ""Hello World!"";
+        }
+        static string SayHelloPrivatly() {
+            throw new System.NotImplementedException();
         }
     }
 }
 ";
-            AssertSingleFileSimpleOutput(input, string.Empty);
+            AssertSingleFileSimpleOutput(input, "Hello World!");
         }
         [Fact]
         public void SeveralMethods() {

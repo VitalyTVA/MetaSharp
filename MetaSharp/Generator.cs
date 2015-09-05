@@ -98,7 +98,7 @@ namespace MetaSharp {
                 );
 
             var outputFiles = compiledAssembly.DefinedTypes
-                .SelectMany(type => type.DeclaredMethods)
+                .SelectMany(type => environment.GetAllMethods(type.AsType()))
                 .GroupBy(method => methodTreeMap[GetMethodId(method)].SourceTree)
                 .Select(grouping => {
                     var result = GenerateOutput(grouping, methodId => methodTreeMap[methodId].GetLineSpan().StartLinePosition.Line);
@@ -117,7 +117,7 @@ namespace MetaSharp {
 
         static string GenerateOutput(IEnumerable<MethodInfo> methods, Func<MethodId, int> getLine) {
             return methods
-                .Where(method => method.IsPublic)
+                .Where(method => method.IsPublic || method.IsAssembly)
                 .GroupBy(method => method.DeclaringType)
                 .Select(grouping => {
                     return grouping
@@ -183,12 +183,14 @@ namespace MetaSharp {
         public readonly Func<string, string> ReadText;
         public readonly Action<string, string> WriteText;
         public readonly Func<MemoryStream, Assembly> LoadAssembly;
+        public readonly Func<Type, IEnumerable<MethodInfo>> GetAllMethods;
         public readonly string IntermediateOutputPath; 
-        public Environment(Func<string, string> readText, Action<string, string> writeText, Func<MemoryStream, Assembly> loadAssembly, string intermediateOutputPath) {
+        public Environment(Func<string, string> readText, Action<string, string> writeText, Func<MemoryStream, Assembly> loadAssembly, string intermediateOutputPath, Func<Type, IEnumerable<MethodInfo>> getAllMethods) {
             ReadText = readText;
             WriteText = writeText;
             LoadAssembly = loadAssembly;
             IntermediateOutputPath = intermediateOutputPath;
+            GetAllMethods = getAllMethods;
         }
     }
 }
