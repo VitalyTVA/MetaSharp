@@ -37,7 +37,7 @@ namespace MetaSharp {
         const string NewLine = "\r\n";
         const string ConditionalConstant = "METASHARP";
 
-        public static bool IsMetaShaprtFile(string fileName) {
+        public static bool IsMetaSharpFile(string fileName) {
             return fileName.EndsWith(DefaultInputFileEnd);
         }
 

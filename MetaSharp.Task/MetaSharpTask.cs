@@ -26,7 +26,7 @@ namespace MetaSharp.Tasks {
         public bool Execute() {
             var files = InputFiles
                 .Select(x => x.ItemSpec)
-                .Where(Generator.IsMetaShaprtFile)
+                .Where(Generator.IsMetaSharpFile)
                 .ToImmutableArray();
             var references = PlatformEnvironment.DefaultReferences;
             var result = Generator.Generate(files, CreateEnvironment(), references);

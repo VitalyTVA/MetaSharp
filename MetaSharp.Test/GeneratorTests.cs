@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.Linq;
 using System.Reflection;
 using Xunit;
 
@@ -149,7 +150,16 @@ namespace MetaSharp.HelloWorld {
 
 
     }
+    public class TestFile {
+        public readonly string Name, Text;
+        public TestFile(string name, string text) {
+            Name = name;
+            Text = text;
+        }
+    }
     public class GeneratorTestsBase {
+        const string DefaultIntermediateOutputPath = "obj";
+
         protected class TestEnvironment {
             public readonly Environment Environment;
 
@@ -162,32 +172,51 @@ namespace MetaSharp.HelloWorld {
                 Environment = environment;
             }
         }
-        const string SingleInputFileName = "file.meta.cs";
-        static void AssertSingleFileResult(string input, Action<GeneratorResult, TestEnvironment> assertion) {
-            var testEnvironment = CreateEnvironment();
-            testEnvironment.Environment.WriteText(SingleInputFileName, input);
+        static void AssertMultipleFilesResult(ImmutableArray<TestFile> input, Action<GeneratorResult, TestEnvironment> assertion, string intermediateOutputPath) {
+            var testEnvironment = CreateEnvironment(intermediateOutputPath);
+            input.ForEach(file => testEnvironment.Environment.WriteText(file.Name, file.Text));
             var result = Generator.Generate(ImmutableArray.Create(SingleInputFileName), testEnvironment.Environment, PlatformEnvironment.DefaultReferences);
-            Assert.Equal(input, testEnvironment.ReadText(SingleInputFileName));
+            AssertFiles(input, testEnvironment);
             assertion(result, testEnvironment);
         }
-        protected static void AssertSingleFileOutput(string input, string output) {
-            AssertSingleFileResult(input, (result, testEnvironment) => {
+        protected static void AssertMultipleFilesOutput(ImmutableArray<TestFile> input, ImmutableArray<TestFile> output, string intermediateOutputPath = DefaultIntermediateOutputPath) {
+            AssertMultipleFilesResult(input, (result, testEnvironment) => {
                 Assert.Empty(result.Errors);
-
-                const string SingleOutputFileName = "obj\\file.meta.g.i.cs";
-                Assert.Equal<string>(ImmutableArray.Create(SingleOutputFileName), result.Files);
-                Assert.Equal(2, testEnvironment.FileCount);
-                Assert.Equal(output, testEnvironment.ReadText(SingleOutputFileName));
-            });
+                Assert.Equal<string>(output.Select(x => x.Name).ToImmutableArray(), result.Files);
+                Assert.Equal(input.Length + output.Length, testEnvironment.FileCount);
+                AssertFiles(output, testEnvironment);
+            }, intermediateOutputPath);
         }
-        protected static void AssertSingleFileErrors(string input, Action<ImmutableArray<GeneratorError>> assertErrors) {
-            AssertSingleFileResult(input, (result, testEnvironment) => {
+        protected static void AssertMultipleFilesErrors(ImmutableArray<TestFile> input, Action<ImmutableArray<GeneratorError>> assertErrors, string intermediateOutputPath = DefaultIntermediateOutputPath) {
+            AssertMultipleFilesResult(input, (result, testEnvironment) => {
                 Assert.NotEmpty(result.Errors);
-                Assert.All(result.Errors, error => Assert.Equal(SingleInputFileName, error.File));
-                Assert.Equal(1, testEnvironment.FileCount);
+                Assert.Equal(input.Length, testEnvironment.FileCount);
                 Assert.Empty(result.Files);
                 assertErrors(result.Errors);
-            });
+            }, intermediateOutputPath);
+        }
+        static void AssertFiles(ImmutableArray<TestFile> files, TestEnvironment environment) {
+            files.ForEach(file => Assert.Equal(file.Text, environment.ReadText(file.Name)));
+        }
+
+
+
+
+        const string SingleInputFileName = "file.meta.cs";
+        protected static void AssertSingleFileOutput(string input, string output) {
+            AssertMultipleFilesOutput(
+                ImmutableArray.Create(new TestFile(SingleInputFileName, input)),
+                ImmutableArray.Create(new TestFile("obj\\file.meta.g.i.cs", output))
+            );
+        }
+        protected static void AssertSingleFileErrors(string input, Action<ImmutableArray<GeneratorError>> assertErrors) {
+            AssertMultipleFilesErrors(
+                ImmutableArray.Create(new TestFile(SingleInputFileName, input)),
+                errors => {
+                    Assert.All(errors, error => Assert.Equal(SingleInputFileName, error.File));
+                    assertErrors(errors);
+                }
+            );
         }
         protected static void AssertError(GeneratorError error, string id, string message, int lineNumber, int columnNumber) {
             Assert.Equal(id, error.Id);
@@ -198,12 +227,12 @@ namespace MetaSharp.HelloWorld {
             Assert.Equal(columnNumber, error.EndColumnNumber);
         }
 
-        static TestEnvironment CreateEnvironment() {
+        static TestEnvironment CreateEnvironment(string intermediateOutputPath) {
             var files = new Dictionary<string, string>();
             var environment = PlatformEnvironment.Create(
                 fileName => files[fileName],
                 (fileName, text) => files[fileName] = text,
-                "obj"
+                intermediateOutputPath
             );
             return new TestEnvironment(files, environment);
         }
