@@ -22,6 +22,20 @@ namespace MetaSharp.HelloWorld {
             AssertSingleFileSimpleOutput(input, output);
         }
         [Fact]
+        public void NullOutput() {
+            var input = @"
+namespace MetaSharp.HelloWorld {
+    public static class HelloWorldGenerator {
+        public static string SayHello() {
+             return null;
+        }
+    }
+}
+";
+            var output = "";
+            AssertSingleFileSimpleOutput(input, output);
+        }
+        [Fact]
         public void NonPublicClass() {
             var input = @"
 namespace MetaSharp.HelloWorld.NonPublicClass {
