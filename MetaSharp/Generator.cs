@@ -1,5 +1,6 @@
 ﻿#define TEST
 #define TEST
+using MetaSharp.Utils;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;

@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace MetaSharp {
+namespace MetaSharp.Utils {
     public static class LinqExtensions {
         public static IEnumerable<T> Yield<T>(this T item) {
             yield return item;
