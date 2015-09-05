@@ -59,7 +59,7 @@ namespace MetaSharp {
                     var span = error.Location.GetLineSpan();
                     return new GeneratorError(
                         id: error.Id,
-                        file: files.Single(),//TODO
+                        file: trees[error.Location.SourceTree],
                         message: error.GetMessage(),
                         lineNumber: span.StartLinePosition.Line,
                         columnNumber: span.StartLinePosition.Character,

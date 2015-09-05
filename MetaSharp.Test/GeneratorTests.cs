@@ -157,25 +157,37 @@ namespace MetaSharp.HelloWorld {
                 path
             );
         }
-//        [Fact]
-//        public void MultipleFileErrors() {
-//            var input = @"
-//namespace MetaSharp.HelloWorld {
-//    public static class HelloWorldGenerator {
-//        public static string SayHello() {
-//             return ""Hello World!"";
-//        }
-//    }
-//}
-//";
-//            var name = "file123.meta.cs";
-//            var path = "obf123";
-//            AssertMultipleFilesOutput(
-//                new TestFile(name, input).YieldToImmutable(),
-//                new TestFile(GetOutputFileName(name, path), "Hello World!").YieldToImmutable(),
-//                path
-//            );
-//        }
+        [Fact]
+        public void MultipleFileErrors() {
+            var input1 = @"
+namespace MetaSharp.HelloWorld {
+    public static class HelloWorldGenerator {
+        public static string SayHello() {
+             return ""Hello World!""
+        }
+    }
+}
+";
+            var input2 = @"
+namespace MetaSharp.HelloWorld {
+    public static class HelloAgainGenerator {
+        public static string SayHelloAgain() {
+             return ""Hello Again!"";
+        }
+    }
+
+";
+            var name1 = "file1.meta.cs";
+            var name2 = "file2.meta.cs";
+            AssertMultipleFilesErrors(
+                ImmutableArray.Create(new TestFile(name1, input1), new TestFile(name2, input2)),
+                errors => {
+                    Assert.Collection(errors,
+                        error => AssertError(error, name1, "CS1002"),
+                        error => AssertError(error, name2, "CS1513"));
+                }
+            );
+        }
 
         static void AssertSingleFileSimpleOutput(string input, string output) {
             AssertSingleFileOutput(input, GetFullSimpleOutput(output));
@@ -222,12 +234,12 @@ namespace MetaSharp.HelloWorld {
                 AssertFiles(output, testEnvironment);
             }, intermediateOutputPath);
         }
-        protected static void AssertMultipleFilesErrors(ImmutableArray<TestFile> input, Action<ImmutableArray<GeneratorError>> assertErrors, string intermediateOutputPath = DefaultIntermediateOutputPath) {
+        protected static void AssertMultipleFilesErrors(ImmutableArray<TestFile> input, Action<IEnumerable<GeneratorError>> assertErrors, string intermediateOutputPath = DefaultIntermediateOutputPath) {
             AssertMultipleFilesResult(input, (result, testEnvironment) => {
                 Assert.NotEmpty(result.Errors);
                 Assert.Equal(input.Length, testEnvironment.FileCount);
                 Assert.Empty(result.Files);
-                assertErrors(result.Errors);
+                assertErrors(result.Errors.OrderBy(x => x.File));
             }, intermediateOutputPath);
         }
         static void AssertFiles(ImmutableArray<TestFile> files, TestEnvironment environment) {
@@ -244,7 +256,7 @@ namespace MetaSharp.HelloWorld {
                 new TestFile(GetOutputFileName(SingleInputFileName), output).YieldToImmutable()
             );
         }
-        protected static void AssertSingleFileErrors(string input, Action<ImmutableArray<GeneratorError>> assertErrors) {
+        protected static void AssertSingleFileErrors(string input, Action<IEnumerable<GeneratorError>> assertErrors) {
             AssertMultipleFilesErrors(
                 ImmutableArray.Create(new TestFile(SingleInputFileName, input)),
                 errors => {
