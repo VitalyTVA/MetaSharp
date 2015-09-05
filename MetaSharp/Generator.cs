@@ -14,8 +14,7 @@ using System.Text;
 namespace MetaSharp {
     //TODO exceptions in generator methods
     //TODO non static classes
-    //TODO several output files
-    //TODO Conditional
+    //TODO methods with arguments
     //TODO other environment constants (OutputPath, etc.)
     //TODO g.cs/g.i.cs/designer.cs and explicit file name modes
     //TODO automatically generate namespace and usings based on usings above and under namespace
@@ -58,15 +57,9 @@ namespace MetaSharp {
                 .Where(x => x.Severity == DiagnosticSeverity.Error)
                 .Select(error => {
                     var span = error.Location.GetLineSpan();
-                    return new GeneratorError(
-                        id: error.Id,
-                        file: trees[error.Location.SourceTree],
-                        message: error.GetMessage(),
-                        lineNumber: span.StartLinePosition.Line,
-                        columnNumber: span.StartLinePosition.Character,
-                        endLineNumber: span.EndLinePosition.Line,
-                        endColumnNumber: span.EndLinePosition.Character
-                        );
+                    return error.ToGeneratorError(
+                        file: trees[error.Location.SourceTree], 
+                        span: error.Location.GetLineSpan());
                 })
                 .ToImmutableArray();
             if(errors.Any())
@@ -87,7 +80,7 @@ namespace MetaSharp {
                 .Select(grouping => {
                     var result = GenerateOutput(grouping);
                     var inputFile = trees[grouping.Key];
-                    var outputFile = Path.Combine(environment.IntermediateOutputPath, inputFile.Replace(DefaultInputFileEnd, DefaultOutputFileEnd_IntellisenseVisible));//TODO replace end
+                    var outputFile = Path.Combine(environment.IntermediateOutputPath, inputFile.ReplaceEnd(DefaultInputFileEnd, DefaultOutputFileEnd_IntellisenseVisible));
                     environment.WriteText(outputFile, result);
                     return outputFile;
                 })
@@ -106,6 +99,18 @@ namespace MetaSharp {
                 .InsertDelimeter(Enumerable.Repeat(NewLine, 2))
                 .SelectMany(x => x)
                 .ConcatStrings();
+        }
+
+        static GeneratorError ToGeneratorError(this Diagnostic error, string file, FileLinePositionSpan span) {
+            return new GeneratorError(
+                                    id: error.Id,
+                                    file: file,
+                                    message: error.GetMessage(),
+                                    lineNumber: span.StartLinePosition.Line,
+                                    columnNumber: span.StartLinePosition.Character,
+                                    endLineNumber: span.EndLinePosition.Line,
+                                    endColumnNumber: span.EndLinePosition.Character
+                                    );
         }
     }
     public static class RoslynExtensions {
