@@ -72,6 +72,17 @@ namespace MetaSharp.HelloWorld.NonPublicMethod {
             AssertSingleFileSimpleOutput(input, "Hello World!");
         }
         [Fact]
+        public void NoMethods() {
+            var input = @"
+namespace MetaSharp.HelloWorld.NonPublicMethod {
+    static class HelloWorldGenerator_NonPublicMethod {
+        internal static string Hello => ""Hello"";
+    }
+}
+";
+            AssertSingleFileSimpleOutput(input, string.Empty);
+        }
+        [Fact]
         public void SeveralMethods() {
             var input = @"
 using System;

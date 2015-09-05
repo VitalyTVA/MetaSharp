@@ -13,8 +13,6 @@ using System.Reflection;
 using System.Text;
 
 namespace MetaSharp {
-    //TODO class without members at all
-    //TODO use internal method
     //TODO exceptions in generator methods
     //TODO non static classes
     //TODO methods with arguments
@@ -90,19 +88,25 @@ namespace MetaSharp {
 
             var methodTreeMap = compilation
                 .GetSymbolsWithName(name => true, SymbolFilter.Member)
-                //.Where(member => member.Kind == SymbolKind.Method)
+                .Where(member => member.Kind == SymbolKind.Method && !member.IsImplicitlyDeclared)
                 .Cast<IMethodSymbol>()
                 .ToImmutableDictionary(
-                    method => new MethodId(method.Name, method.ContainingType.FullName()), 
-                    method => method.Locations.Single() 
+                    method => new MethodId(method.Name, method.ContainingType.FullName()),
+                    method => method.Locations.Single()
                 );
 
-            var outputFiles = compiledAssembly.DefinedTypes
-                .SelectMany(type => environment.GetAllMethods(type.AsType()))
+            var outputFileMethodsMap = compiledAssembly.DefinedTypes
+                .SelectMany(type => environment.GetAllMethods(type.AsType()).Where(method => (method.IsPublic || method.IsAssembly) && !method.IsSpecialName))
                 .GroupBy(method => methodTreeMap[GetMethodId(method)].SourceTree)
-                .Select(grouping => {
-                    var result = GenerateOutput(grouping, methodId => methodTreeMap[methodId].GetLineSpan().StartLinePosition.Line);
-                    var inputFile = trees[grouping.Key];
+                .ToImmutableDictionary(
+                    grouping => trees[grouping.Key],
+                    grouping => grouping.OrderBy(method => methodTreeMap[GetMethodId(method)].GetLineSpan().StartLinePosition.Line).ToArray()
+                 );
+
+            var outputFiles = files
+                .Select(inputFile => {
+                    var methods = outputFileMethodsMap.GetValueOrDefault(inputFile);
+                    var result = methods != null ? GenerateOutput(methods) : string.Empty;
                     var outputFile = Path.Combine(environment.IntermediateOutputPath, inputFile.ReplaceEnd(DefaultInputFileEnd, DefaultOutputFileEnd_IntellisenseVisible));
                     environment.WriteText(outputFile, result);
                     return outputFile;
@@ -115,13 +119,11 @@ namespace MetaSharp {
             return new MethodId(method.Name, method.DeclaringType.FullName);
         }
 
-        static string GenerateOutput(IEnumerable<MethodInfo> methods, Func<MethodId, int> getLine) {
+        static string GenerateOutput(IEnumerable<MethodInfo> methods) {
             return methods
-                .Where(method => method.IsPublic || method.IsAssembly)
                 .GroupBy(method => method.DeclaringType)
                 .Select(grouping => {
                     return grouping
-                        .OrderBy(method => getLine(GetMethodId(method)))
                         .Select(method => (string)method.Invoke(null, null))
                         .InsertDelimeter(NewLine);
                 })
