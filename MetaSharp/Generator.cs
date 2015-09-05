@@ -100,13 +100,13 @@ namespace MetaSharp {
                 .GroupBy(method => methodTreeMap[GetMethodId(method)].SourceTree)
                 .ToImmutableDictionary(
                     grouping => trees[grouping.Key],
-                    grouping => grouping.OrderBy(method => methodTreeMap[GetMethodId(method)].GetLineSpan().StartLinePosition.Line).ToArray()
+                    grouping => grouping.OrderBy(method => methodTreeMap[GetMethodId(method)].GetLineSpan().StartLinePosition.Line).ToImmutableArray()
                  );
 
             var outputFiles = files
                 .Select(inputFile => {
-                    var methods = outputFileMethodsMap.GetValueOrDefault(inputFile);
-                    var result = methods != null ? GenerateOutput(methods) : string.Empty;
+                    var methods = outputFileMethodsMap.GetValueOrDefault(inputFile, ImmutableArray<MethodInfo>.Empty);
+                    var result = methods.Any() ? GenerateOutput(methods) : string.Empty;
                     var outputFile = Path.Combine(environment.IntermediateOutputPath, inputFile.ReplaceEnd(DefaultInputFileEnd, DefaultOutputFileEnd_IntellisenseVisible));
                     environment.WriteText(outputFile, result);
                     return outputFile;
@@ -119,7 +119,7 @@ namespace MetaSharp {
             return new MethodId(method.Name, method.DeclaringType.FullName);
         }
 
-        static string GenerateOutput(IEnumerable<MethodInfo> methods) {
+        static string GenerateOutput(ImmutableArray<MethodInfo> methods) {
             return methods
                 .GroupBy(method => method.DeclaringType)
                 .Select(grouping => {
