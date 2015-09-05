@@ -11,6 +11,12 @@ using MetaSharp.Utils;
 namespace MetaSharp.Test {
     public class HelloWorldTests : GeneratorTestsBase {
         [Fact]
+        public void IsMetaSharpFile() {
+            Assert.True(Generator.IsMetaSharpFile("file.meta.cs"));
+            Assert.False(Generator.IsMetaSharpFile("file.teta.cs"));
+            Assert.False(Generator.IsMetaSharpFile("file.meta.cs.cs"));
+        }
+        [Fact]
         public void Default() {
             var input = @"
 namespace MetaSharp.HelloWorld {
@@ -260,7 +266,7 @@ namespace MetaSharp.HelloAgain {
         protected static void AssertMultipleFilesOutput(ImmutableArray<TestFile> input, ImmutableArray<TestFile> output, string intermediateOutputPath = DefaultIntermediateOutputPath) {
             AssertMultipleFilesResult(input, (result, testEnvironment) => {
                 Assert.Empty(result.Errors);
-                Assert.Equal<string>(output.OrderBy(x => x.Name).Select(x => x.Name).ToImmutableArray(), result.Files);
+                Assert.Equal<string>(output.Select(x => x.Name).ToImmutableArray(), result.Files.OrderBy(x => x));
                 Assert.Equal(input.Length + output.Length, testEnvironment.FileCount);
                 AssertFiles(output, testEnvironment);
             }, intermediateOutputPath);
