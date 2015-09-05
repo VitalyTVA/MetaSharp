@@ -80,10 +80,10 @@ namespace MetaSharp {
             var typeTreeMap = compilation
                 .GetSymbolsWithName(name => true, SymbolFilter.Type)
                 .Cast<INamedTypeSymbol>()
-                .ToImmutableDictionary(type => type.Name, type => type.Locations.Single().SourceTree); //TODO namespace, multiple locations
+                .ToImmutableDictionary(type => type.FullName(), type => type.Locations.Single().SourceTree); //TODO multiple locations
 
             var outputFiles = compiledAssembly.DefinedTypes
-                .GroupBy(type => typeTreeMap[type.Name])
+                .GroupBy(type => typeTreeMap[type.FullName])
                 .Select(grouping => {
                     var result = GenerateOutput(grouping);
                     var inputFile = trees[grouping.Key];
@@ -94,6 +94,7 @@ namespace MetaSharp {
                 .ToImmutableArray();
             return new GeneratorResult(outputFiles, ImmutableArray<GeneratorError>.Empty);
         }
+
         static string GenerateOutput(IEnumerable<System.Reflection.TypeInfo> types) {
             return types
                 .Select(type => {
@@ -105,6 +106,11 @@ namespace MetaSharp {
                 .InsertDelimeter(Enumerable.Repeat(NewLine, 2))
                 .SelectMany(x => x)
                 .ConcatStrings();
+        }
+    }
+    public static class RoslynExtensions {
+        public static string FullName(this INamedTypeSymbol type) {
+            return type.ContainingNamespace + "." + type.Name;
         }
     }
     public class GeneratorResult {

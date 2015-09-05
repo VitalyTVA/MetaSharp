@@ -200,8 +200,8 @@ namespace MetaSharp.HelloWorld {
 }
 ";
             var input2 = @"
-namespace MetaSharp.HelloWorld {
-    public static class HelloWorldGenerator2 {
+namespace MetaSharp.HelloAgain {
+    public static class HelloWorldGenerator {
         public static string SayHelloAgain() {
              return ""Hello Again!"";
         }
