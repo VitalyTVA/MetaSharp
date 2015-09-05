@@ -149,11 +149,10 @@ namespace MetaSharp.HelloWorld {
     }
 }
 ";
-            var output = "Hello World!";
             var name = "file123.meta.cs";
             AssertMultipleFilesOutput(
                 new TestFile(name, input).YieldToImmutable(),
-                new TestFile(GetOutputFileName(name, "obf123"), output).YieldToImmutable(),
+                new TestFile(GetOutputFileName(name, "obf123"), "Hello World!").YieldToImmutable(),
                 "obf123"
             );
         }
