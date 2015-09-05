@@ -131,16 +131,6 @@ namespace MetaSharp {
             .SelectMany(x => x)
             .ConcatStrings();
 
-            //return types
-            //    .Select(type => {
-            //        return type.DeclaredMethods
-            //            .Where(method => method.IsPublic)
-            //            .Select(method => (string)method.Invoke(null, null))
-            //            .InsertDelimeter(NewLine);
-            //    })
-            //    .InsertDelimeter(Enumerable.Repeat(NewLine, 2))
-            //    .SelectMany(x => x)
-            //    .ConcatStrings();
         }
 
         static GeneratorError ToGeneratorError(this Diagnostic error, string file, FileLinePositionSpan span) {
