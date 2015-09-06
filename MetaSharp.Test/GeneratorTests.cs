@@ -274,14 +274,22 @@ namespace MetaSharp.HelloWorld {
             var input = @"
 using MetaSharp;
 namespace MetaSharp.HelloWorld {
+
+    using System;
+    using System.Collections;
+    using Alias = System.Action;
+
     public static class HelloWorldGenerator {
         public static string SayHello(MetaContext context) {
-             return ""Hello World from "" + context.Namespace;
+             return context.Usings.Length + string.Concat(context.Usings) + ""Hello World from "" + context.Namespace;
         }
     }
 }
 ";
-            AssertSingleFileSimpleOutput(input, "Hello World from MetaSharp.HelloWorld");
+            const string output =
+                "3using System;using System.Collections;using Alias = System.Action;" +
+                "Hello World from MetaSharp.HelloWorld";
+            AssertSingleFileSimpleOutput(input, output);
         }
 
         static void AssertSingleFileSimpleOutput(string input, string output) {

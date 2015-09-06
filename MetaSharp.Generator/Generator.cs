@@ -108,7 +108,11 @@ namespace MetaSharp {
                             })
                             .OrderBy(info => info.Symbol.Location().GetLineSpan().StartLinePosition)
                             .Select(info => {
-                                return new MethodContext(info.Method, new MetaContext(info.Method.DeclaringType.Namespace));
+                                var location = info.Symbol.Location();
+                                var nodes = location.SourceTree.GetCompilationUnitRoot().DescendantNodes(location.SourceSpan);
+                                var namespaces = nodes.OfType<NamespaceDeclarationSyntax>().Single(); //TODO nested namespaces
+                                var usings = namespaces.Usings.Select(x => x.ToString()).ToArray();
+                                return new MethodContext(info.Method, new MetaContext(info.Method.DeclaringType.Namespace, usings));
                             })
                             .ToImmutableArray();
                         return GenerateOutput(methods);
