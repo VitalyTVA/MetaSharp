@@ -86,22 +86,22 @@ namespace MetaSharp {
                 compiledAssembly = environment.LoadAssembly(stream);
             }
 
-            var methodTreeMap = compilation
+            var methodsMap = compilation
                 .GetSymbolsWithName(name => true, SymbolFilter.Member)
                 .Where(member => member.Kind == SymbolKind.Method && !member.IsImplicitlyDeclared)
                 .Cast<IMethodSymbol>()
                 .ToImmutableDictionary(
                     method => new MethodId(method.Name, method.ContainingType.FullName()),
-                    method => method.Locations.Single()
+                    method => method
                 );
 
             var fileOutputMap = compiledAssembly.DefinedTypes
                 .SelectMany(type => environment.GetAllMethods(type.AsType()).Where(method => (method.IsPublic || method.IsAssembly) && !method.IsSpecialName))
-                .GroupBy(method => methodTreeMap[GetMethodId(method)].SourceTree)
+                .GroupBy(method => methodsMap[GetMethodId(method)].Location().SourceTree)
                 .ToImmutableDictionary(
                     grouping => trees[grouping.Key],
                     grouping => {
-                        var methods = grouping.OrderBy(method => methodTreeMap[GetMethodId(method)].GetLineSpan().StartLinePosition)
+                        var methods = grouping.OrderBy(method => methodsMap[GetMethodId(method)].Location().GetLineSpan().StartLinePosition)
                             .ToImmutableArray();
                         return GenerateOutput(methods);
                     }
@@ -151,6 +151,9 @@ namespace MetaSharp {
     public static class RoslynExtensions {
         public static string FullName(this INamedTypeSymbol type) {
             return type.ContainingNamespace + "." + type.Name;
+        }
+        public static Location Location(this IMethodSymbol method) {
+            return method.Locations.Single();
         }
     }
     public class GeneratorResult {
