@@ -80,7 +80,10 @@ namespace MetaSharp.HelloWorld.NonPublicMethod {
     }
 }
 ";
-            AssertSingleFileSimpleOutput(input, string.Empty);
+            AssertMultipleFilesOutput(
+                new TestFile(SingleInputFileName, input).YieldToImmutable(),
+                ImmutableArray<TestFile>.Empty
+            );
         }
         [Fact]
         public void SeveralMethods() {
