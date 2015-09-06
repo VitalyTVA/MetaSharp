@@ -65,7 +65,10 @@ namespace MetaSharp {
             var compilation = CSharpCompilation.Create(
                 DefaultAssemblyName,
                 references: references.Select(x => MetadataReference.CreateFromFile(x)),
-                options: new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary),
+                options: new CSharpCompilationOptions(
+                    OutputKind.DynamicallyLinkedLibrary,
+                    assemblyIdentityComparer: DesktopAssemblyIdentityComparer.Default
+                ),
                 syntaxTrees: trees.Keys
             );
 
