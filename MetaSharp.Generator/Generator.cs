@@ -101,9 +101,14 @@ namespace MetaSharp {
                 .ToImmutableDictionary(
                     grouping => trees[grouping.Key],
                     grouping => {
-                        var methods = grouping.OrderBy(method => methodsMap[GetMethodId(method)].Location().GetLineSpan().StartLinePosition)
+                        var methods = grouping
+                            .Select(method => new {
+                                Method = method,
+                                Symbol = methodsMap[GetMethodId(method)]
+                            })
+                            .OrderBy(info => info.Symbol.Location().GetLineSpan().StartLinePosition)
                             .ToImmutableArray();
-                        return GenerateOutput(methods);
+                        return GenerateOutput(methods.Select(x => x.Method));
                     }
                  );
 
@@ -122,7 +127,7 @@ namespace MetaSharp {
             return new MethodId(method.Name, method.DeclaringType.FullName);
         }
 
-        static string GenerateOutput(ImmutableArray<MethodInfo> methods) {
+        static string GenerateOutput(IEnumerable<MethodInfo> methods) {
             return methods
                 .GroupBy(method => method.DeclaringType)
                 .Select(grouping => {
