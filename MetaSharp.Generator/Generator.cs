@@ -107,8 +107,11 @@ namespace MetaSharp {
                                 Symbol = methodsMap[GetMethodId(method)]
                             })
                             .OrderBy(info => info.Symbol.Location().GetLineSpan().StartLinePosition)
+                            .Select(info => {
+                                return new MethodContext(info.Method, new MetaContext(info.Method.DeclaringType.Namespace));
+                            })
                             .ToImmutableArray();
-                        return GenerateOutput(methods.Select(x => x.Method));
+                        return GenerateOutput(methods);
                     }
                  );
 
@@ -127,12 +130,18 @@ namespace MetaSharp {
             return new MethodId(method.Name, method.DeclaringType.FullName);
         }
 
-        static string GenerateOutput(IEnumerable<MethodInfo> methods) {
+        static string GenerateOutput(ImmutableArray<MethodContext> methods) {
             return methods
-                .GroupBy(method => method.DeclaringType)
+                .GroupBy(methodContext => methodContext.Method.DeclaringType)
                 .Select(grouping => {
                     return grouping
-                        .Select(method => (string)method.Invoke(null, null))
+                        .Select(methodContext => {
+                            //TODO check args
+                            var parameters = methodContext.Method.GetParameters().Length == 1
+                                ? methodContext.Context.YieldToArray()
+                                : null;
+                            return (string)methodContext.Method.Invoke(null, parameters);
+                        })
                         .InsertDelimeter(NewLine);
                 })
             .InsertDelimeter(Enumerable.Repeat(NewLine, 2))
@@ -151,6 +160,14 @@ namespace MetaSharp {
                                     endLineNumber: span.EndLinePosition.Line,
                                     endColumnNumber: span.EndLinePosition.Character
                                     );
+        }
+    }
+    public class MethodContext {
+        public readonly MetaContext Context;
+        public readonly MethodInfo Method;
+        public MethodContext(MethodInfo method, MetaContext context) {
+            Context = context;
+            Method = method;
         }
     }
     public static class RoslynExtensions {

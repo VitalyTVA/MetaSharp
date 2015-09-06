@@ -4,9 +4,9 @@ using System.Linq;
 using System.Text;
 
 namespace MetaSharp {
-    public class GeneratorContext {
+    public class MetaContext {
         public string Namespace { get; }
-        public GeneratorContext(string @namespace) {
+        public MetaContext(string @namespace) {
             Namespace = @namespace;
         }
     }

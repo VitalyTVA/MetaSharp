@@ -269,6 +269,20 @@ namespace MetaSharp.HelloWorld {
                 )
             );
         }
+        [Fact]
+        public void UseMetaContext() {
+            var input = @"
+using MetaSharp;
+namespace MetaSharp.HelloWorld {
+    public static class HelloWorldGenerator {
+        public static string SayHello(MetaContext context) {
+             return ""Hello World from "" + context.Namespace;
+        }
+    }
+}
+";
+            AssertSingleFileSimpleOutput(input, "Hello World from MetaSharp.HelloWorld");
+        }
 
         static void AssertSingleFileSimpleOutput(string input, string output) {
             AssertSingleFileOutput(input, GetFullSimpleOutput(output));

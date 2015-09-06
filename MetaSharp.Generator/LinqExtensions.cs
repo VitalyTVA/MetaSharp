@@ -13,6 +13,9 @@ namespace MetaSharp.Utils {
         public static ImmutableArray<T> YieldToImmutable<T>(this T item) {
             return ImmutableArray.Create(item);
         }
+        public static T[] YieldToArray<T>(this T item) {
+            return new[] { item };
+        }
         public static void ForEach<T>(this IEnumerable<T> source, Action<T> action) {
             foreach(var item in source) {
                 action(item);
