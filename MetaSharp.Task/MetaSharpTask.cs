@@ -56,7 +56,7 @@ namespace MetaSharp.Tasks {
         }
 
         private Assembly CurrentDomain_AssemblyResolve(object sender, ResolveEventArgs args) {
-            if(args.Name.StartsWith("MetaSharp"))
+            if(args.Name == typeof(MetaContext).Assembly.FullName)
                 return typeof(MetaContext).Assembly;
             return null;
         }
