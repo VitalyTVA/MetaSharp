@@ -120,8 +120,10 @@ namespace MetaSharp {
                         })
                         .ToImmutableArray();
                     var outputs = GenerateOutputs(methods, trees[grouping.Key], environment);
-                    outputs.ForEach(output => environment.WriteText(output.FileName, output.Text));
-                    return outputs.Select(output => output.FileName);
+                    outputs.ForEach(output => environment.WriteText(output.FileName.FileName, output.Text));
+                    return outputs
+                        .Where(output => output.FileName.IncludeInOutput)
+                        .Select(output => output.FileName.FileName);
                 })
                 .ToImmutableArray();
             return new GeneratorResult(outputFiles, ImmutableArray<GeneratorError>.Empty);
@@ -155,11 +157,11 @@ namespace MetaSharp {
                 })
                 .ToImmutableArray();
         }
-        static string GetOutputFileName(MethodInfo method, string fileName, Environment environment) {
+        static OutputFileName GetOutputFileName(MethodInfo method, string fileName, Environment environment) {
             var location = environment.GetMethodAttributes(method).OfType<MetaLocationAttribute>().SingleOrDefault()?.Location
                 ?? environment.GetTypeAttributes(method.DeclaringType).OfType<MetaLocationAttribute>().SingleOrDefault()?.Location 
                 ?? default(MetaLocationKind);
-            return GetOutputFileName(location, fileName, environment);
+            return new OutputFileName(GetOutputFileName(location, fileName, environment), location != MetaLocationKind.Designer);
         }
         static string GetOutputFileName(MetaLocationKind location, string fileName, Environment environment) {
             switch(location) {
@@ -185,11 +187,28 @@ namespace MetaSharp {
                                     );
         }
     }
-    public class Output {
-        public readonly string Text, FileName;
-        public Output(string text, string fileName) {
+    class Output {
+        public readonly string Text;
+        public readonly OutputFileName FileName;
+        public Output(string text, OutputFileName fileName) {
             Text = text;
             FileName = fileName;
+        }
+    }
+    class OutputFileName {
+        public readonly string FileName;
+        public readonly bool IncludeInOutput;
+
+        public OutputFileName(string fileName, bool includeInOutput) {
+            FileName = fileName;
+            IncludeInOutput = includeInOutput;
+        }
+        public override int GetHashCode() {
+            return FileName.GetHashCode() ^ IncludeInOutput.GetHashCode();
+        }
+        public override bool Equals(object obj) {
+            var other = obj as OutputFileName;
+            return other != null && other.FileName == FileName && other.IncludeInOutput == IncludeInOutput;
         }
     }
     public class MethodContext {

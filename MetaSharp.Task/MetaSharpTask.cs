@@ -30,6 +30,7 @@ namespace MetaSharp.Tasks {
                 .Where(Generator.IsMetaSharpFile)
                 .ToImmutableArray();
             var references = PlatformEnvironment.DefaultReferences;
+            AppDomain.CurrentDomain.AssemblyResolve += CurrentDomain_AssemblyResolve;
             var result = Generator.Generate(files, CreateEnvironment(), references);
             if(result.Errors.Any()) {
                 foreach(var error in result.Errors) {
@@ -53,6 +54,13 @@ namespace MetaSharp.Tasks {
             //if(symbol == type) {
             //}
         }
+
+        private Assembly CurrentDomain_AssemblyResolve(object sender, ResolveEventArgs args) {
+            if(args.Name.StartsWith("MetaSharp"))
+                return typeof(MetaContext).Assembly;
+            return null;
+        }
+
         static BuildErrorEventArgs ToBuildError(GeneratorError error) {
             return new BuildErrorEventArgs(
                         subcategory: "MetaSharp",

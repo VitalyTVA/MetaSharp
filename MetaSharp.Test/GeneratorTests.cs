@@ -324,7 +324,7 @@ namespace MetaSharp.HelloWorld {
                 ImmutableArray.Create(
                     new TestFile(GetOutputFileName(name), "Hello World!"),
                     new TestFile(GetOutputFileNameNoIntellisense(name), "I am hidden!"),
-                    new TestFile(GetOutputFileNameDesigner(name), "I am dependent upon!")
+                    new TestFile(GetOutputFileNameDesigner(name), "I am dependent upon!", isInOutput: false)
                 )
             );
         }
@@ -356,7 +356,7 @@ namespace MetaSharp.HelloWorld {
                 ImmutableArray.Create(
                     new TestFile(GetOutputFileName(name), "Hello World!"),
                     new TestFile(GetOutputFileNameNoIntellisense(name), "I am hidden!"),
-                    new TestFile(GetOutputFileNameDesigner(name), "I am dependent upon!")
+                    new TestFile(GetOutputFileNameDesigner(name), "I am dependent upon!", isInOutput: false)
                 )
             );
         }
@@ -371,9 +371,11 @@ namespace MetaSharp.HelloWorld {
     }
     public class TestFile {
         public readonly string Name, Text;
-        public TestFile(string name, string text) {
+        public readonly bool IsInOutput;
+        public TestFile(string name, string text, bool isInOutput = true) {
             Name = name;
             Text = text;
+            IsInOutput = isInOutput;
         }
     }
     public class GeneratorTestsBase {
@@ -401,7 +403,12 @@ namespace MetaSharp.HelloWorld {
         protected static void AssertMultipleFilesOutput(ImmutableArray<TestFile> input, ImmutableArray<TestFile> output, string intermediateOutputPath = DefaultIntermediateOutputPath) {
             AssertMultipleFilesResult(input, (result, testEnvironment) => {
                 Assert.Empty(result.Errors);
-                Assert.Equal<string>(output.Select(x => x.Name).OrderBy(x => x).ToImmutableArray(), result.Files.OrderBy(x => x));
+                Assert.Equal<string>(
+                    output
+                        .Where(x => x.IsInOutput)
+                        .Select(x => x.Name)
+                        .OrderBy(x => x), 
+                    result.Files.OrderBy(x => x));
                 Assert.Equal(input.Length + output.Length, testEnvironment.FileCount);
                 AssertFiles(output, testEnvironment);
             }, intermediateOutputPath);
