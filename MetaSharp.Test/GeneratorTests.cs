@@ -297,18 +297,21 @@ namespace MetaSharp.HelloWorld {
         [Fact]
         public void SeveralOutputLocationKinds() {
             var input = @"
+using MetaSharp;
 namespace MetaSharp.HelloWorld {
     public static class HelloWorldGenerator {
         public static string SayHello() {
              return ""Hello World!"";
         }
     }
+    [MetaLocation(MetaLocationKind.IntermediateOutputNoIntellisense)]
     public static class HelloWorldGenerator_NoIntellisense {
         public static string SayHelloAgain() {
              return ""I am hidden!"";
         }
     }
-    public static class HelloWorldGenerator_NoIntellisense {
+    [MetaLocation(MetaLocationKind.Designer)]
+    public static class HelloWorldGenerator_Designer{
         public static string SayHelloAgain() {
              return ""I am dependent upon!"";
         }
@@ -366,7 +369,7 @@ namespace MetaSharp.HelloWorld {
         protected static void AssertMultipleFilesOutput(ImmutableArray<TestFile> input, ImmutableArray<TestFile> output, string intermediateOutputPath = DefaultIntermediateOutputPath) {
             AssertMultipleFilesResult(input, (result, testEnvironment) => {
                 Assert.Empty(result.Errors);
-                Assert.Equal<string>(output.Select(x => x.Name).ToImmutableArray(), result.Files.OrderBy(x => x));
+                Assert.Equal<string>(output.Select(x => x.Name).OrderBy(x => x).ToImmutableArray(), result.Files.OrderBy(x => x));
                 Assert.Equal(input.Length + output.Length, testEnvironment.FileCount);
                 AssertFiles(output, testEnvironment);
             }, intermediateOutputPath);

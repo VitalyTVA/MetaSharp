@@ -48,7 +48,10 @@ namespace MetaSharp {
         const string DefaultSuffix = "meta";
         const string CShaprFileExtension = ".cs";
         const string DefaultInputFileEnd = DefaultSuffix + CShaprFileExtension;
-        const string DefaultOutputFileEnd_IntellisenseVisible = DefaultSuffix + ".g.i" + CShaprFileExtension;
+        const string DefaultOutputFileEnd = DefaultSuffix + ".g.i" + CShaprFileExtension;
+        const string DefaultOutputFileEnd_IntellisenseInvisible = DefaultSuffix + ".g" + CShaprFileExtension;
+        const string DesignerOutputFileEnd = DefaultSuffix + ".designer" + CShaprFileExtension;
+
         const string DefaultAssemblyName = "meta.dll";
         const string NewLine = "\r\n";
         const string ConditionalConstant = "METASHARP";
@@ -101,7 +104,7 @@ namespace MetaSharp {
             var outputFiles = compiledAssembly.DefinedTypes
                 .SelectMany(type => environment.GetAllMethods(type.AsType()).Where(method => (method.IsPublic || method.IsAssembly) && !method.IsSpecialName))
                 .GroupBy(method => methodsMap[GetMethodId(method)].Location().SourceTree)
-                .Select(grouping => {
+                .SelectMany(grouping => {
                     var methods = grouping
                         .Select(method => new {
                             Method = method,
@@ -116,10 +119,9 @@ namespace MetaSharp {
                             return new MethodContext(info.Method, new MetaContext(info.Method.DeclaringType.Namespace, usings));
                         })
                         .ToImmutableArray();
-                    var output = GenerateOutput(methods);
-                    var outputFile = Path.Combine(environment.IntermediateOutputPath, trees[grouping.Key].ReplaceEnd(DefaultInputFileEnd, DefaultOutputFileEnd_IntellisenseVisible));
-                    environment.WriteText(outputFile, output);
-                    return outputFile;
+                    var outputs = GenerateOutputs(methods, trees[grouping.Key], environment);
+                    outputs.ForEach(output => environment.WriteText(output.FileName, output.Text));
+                    return outputs.Select(output => output.FileName);
                 })
                 .ToImmutableArray();
             return new GeneratorResult(outputFiles, ImmutableArray<GeneratorError>.Empty);
@@ -146,9 +148,47 @@ namespace MetaSharp {
             .InsertDelimeter(Enumerable.Repeat(NewLine, 2))
             .SelectMany(x => x)
             .ConcatStrings();
-
         }
-
+        static ImmutableArray<Output> GenerateOutputs(ImmutableArray<MethodContext> methods, string inputFileName, Environment environment) {
+            return methods
+                .GroupBy(method => GetOutputFileName(method.Method.DeclaringType, inputFileName, environment))
+                .Select(byOutputGrouping => {
+                    var output = byOutputGrouping
+                        .GroupBy(methodContext => methodContext.Method.DeclaringType)
+                        .Select(grouping => {
+                            return grouping
+                                .Select(methodContext => {
+                                    //TODO check args
+                                    var parameters = methodContext.Method.GetParameters().Length == 1
+                                        ? methodContext.Context.YieldToArray()
+                                        : null;
+                                    return (string)methodContext.Method.Invoke(null, parameters);
+                                })
+                                .InsertDelimeter(NewLine);
+                        })
+                    .InsertDelimeter(Enumerable.Repeat(NewLine, 2))
+                    .SelectMany(x => x)
+                    .ConcatStrings();
+                    return new Output(output, byOutputGrouping.Key);
+                })
+                .ToImmutableArray();
+        }
+        static string GetOutputFileName(Type type, string fileName, Environment environment) {
+            var location = environment.GetAttributes(type).OfType<MetaLocationAttribute>().SingleOrDefault()?.Location ?? default(MetaLocationKind);
+            return GetOutputFileName(location, fileName, environment);
+        }
+        static string GetOutputFileName(MetaLocationKind location, string fileName, Environment environment) {
+            switch(location) {
+            case MetaLocationKind.IntermediateOutput:
+                return Path.Combine(environment.IntermediateOutputPath, fileName.ReplaceEnd(DefaultInputFileEnd, DefaultOutputFileEnd));
+            case MetaLocationKind.IntermediateOutputNoIntellisense:
+                return Path.Combine(environment.IntermediateOutputPath, fileName.ReplaceEnd(DefaultInputFileEnd, DefaultOutputFileEnd_IntellisenseInvisible));
+            case MetaLocationKind.Designer:
+                return fileName.ReplaceEnd(DefaultInputFileEnd, DesignerOutputFileEnd);
+            default:
+                throw new InvalidOperationException();
+            }
+        }
         static GeneratorError ToGeneratorError(this Diagnostic error, string file, FileLinePositionSpan span) {
             return new GeneratorError(
                                     id: error.Id,
@@ -159,6 +199,13 @@ namespace MetaSharp {
                                     endLineNumber: span.EndLinePosition.Line,
                                     endColumnNumber: span.EndLinePosition.Character
                                     );
+        }
+    }
+    public class Output {
+        public readonly string Text, FileName;
+        public Output(string text, string fileName) {
+            Text = text;
+            FileName = fileName;
         }
     }
     public class MethodContext {
@@ -203,13 +250,15 @@ namespace MetaSharp {
         public readonly Action<string, string> WriteText;
         public readonly Func<MemoryStream, Assembly> LoadAssembly;
         public readonly Func<Type, IEnumerable<MethodInfo>> GetAllMethods;
+        public readonly Func<Type, IEnumerable<Attribute>> GetAttributes;
         public readonly string IntermediateOutputPath; 
-        public Environment(Func<string, string> readText, Action<string, string> writeText, Func<MemoryStream, Assembly> loadAssembly, string intermediateOutputPath, Func<Type, IEnumerable<MethodInfo>> getAllMethods) {
+        public Environment(Func<string, string> readText, Action<string, string> writeText, Func<MemoryStream, Assembly> loadAssembly, string intermediateOutputPath, Func<Type, IEnumerable<MethodInfo>> getAllMethods, Func<Type, IEnumerable<Attribute>> getAttributes) {
             ReadText = readText;
             WriteText = writeText;
             LoadAssembly = loadAssembly;
             IntermediateOutputPath = intermediateOutputPath;
             GetAllMethods = getAllMethods;
+            GetAttributes = getAttributes;
         }
     }
 }

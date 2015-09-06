@@ -81,7 +81,8 @@ namespace MetaSharp.Tasks {
                 writeText: writeText,
                 loadAssembly: stream => Assembly.Load(stream.GetBuffer()),
                 intermediateOutputPath: intermediateOutputPath,
-                getAllMethods: type => type.GetMethods(BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic));
+                getAllMethods: type => type.GetMethods(BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic),
+                getAttributes: type => type.GetCustomAttributes());
         }
         public static readonly ImmutableArray<string> DefaultReferences;
         static PlatformEnvironment() {
