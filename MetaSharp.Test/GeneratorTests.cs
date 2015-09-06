@@ -276,18 +276,18 @@ using MetaSharp;
 namespace MetaSharp.HelloWorld {
 
     using System;
-    using System.Collections;
+    using System.Linq;
     using Alias = System.Action;
 
     public static class HelloWorldGenerator {
         public static string SayHello(MetaContext context) {
-             return context.Usings.Length + string.Concat(context.Usings) + ""Hello World from "" + context.Namespace;
+             return context.Usings.Count() + string.Concat(context.Usings) + ""Hello World from "" + context.Namespace;
         }
     }
 }
 ";
             const string output =
-                "3using System;using System.Collections;using Alias = System.Action;" +
+                "3using System;using System.Linq;using Alias = System.Action;" +
                 "Hello World from MetaSharp.HelloWorld";
             AssertSingleFileSimpleOutput(input, output);
         }

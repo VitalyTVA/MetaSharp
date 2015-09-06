@@ -85,6 +85,7 @@ namespace MetaSharp.Tasks {
         public static readonly ImmutableArray<string> DefaultReferences =
             new[] {
                 typeof(object),
+                typeof(Enumerable),
                 typeof(MetaContext),
             }
             .Select(type => type.Assembly.Location)
