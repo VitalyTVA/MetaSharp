@@ -17,7 +17,7 @@ namespace MetaSharp {
         IntermediateOutputNoIntellisense,
         Designer,
     }
-    [AttributeUsage(AttributeTargets.Class)]
+    [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method)]
     public class MetaLocationAttribute : Attribute {
         public MetaLocationAttribute(MetaLocationKind location = default(MetaLocationKind)) {
             Location = location;

@@ -295,7 +295,7 @@ namespace MetaSharp.HelloWorld {
             AssertSingleFileSimpleOutput(input, output);
         }
         [Fact]
-        public void SeveralOutputLocationKinds() {
+        public void SeveralOutputLocationKindsForTypes() {
             var input = @"
 using MetaSharp;
 namespace MetaSharp.HelloWorld {
@@ -313,6 +313,38 @@ namespace MetaSharp.HelloWorld {
     [MetaLocation(Location = MetaLocationKind.Designer)]
     public static class HelloWorldGenerator_Designer{
         public static string SayHelloAgain() {
+             return ""I am dependent upon!"";
+        }
+    }
+}
+";
+            var name = "file.meta.cs";
+            AssertMultipleFilesOutput(
+                new TestFile(name, input).YieldToImmutable(),
+                ImmutableArray.Create(
+                    new TestFile(GetOutputFileName(name), "Hello World!"),
+                    new TestFile(GetOutputFileNameNoIntellisense(name), "I am hidden!"),
+                    new TestFile(GetOutputFileNameDesigner(name), "I am dependent upon!")
+                )
+            );
+        }
+        [Fact]
+        public void SeveralOutputLocationKindsForMethods() {
+            var input = @"
+using MetaSharp;
+namespace MetaSharp.HelloWorld {
+    [MetaLocation(Location = MetaLocationKind.Designer)]
+    public static class HelloWorldGenerator {
+        [MetaLocation(MetaLocationKind.IntermediateOutput)]
+        public static string SayHello() {
+             return ""Hello World!"";
+        }
+        [MetaLocation(MetaLocationKind.IntermediateOutputNoIntellisense)]
+        public static string SayHelloAgain() {
+             return ""I am hidden!"";
+        }
+        [MetaLocation(Location = MetaLocationKind.Designer)]
+        public static string SayHelloOneMoreTime() {
              return ""I am dependent upon!"";
         }
     }

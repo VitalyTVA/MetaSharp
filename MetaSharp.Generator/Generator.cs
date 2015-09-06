@@ -133,7 +133,7 @@ namespace MetaSharp {
 
         static ImmutableArray<Output> GenerateOutputs(ImmutableArray<MethodContext> methods, string inputFileName, Environment environment) {
             return methods
-                .GroupBy(method => GetOutputFileName(method.Method.DeclaringType, inputFileName, environment))
+                .GroupBy(method => GetOutputFileName(method.Method, inputFileName, environment))
                 .Select(byOutputGrouping => {
                     var output = byOutputGrouping
                         .GroupBy(methodContext => methodContext.Method.DeclaringType)
@@ -155,8 +155,10 @@ namespace MetaSharp {
                 })
                 .ToImmutableArray();
         }
-        static string GetOutputFileName(Type type, string fileName, Environment environment) {
-            var location = environment.GetAttributes(type).OfType<MetaLocationAttribute>().SingleOrDefault()?.Location ?? default(MetaLocationKind);
+        static string GetOutputFileName(MethodInfo method, string fileName, Environment environment) {
+            var location = environment.GetMethodAttributes(method).OfType<MetaLocationAttribute>().SingleOrDefault()?.Location
+                ?? environment.GetTypeAttributes(method.DeclaringType).OfType<MetaLocationAttribute>().SingleOrDefault()?.Location 
+                ?? default(MetaLocationKind);
             return GetOutputFileName(location, fileName, environment);
         }
         static string GetOutputFileName(MetaLocationKind location, string fileName, Environment environment) {
@@ -232,15 +234,25 @@ namespace MetaSharp {
         public readonly Action<string, string> WriteText;
         public readonly Func<MemoryStream, Assembly> LoadAssembly;
         public readonly Func<Type, IEnumerable<MethodInfo>> GetAllMethods;
-        public readonly Func<Type, IEnumerable<Attribute>> GetAttributes;
+        public readonly Func<Type, IEnumerable<Attribute>> GetTypeAttributes;
+        public readonly Func<MethodInfo, IEnumerable<Attribute>> GetMethodAttributes;
         public readonly string IntermediateOutputPath; 
-        public Environment(Func<string, string> readText, Action<string, string> writeText, Func<MemoryStream, Assembly> loadAssembly, string intermediateOutputPath, Func<Type, IEnumerable<MethodInfo>> getAllMethods, Func<Type, IEnumerable<Attribute>> getAttributes) {
+        public Environment(
+            Func<string, string> readText, 
+            Action<string, string> writeText, 
+            Func<MemoryStream, Assembly> loadAssembly, 
+            string intermediateOutputPath, 
+            Func<Type, IEnumerable<MethodInfo>> getAllMethods, 
+            Func<Type, IEnumerable<Attribute>> getTypeAttributes, 
+            Func<MethodInfo, IEnumerable<Attribute>> getMethodAttributes) {
+
             ReadText = readText;
             WriteText = writeText;
             LoadAssembly = loadAssembly;
             IntermediateOutputPath = intermediateOutputPath;
             GetAllMethods = getAllMethods;
-            GetAttributes = getAttributes;
+            GetTypeAttributes = getTypeAttributes;
+            GetMethodAttributes = getMethodAttributes;
         }
     }
 }
