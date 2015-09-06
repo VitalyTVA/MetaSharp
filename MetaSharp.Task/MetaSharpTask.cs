@@ -31,7 +31,12 @@ namespace MetaSharp.Tasks {
                 .ToImmutableArray();
             var references = PlatformEnvironment.DefaultReferences;
             AppDomain.CurrentDomain.AssemblyResolve += CurrentDomain_AssemblyResolve;
-            var result = Generator.Generate(files, CreateEnvironment(), references);
+            GeneratorResult result;
+            try {
+                result = Generator.Generate(files, CreateEnvironment(), references);
+            } finally {
+                AppDomain.CurrentDomain.AssemblyResolve -= CurrentDomain_AssemblyResolve;
+            }
             if(result.Errors.Any()) {
                 foreach(var error in result.Errors) {
                     BuildEngine.LogErrorEvent(ToBuildError(error));
