@@ -75,6 +75,10 @@
       <Project>{f20745eb-b266-4c27-a692-f241ea1e3fb7}</Project>
       <Name>MetaSharp.Generator</Name>
     </ProjectReference>
+    <ProjectReference Include="..\MetaSharp\MetaSharp.csproj">
+      <Project>{78269216-177b-4b14-a61f-b249cb2947f0}</Project>
+      <Name>MetaSharp</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">

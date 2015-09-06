@@ -100,7 +100,7 @@ namespace MetaSharp {
                 .GroupBy(method => methodTreeMap[GetMethodId(method)].SourceTree)
                 .ToImmutableDictionary(
                     grouping => trees[grouping.Key],
-                    grouping => grouping.OrderBy(method => methodTreeMap[GetMethodId(method)].GetLineSpan().StartLinePosition.Line).ToImmutableArray()
+                    grouping => grouping.OrderBy(method => methodTreeMap[GetMethodId(method)].GetLineSpan().StartLinePosition).ToImmutableArray()
                  );
 
             var outputFiles = files
