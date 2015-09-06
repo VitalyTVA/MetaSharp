@@ -5,7 +5,7 @@ VisualStudioVersion = 14.0.23107.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MetaSharp.Task", "MetaSharp.Task\MetaSharp.Task.csproj", "{4E0FA273-74F8-47FB-8881-40BC7BE77CBC}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MetaSharp.Generator", "MetaSharp\MetaSharp.Generator.csproj", "{F20745EB-B266-4C27-A692-F241EA1E3FB7}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MetaSharp.Generator", "MetaSharp.Generator\MetaSharp.Generator.csproj", "{F20745EB-B266-4C27-A692-F241EA1E3FB7}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MetaSharp.Test", "MetaSharp.Test\MetaSharp.Test.csproj", "{35326999-EEC9-4A53-8F14-EEA954F87F6B}"
 EndProject
