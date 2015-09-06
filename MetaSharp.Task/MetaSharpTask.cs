@@ -1,4 +1,5 @@
-﻿using Microsoft.Build.Framework;
+﻿using MetaSharp.Utils;
+using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
@@ -82,13 +83,16 @@ namespace MetaSharp.Tasks {
                 intermediateOutputPath: intermediateOutputPath,
                 getAllMethods: type => type.GetMethods(BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic));
         }
-        public static readonly ImmutableArray<string> DefaultReferences =
-            new[] {
-                typeof(object),
-                typeof(Enumerable),
-                typeof(MetaContext),
-            }
-            .Select(type => type.Assembly.Location)
-            .ToImmutableArray();
+        public static readonly ImmutableArray<string> DefaultReferences;
+        static PlatformEnvironment() {
+            var assemblyPath = Path.GetDirectoryName(typeof(object).Assembly.Location);
+            DefaultReferences = ImmutableArray.Create(
+                Path.Combine(assemblyPath, "mscorlib.dll"),
+                Path.Combine(assemblyPath, "System.dll"),
+                Path.Combine(assemblyPath, "System.Core.dll"),
+                Path.Combine(assemblyPath, "System.Runtime.dll"),
+                typeof(MetaContext).Assembly.Location
+                );
+        }
     }
 }
