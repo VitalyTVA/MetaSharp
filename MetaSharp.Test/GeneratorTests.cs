@@ -310,7 +310,7 @@ namespace MetaSharp.HelloWorld {
              return ""I am hidden!"";
         }
     }
-    [MetaLocation(MetaLocationKind.Designer)]
+    [MetaLocation(Location = MetaLocationKind.Designer)]
     public static class HelloWorldGenerator_Designer{
         public static string SayHelloAgain() {
              return ""I am dependent upon!"";

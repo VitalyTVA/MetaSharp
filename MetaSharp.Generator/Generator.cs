@@ -131,24 +131,6 @@ namespace MetaSharp {
             return new MethodId(method.Name, method.DeclaringType.FullName);
         }
 
-        static string GenerateOutput(ImmutableArray<MethodContext> methods) {
-            return methods
-                .GroupBy(methodContext => methodContext.Method.DeclaringType)
-                .Select(grouping => {
-                    return grouping
-                        .Select(methodContext => {
-                            //TODO check args
-                            var parameters = methodContext.Method.GetParameters().Length == 1
-                                ? methodContext.Context.YieldToArray()
-                                : null;
-                            return (string)methodContext.Method.Invoke(null, parameters);
-                        })
-                        .InsertDelimeter(NewLine);
-                })
-            .InsertDelimeter(Enumerable.Repeat(NewLine, 2))
-            .SelectMany(x => x)
-            .ConcatStrings();
-        }
         static ImmutableArray<Output> GenerateOutputs(ImmutableArray<MethodContext> methods, string inputFileName, Environment environment) {
             return methods
                 .GroupBy(method => GetOutputFileName(method.Method.DeclaringType, inputFileName, environment))

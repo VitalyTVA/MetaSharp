@@ -19,7 +19,7 @@ namespace MetaSharp {
     }
     [AttributeUsage(AttributeTargets.Class)]
     public class MetaLocationAttribute : Attribute {
-        public MetaLocationAttribute(MetaLocationKind location) {
+        public MetaLocationAttribute(MetaLocationKind location = default(MetaLocationKind)) {
             Location = location;
         }
         public MetaLocationKind Location { get; set; }
