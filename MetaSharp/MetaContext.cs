@@ -12,4 +12,16 @@ namespace MetaSharp {
             Usings = usings;
         }
     }
+    public enum MetaLocationKind {
+        IntermediateOutput,
+        IntermediateOutputNoIntellisense,
+        Designer,
+    }
+    [AttributeUsage(AttributeTargets.Class)]
+    public class MetaLocationAttribute : Attribute {
+        public MetaLocationAttribute(MetaLocationKind location) {
+            Location = location;
+        }
+        public MetaLocationKind Location { get; set; }
+    }
 }

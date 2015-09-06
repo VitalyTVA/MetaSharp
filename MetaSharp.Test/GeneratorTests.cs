@@ -291,6 +291,37 @@ namespace MetaSharp.HelloWorld {
                 "Hello World from MetaSharp.HelloWorld";
             AssertSingleFileSimpleOutput(input, output);
         }
+        [Fact]
+        public void SeveralOutputLocationKinds() {
+            var input = @"
+namespace MetaSharp.HelloWorld {
+    public static class HelloWorldGenerator {
+        public static string SayHello() {
+             return ""Hello World!"";
+        }
+    }
+    public static class HelloWorldGenerator_NoIntellisense {
+        public static string SayHelloAgain() {
+             return ""I am hidden!"";
+        }
+    }
+    public static class HelloWorldGenerator_NoIntellisense {
+        public static string SayHelloAgain() {
+             return ""I am dependent upon!"";
+        }
+    }
+}
+";
+            var name = "file.meta.cs";
+            AssertMultipleFilesOutput(
+                new TestFile(name, input).YieldToImmutable(),
+                ImmutableArray.Create(
+                    new TestFile(GetOutputFileName(name), "Hello World!"),
+                    new TestFile(GetOutputFileNameNoIntellisense(name), "I am hidden!"),
+                    new TestFile(GetOutputFileNameDesigner(name), "I am dependent upon!")
+                )
+            );
+        }
 
         static void AssertSingleFileSimpleOutput(string input, string output) {
             AssertSingleFileOutput(input, GetFullSimpleOutput(output));
@@ -376,7 +407,16 @@ namespace MetaSharp.HelloWorld {
         }
 
         protected static string GetOutputFileName(string input, string intermediateOutputPath = DefaultIntermediateOutputPath) {
-            return Path.Combine(intermediateOutputPath, input.ReplaceEnd(".meta.cs", ".meta.g.i.cs"));
+            return GetOutputFileNameCore(input, intermediateOutputPath, "g.i.cs");
+        }
+        protected static string GetOutputFileNameNoIntellisense(string input, string intermediateOutputPath = DefaultIntermediateOutputPath) {
+            return GetOutputFileNameCore(input, intermediateOutputPath, "g.cs");
+        }
+        protected static string GetOutputFileNameDesigner(string input, string intermediateOutputPath = DefaultIntermediateOutputPath) {
+            return GetOutputFileNameCore(input, string.Empty, "designer.cs");
+        }
+        static string GetOutputFileNameCore(string input, string intermediateOutputPath, string suffix) {
+            return Path.Combine(intermediateOutputPath, input.ReplaceEnd(".meta.cs", ".meta." + suffix));
         }
 
         static TestEnvironment CreateEnvironment(string intermediateOutputPath) {
