@@ -101,37 +101,27 @@ namespace MetaSharp {
             var outputFiles = compiledAssembly.DefinedTypes
                 .SelectMany(type => environment.GetAllMethods(type.AsType()).Where(method => (method.IsPublic || method.IsAssembly) && !method.IsSpecialName))
                 .GroupBy(method => methodsMap[GetMethodId(method)].Location().SourceTree)
-                .Select(
-                    grouping => {
-                        var methods = grouping
-                            .Select(method => new {
-                                Method = method,
-                                Symbol = methodsMap[GetMethodId(method)]
-                            })
-                            .OrderBy(info => info.Symbol.Location().GetLineSpan().StartLinePosition)
-                            .Select(info => {
-                                var location = info.Symbol.Location();
-                                var nodes = location.SourceTree.GetCompilationUnitRoot().DescendantNodes(location.SourceSpan);
-                                var namespaces = nodes.OfType<NamespaceDeclarationSyntax>().Single(); //TODO nested namespaces
+                .Select(grouping => {
+                    var methods = grouping
+                        .Select(method => new {
+                            Method = method,
+                            Symbol = methodsMap[GetMethodId(method)]
+                        })
+                        .OrderBy(info => info.Symbol.Location().GetLineSpan().StartLinePosition)
+                        .Select(info => {
+                            var location = info.Symbol.Location();
+                            var nodes = location.SourceTree.GetCompilationUnitRoot().DescendantNodes(location.SourceSpan);
+                            var namespaces = nodes.OfType<NamespaceDeclarationSyntax>().Single(); //TODO nested namespaces
                                 var usings = namespaces.Usings.Select(x => x.ToString()).ToArray();
-                                return new MethodContext(info.Method, new MetaContext(info.Method.DeclaringType.Namespace, usings));
-                            })
-                            .ToImmutableArray();
-                        var output = GenerateOutput(methods);
-                        var outputFile = Path.Combine(environment.IntermediateOutputPath, trees[grouping.Key].ReplaceEnd(DefaultInputFileEnd, DefaultOutputFileEnd_IntellisenseVisible));
-                        environment.WriteText(outputFile, output);
-                        return outputFile;
-                    }
-                 ).ToImmutableArray();
-
-            //var outputFiles = files
-            //    .Select(inputFile => {
-            //        var output = fileOutputMap.GetValueOrDefault(inputFile, string.Empty);
-            //        var outputFile = Path.Combine(environment.IntermediateOutputPath, inputFile.ReplaceEnd(DefaultInputFileEnd, DefaultOutputFileEnd_IntellisenseVisible));
-            //        environment.WriteText(outputFile, output);
-            //        return outputFile;
-            //    })
-            //    .ToImmutableArray();
+                            return new MethodContext(info.Method, new MetaContext(info.Method.DeclaringType.Namespace, usings));
+                        })
+                        .ToImmutableArray();
+                    var output = GenerateOutput(methods);
+                    var outputFile = Path.Combine(environment.IntermediateOutputPath, trees[grouping.Key].ReplaceEnd(DefaultInputFileEnd, DefaultOutputFileEnd_IntellisenseVisible));
+                    environment.WriteText(outputFile, output);
+                    return outputFile;
+                })
+                .ToImmutableArray();
             return new GeneratorResult(outputFiles, ImmutableArray<GeneratorError>.Empty);
         }
 
