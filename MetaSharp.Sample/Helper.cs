@@ -1,9 +1,9 @@
 ﻿using System;
 
 namespace MetaSharp.Sample {
-    static class Helper {
+    public static class Helper {
         [MetaLocation(MetaLocationKind.Designer)]
-        internal static string Do2() {
+        public static string Do2() {
             var name = "D2";
             return $@"
 namespace Gen {{
