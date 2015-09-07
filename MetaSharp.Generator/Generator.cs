@@ -30,7 +30,6 @@ namespace MetaSharp {
     //TODO recursive includes and references
     //TODO duplicate includes and references
     //TODO invalid includes and references
-    //TODO multiple references
 
     //TODO ADT, immutable objects, DProps, ViewModels, MonadTransfomers, Templates, Localization, Aspects
     //TODO binary output - drawing images??

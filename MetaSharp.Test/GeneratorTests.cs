@@ -408,14 +408,17 @@ namespace MetaSharp.HelloWorld {
         public void Reference() {
             var input = @"
 using MetaSharp;
+using Xunit;
 using System.Linq;
 using System.Collections.Immutable;
 
 [assembly: MetaReference(""System.Collections.Immutable.dll"")]
+[assembly: MetaReference(""Xunit.Assert.dll"")]
 namespace MetaSharp.HelloWorld {
     public static class HelloWorldGenerator {
-        public static string SayHello() {
-             return ImmutableArray.Create(""Hello World!"").Single();
+        public static string SayHello(MetaContext context) {
+            Assert.Equal(""MetaSharp.HelloWorld"", context.Namespace);
+            return ImmutableArray.Create(""Hello World!"").Single();
         }
     }
 }
