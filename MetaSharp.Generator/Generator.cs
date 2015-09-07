@@ -27,9 +27,10 @@ namespace MetaSharp {
     //TODO option to insert delimeters between output from different classes and methods
     //TODO debugging
 
-    //TODO recursive includes
-    //TODO duplicate includes
-    //TODO invalid includes
+    //TODO recursive includes and references
+    //TODO duplicate includes and references
+    //TODO invalid includes and references
+    //TODO multiple references
 
     //TODO ADT, immutable objects, DProps, ViewModels, MonadTransfomers, Templates, Localization, Aspects
     //TODO binary output - drawing images??
@@ -79,7 +80,8 @@ namespace MetaSharp {
                 ),
                 syntaxTrees: trees.Keys
             )
-            .AddIncludes(environment);
+            .AddIncludes(environment)
+            .AddReferences(environment);
 
             var errors = compilation.GetDiagnostics()
                 .Where(x => x.Severity == DiagnosticSeverity.Error)
@@ -144,6 +146,14 @@ namespace MetaSharp {
                 .Select(attribute => (string)attribute.ConstructorArguments.Single().Value)
                 .Select(fileName => ParseFile(environment, fileName));
             return compilation.AddSyntaxTrees(includes);
+        }
+        private static CSharpCompilation AddReferences(this CSharpCompilation compilation, Environment environment) {
+            var includeAttributeSymbol = compilation.GetTypeByMetadataName(typeof(MetaReferenceAttribute).FullName);
+            var references = compilation.Assembly.GetAttributes()
+                .Where(attribute => attribute.AttributeClass == includeAttributeSymbol)
+                .Select(attribute => (string)attribute.ConstructorArguments.Single().Value)
+                .Select(dllName => MetadataReference.CreateFromFile(dllName));
+            return compilation.AddReferences(references);
         }
 
         private static SyntaxTree ParseFile(Environment environment, string x) {

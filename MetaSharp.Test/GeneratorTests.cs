@@ -404,6 +404,24 @@ namespace MetaSharp.HelloWorld {
                 ),
                 new TestFile(GetOutputFileName(fileName), "Hello World!Hello Again!").YieldToImmutable());
         }
+        [Fact]
+        public void Reference() {
+            var input = @"
+using MetaSharp;
+using System.Linq;
+using System.Collections.Immutable;
+
+[assembly: MetaReference(""System.Collections.Immutable.dll"")]
+namespace MetaSharp.HelloWorld {
+    public static class HelloWorldGenerator {
+        public static string SayHello() {
+             return ImmutableArray.Create(""Hello World!"").Single();
+        }
+    }
+}
+";
+            AssertSingleFileSimpleOutput(input, "Hello World!");
+        }
 
         static void AssertSingleFileSimpleOutput(string input, string output) {
             AssertSingleFileOutput(input, GetFullSimpleOutput(output));

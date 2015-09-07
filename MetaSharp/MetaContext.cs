@@ -32,5 +32,11 @@ namespace MetaSharp {
         }
         public string FileName { get; private set; }
     }
-
+    [AttributeUsage(AttributeTargets.Assembly, AllowMultiple = false)]
+    public sealed class MetaReferenceAttribute : Attribute {
+        public MetaReferenceAttribute(string dllName) {
+            DllName = dllName;
+        }
+        public string DllName { get; private set; }
+    }
 }

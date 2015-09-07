@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 namespace MetaSharp.Sample {
     class Class2 {
         public void Do() {
-            typeof(D).ToString();
+            typeof(B).ToString();
             typeof(D2).ToString();
             typeof(D3).ToString();
         }
