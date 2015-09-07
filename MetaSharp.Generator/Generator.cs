@@ -25,6 +25,9 @@ namespace MetaSharp {
     //TODO use SourceText with SyntaxFactory
     //TODO use SourceReferenceResolver?
     //TODO option to insert delimeters between output from different classes and methods
+    //TODO debugging
+    //TODO recursive includes
+    //TODO duplicate includes
 
     //TODO ADT, immutable objects, DProps, ViewModels, MonadTransfomers, Templates, Localization, Aspects
     //TODO binary output - drawing images??
@@ -55,13 +58,14 @@ namespace MetaSharp {
         const string NewLine = "\r\n";
         const string ConditionalConstant = "METASHARP";
 
+        static readonly CSharpParseOptions ParseOptions = CSharpParseOptions.Default.WithPreprocessorSymbols(ConditionalConstant);
+
         public static bool IsMetaSharpFile(string fileName) {
             return fileName.EndsWith(DefaultInputFileEnd);
         }
 
         public static GeneratorResult Generate(ImmutableArray<string> files, Environment environment, ImmutableArray<string> references) {
-            var parseOptions = CSharpParseOptions.Default.WithPreprocessorSymbols(ConditionalConstant);
-            var trees = files.ToImmutableDictionary(x => SyntaxFactory.ParseSyntaxTree(environment.ReadText(x), parseOptions), x => x);
+            var trees = files.ToImmutableDictionary(file => ParseFile(environment, file), file => file);
 
 
             var compilation = CSharpCompilation.Create(
@@ -72,7 +76,8 @@ namespace MetaSharp {
                     assemblyIdentityComparer: DesktopAssemblyIdentityComparer.Default
                 ),
                 syntaxTrees: trees.Keys
-            );
+            )
+            .AddIncludes(environment);
 
             var errors = compilation.GetDiagnostics()
                 .Where(x => x.Severity == DiagnosticSeverity.Error)
@@ -114,7 +119,7 @@ namespace MetaSharp {
                             var location = info.Symbol.Location();
                             var nodes = location.SourceTree.GetCompilationUnitRoot().DescendantNodes(location.SourceSpan);
                             var namespaces = nodes.OfType<NamespaceDeclarationSyntax>().Single(); //TODO nested namespaces
-                                var usings = namespaces.Usings.Select(x => x.ToString()).ToArray();
+                            var usings = namespaces.Usings.Select(x => x.ToString()).ToArray();
                             return new MethodContext(info.Method, new MetaContext(info.Method.DeclaringType.Namespace, usings));
                         })
                         .ToImmutableArray();
@@ -126,6 +131,19 @@ namespace MetaSharp {
                 })
                 .ToImmutableArray();
             return new GeneratorResult(outputFiles, ImmutableArray<GeneratorError>.Empty);
+        }
+
+        private static CSharpCompilation AddIncludes(this CSharpCompilation compilation, Environment environment) {
+            var includeAttributeSymbol = compilation.GetTypeByMetadataName(typeof(MetaIncludeAttribute).FullName);
+            var includes = compilation.Assembly.GetAttributes()
+                .Where(attribute => attribute.AttributeClass == includeAttributeSymbol)
+                .Select(attribute => (string)attribute.ConstructorArguments.Single().Value)
+                .Select(fileName => ParseFile(environment, fileName));
+            return compilation.AddSyntaxTrees(includes);
+        }
+
+        private static SyntaxTree ParseFile(Environment environment, string x) {
+            return SyntaxFactory.ParseSyntaxTree(environment.ReadText(x), ParseOptions);
         }
 
         static MethodId GetMethodId(MethodInfo method) {

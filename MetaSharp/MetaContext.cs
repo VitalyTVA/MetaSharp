@@ -25,7 +25,7 @@ namespace MetaSharp {
         public MetaLocationKind Location { get; set; }
     }
 
-    [AttributeUsage(AttributeTargets.Assembly)]
+    [AttributeUsage(AttributeTargets.Assembly, AllowMultiple = true)]
     public sealed class MetaIncludeAttribute : Attribute {
         public MetaIncludeAttribute(string fileName) {
             FileName = fileName;

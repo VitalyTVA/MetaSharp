@@ -365,26 +365,44 @@ namespace MetaSharp.HelloWorld {
         }
         [Fact]
         public void Include() {
-            var input = @"
-
-using MetaSharp;
-[assembly: MetaInclude(""SubDir\\Helper.cs"")]
+            var include1 = @"
 namespace MetaSharp.HelloWorld {
     static class Helper { 
         internal static string SayHello() {
              return ""Hello World!"";
         }
     }
-    public static class HelloWorldGenerator {
-        public static string SayHello() => Helper.SayHello();
+}
+";
+            var include2 = @"
+namespace MetaSharp.HelloWorld {
+    static class Helper2 { 
+        internal static string SayHelloAgain() {
+             return ""Hello Again!"";
+        }
     }
 }
 ";
-            var includeFileName = "SubDir\\Helper.cs";
+            var input = @"
+using MetaSharp;
+[assembly: MetaInclude(MetaSharp.HelloWorld.HelloWorldGenerator.Include)]
+[assembly: MetaInclude(""Helper2.cs"")]
+[assembly: System.CLSCompliant(false)]
+namespace MetaSharp.HelloWorld {
+    public static class HelloWorldGenerator {
+        public const string Include = ""SubDir\\Helper.cs"";
+        public static string SayHello() => Helper.SayHello() + Helper2.SayHelloAgain();
+    }
+}
+";
             var fileName = SingleInputFileName;
             AssertMultipleFilesOutput(
-                ImmutableArray.Create(new TestFile(fileName, input)),
-                new TestFile(GetOutputFileName(fileName), "Hello World!").YieldToImmutable());
+                ImmutableArray.Create(
+                    new TestFile(fileName, input),
+                    new TestFile("SubDir\\Helper.cs", include1, isInFlow: false),
+                    new TestFile("Helper2.cs", include2, isInFlow: false)
+                ),
+                new TestFile(GetOutputFileName(fileName), "Hello World!Hello Again!").YieldToImmutable());
         }
 
         static void AssertSingleFileSimpleOutput(string input, string output) {
@@ -422,7 +440,7 @@ namespace MetaSharp.HelloWorld {
         static void AssertMultipleFilesResult(ImmutableArray<TestFile> input, Action<GeneratorResult, TestEnvironment> assertion, string intermediateOutputPath) {
             var testEnvironment = CreateEnvironment(intermediateOutputPath);
             input.ForEach(file => testEnvironment.Environment.WriteText(file.Name, file.Text));
-            var result = Generator.Generate(input.Select(file => file.Name).ToImmutableArray(), testEnvironment.Environment, PlatformEnvironment.DefaultReferences);
+            var result = Generator.Generate(input.Where(file => file.IsInFlow).Select(file => file.Name).ToImmutableArray(), testEnvironment.Environment, PlatformEnvironment.DefaultReferences);
             AssertFiles(input, testEnvironment);
             assertion(result, testEnvironment);
         }
