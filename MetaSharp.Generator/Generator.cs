@@ -20,8 +20,7 @@ namespace MetaSharp {
     //TODO explicit file name mode
     //TODO automatically generate namespace and usings based on usings above and under namespace
     //TODO generate stub types
-    //TODO include other files
-    //TODO reference other assemblies
+    //TODO reference other assemblies from predefined locations
     //TODO use SourceText with SyntaxFactory
     //TODO use SourceReferenceResolver?
     //TODO option to insert delimeters between output from different classes and methods
