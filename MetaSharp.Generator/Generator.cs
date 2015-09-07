@@ -80,8 +80,8 @@ namespace MetaSharp {
                 ),
                 syntaxTrees: trees.Keys
             )
-            .AddIncludes(environment)
-            .AddReferences(environment);
+            .AddMetaIncludes(environment)
+            .AddMetaReferences();
 
             var errors = compilation.GetDiagnostics()
                 .Where(x => x.Severity == DiagnosticSeverity.Error)
@@ -139,19 +139,15 @@ namespace MetaSharp {
             return new GeneratorResult(outputFiles, ImmutableArray<GeneratorError>.Empty);
         }
 
-        private static CSharpCompilation AddIncludes(this CSharpCompilation compilation, Environment environment) {
-            var includeAttributeSymbol = compilation.GetTypeByMetadataName(typeof(MetaIncludeAttribute).FullName);
-            var includes = compilation.Assembly.GetAttributes()
-                .Where(attribute => attribute.AttributeClass == includeAttributeSymbol)
-                .Select(attribute => (string)attribute.ConstructorArguments.Single().Value)
+        static CSharpCompilation AddMetaIncludes(this CSharpCompilation compilation, Environment environment) {
+            var includes = compilation
+                .GetAttributeValues<MetaIncludeAttribute>()
                 .Select(fileName => ParseFile(environment, fileName));
             return compilation.AddSyntaxTrees(includes);
         }
-        private static CSharpCompilation AddReferences(this CSharpCompilation compilation, Environment environment) {
-            var includeAttributeSymbol = compilation.GetTypeByMetadataName(typeof(MetaReferenceAttribute).FullName);
-            var references = compilation.Assembly.GetAttributes()
-                .Where(attribute => attribute.AttributeClass == includeAttributeSymbol)
-                .Select(attribute => (string)attribute.ConstructorArguments.Single().Value)
+        static CSharpCompilation AddMetaReferences(this CSharpCompilation compilation) {
+            var references = compilation
+                .GetAttributeValues<MetaReferenceAttribute>()
                 .Select(dllName => MetadataReference.CreateFromFile(dllName));
             return compilation.AddReferences(references);
         }
@@ -257,7 +253,14 @@ namespace MetaSharp {
         public static Location Location(this IMethodSymbol method) {
             return method.Locations.Single();
         }
+        public static IEnumerable<string> GetAttributeValues<T>(this CSharpCompilation compilation) where T : Attribute {
+            var attributeSymbol = compilation.GetTypeByMetadataName(typeof(T).FullName);
+            return compilation.Assembly.GetAttributes()
+                .Where(attribute => attribute.AttributeClass == attributeSymbol)
+                .Select(attribute => (string)attribute.ConstructorArguments.Single().Value);
+        }
     }
+
     public class GeneratorResult {
         public readonly ImmutableArray<string> Files;
         public readonly ImmutableArray<GeneratorError> Errors;
