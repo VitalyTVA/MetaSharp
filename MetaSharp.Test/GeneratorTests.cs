@@ -367,8 +367,8 @@ namespace MetaSharp.HelloWorld {
         public void Include() {
             var include1 = @"
 namespace MetaSharp.HelloWorld {
-    static class Helper { 
-        internal static string SayHello() {
+    public class Helper { 
+        public static string SayHello() {
              return ""Hello World!"";
         }
     }
@@ -376,8 +376,8 @@ namespace MetaSharp.HelloWorld {
 ";
             var include2 = @"
 namespace MetaSharp.HelloWorld {
-    static class Helper2 { 
-        internal static string SayHelloAgain() {
+    public static class Helper2 { 
+        public static string SayHelloAgain() {
              return ""Hello Again!"";
         }
     }

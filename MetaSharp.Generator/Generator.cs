@@ -30,7 +30,6 @@ namespace MetaSharp {
     //TODO recursive includes
     //TODO duplicate includes
     //TODO invalid includes
-    //TODO generation-like methods in included files
 
     //TODO ADT, immutable objects, DProps, ViewModels, MonadTransfomers, Templates, Localization, Aspects
     //TODO binary output - drawing images??
@@ -103,6 +102,7 @@ namespace MetaSharp {
                 .GetSymbolsWithName(name => true, SymbolFilter.Member)
                 .Where(member => member.Kind == SymbolKind.Method && !member.IsImplicitlyDeclared)
                 .Cast<IMethodSymbol>()
+                .Where(method => trees.ContainsKey(method.Location().SourceTree))
                 .ToImmutableDictionary(
                     method => new MethodId(method.Name, method.ContainingType.FullName()),
                     method => method
@@ -110,6 +110,7 @@ namespace MetaSharp {
 
             var outputFiles = compiledAssembly.DefinedTypes
                 .SelectMany(type => environment.GetAllMethods(type.AsType()).Where(method => method.IsPublic && !method.IsSpecialName))
+                .Where(method => methodsMap.ContainsKey(GetMethodId(method)))
                 .GroupBy(method => methodsMap[GetMethodId(method)].Location().SourceTree)
                 .SelectMany(grouping => {
                     var methods = grouping
