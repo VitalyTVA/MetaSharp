@@ -60,7 +60,10 @@ namespace MetaSharp.HelloWorld.NonPublicClass {
             var input = @"
 namespace MetaSharp.HelloWorld.NonPublicMethod {
     static class HelloWorldGenerator_NonPublicMethod {
-        internal static string SayHello() {
+        public static string SayHello() {
+             return ""Hello World!"";
+        }
+        internal static string SayHelloInternal() {
              return ""Hello World!"";
         }
         static string SayHelloPrivatly() {
@@ -359,6 +362,29 @@ namespace MetaSharp.HelloWorld {
                     new TestFile(GetOutputFileNameDesigner(name), "I am dependent upon!", isInOutput: false)
                 )
             );
+        }
+        [Fact]
+        public void Include() {
+            var input = @"
+
+using MetaSharp;
+[assembly: MetaInclude(""SubDir\\Helper.cs"")]
+namespace MetaSharp.HelloWorld {
+    static class Helper { 
+        internal static string SayHello() {
+             return ""Hello World!"";
+        }
+    }
+    public static class HelloWorldGenerator {
+        public static string SayHello() => Helper.SayHello();
+    }
+}
+";
+            var includeFileName = "SubDir\\Helper.cs";
+            var fileName = SingleInputFileName;
+            AssertMultipleFilesOutput(
+                new TestFile(fileName, input).YieldToImmutable(),
+                new TestFile(GetOutputFileName(fileName), "Hello World!").YieldToImmutable());
         }
 
         static void AssertSingleFileSimpleOutput(string input, string output) {

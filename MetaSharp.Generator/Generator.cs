@@ -17,9 +17,8 @@ namespace MetaSharp {
     //TODO non static classes
     //TODO methods with arguments
     //TODO other environment constants (OutputPath, etc.)
-    //TODO g.cs/g.i.cs/designer.cs and explicit file name modes
+    //TODO explicit file name mode
     //TODO automatically generate namespace and usings based on usings above and under namespace
-    //TODO non-cs files generation
     //TODO generate stub types
     //TODO include other files
     //TODO reference other assemblies
@@ -102,7 +101,7 @@ namespace MetaSharp {
                 );
 
             var outputFiles = compiledAssembly.DefinedTypes
-                .SelectMany(type => environment.GetAllMethods(type.AsType()).Where(method => (method.IsPublic || method.IsAssembly) && !method.IsSpecialName))
+                .SelectMany(type => environment.GetAllMethods(type.AsType()).Where(method => method.IsPublic && !method.IsSpecialName))
                 .GroupBy(method => methodsMap[GetMethodId(method)].Location().SourceTree)
                 .SelectMany(grouping => {
                     var methods = grouping

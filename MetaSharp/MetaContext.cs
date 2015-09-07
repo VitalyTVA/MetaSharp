@@ -18,10 +18,19 @@ namespace MetaSharp {
         Designer,
     }
     [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method)]
-    public class MetaLocationAttribute : Attribute {
+    public sealed class MetaLocationAttribute : Attribute {
         public MetaLocationAttribute(MetaLocationKind location = default(MetaLocationKind)) {
             Location = location;
         }
         public MetaLocationKind Location { get; set; }
     }
+
+    [AttributeUsage(AttributeTargets.Assembly)]
+    public sealed class MetaIncludeAttribute : Attribute {
+        public MetaIncludeAttribute(string fileName) {
+            FileName = fileName;
+        }
+        public string FileName { get; private set; }
+    }
+
 }
