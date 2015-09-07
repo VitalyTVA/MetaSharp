@@ -327,7 +327,7 @@ namespace MetaSharp.HelloWorld {
                 ImmutableArray.Create(
                     new TestFile(GetOutputFileName(name), "Hello World!"),
                     new TestFile(GetOutputFileNameNoIntellisense(name), "I am hidden!"),
-                    new TestFile(GetOutputFileNameDesigner(name), "I am dependent upon!", isInOutput: false)
+                    new TestFile(GetOutputFileNameDesigner(name), "I am dependent upon!", isInFlow: false)
                 )
             );
         }
@@ -359,7 +359,7 @@ namespace MetaSharp.HelloWorld {
                 ImmutableArray.Create(
                     new TestFile(GetOutputFileName(name), "Hello World!"),
                     new TestFile(GetOutputFileNameNoIntellisense(name), "I am hidden!"),
-                    new TestFile(GetOutputFileNameDesigner(name), "I am dependent upon!", isInOutput: false)
+                    new TestFile(GetOutputFileNameDesigner(name), "I am dependent upon!", isInFlow: false)
                 )
             );
         }
@@ -383,7 +383,7 @@ namespace MetaSharp.HelloWorld {
             var includeFileName = "SubDir\\Helper.cs";
             var fileName = SingleInputFileName;
             AssertMultipleFilesOutput(
-                new TestFile(fileName, input).YieldToImmutable(),
+                ImmutableArray.Create(new TestFile(fileName, input)),
                 new TestFile(GetOutputFileName(fileName), "Hello World!").YieldToImmutable());
         }
 
@@ -397,11 +397,11 @@ namespace MetaSharp.HelloWorld {
     }
     public class TestFile {
         public readonly string Name, Text;
-        public readonly bool IsInOutput;
-        public TestFile(string name, string text, bool isInOutput = true) {
+        public readonly bool IsInFlow;
+        public TestFile(string name, string text, bool isInFlow = true) {
             Name = name;
             Text = text;
-            IsInOutput = isInOutput;
+            IsInFlow = isInFlow;
         }
     }
     public class GeneratorTestsBase {
@@ -431,7 +431,7 @@ namespace MetaSharp.HelloWorld {
                 Assert.Empty(result.Errors);
                 Assert.Equal<string>(
                     output
-                        .Where(x => x.IsInOutput)
+                        .Where(x => x.IsInFlow)
                         .Select(x => x.Name)
                         .OrderBy(x => x), 
                     result.Files.OrderBy(x => x));
