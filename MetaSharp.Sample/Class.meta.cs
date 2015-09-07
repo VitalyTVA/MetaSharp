@@ -1,4 +1,7 @@
-﻿
+﻿using MetaSharp;
+
+[assembly: MetaInclude("helper.cs")]
+
 namespace MetaSharp.Sample {
     public static class Class1 {
         public static string Do() {
@@ -13,17 +16,8 @@ namespace Gen {{
 ";
         }
         [MetaLocation(MetaLocationKind.Designer)]
-        public static string Do2() {
-            var name = "D2";
-            return $@"
-namespace Gen {{
-    public static class {name} {{
-        public static void Bla2() {{
-        }}
-    }}
-}}
-";
-        }
+        public static string Do2() => Helper.Do2();
+
         [MetaLocation(MetaLocationKind.IntermediateOutputNoIntellisense)]
         public static string Do3() {
             var name = "D3";

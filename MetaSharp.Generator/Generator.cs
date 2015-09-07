@@ -26,8 +26,11 @@ namespace MetaSharp {
     //TODO use SourceReferenceResolver?
     //TODO option to insert delimeters between output from different classes and methods
     //TODO debugging
+
     //TODO recursive includes
     //TODO duplicate includes
+    //TODO invalid includes
+    //TODO generation-like methods in included files
 
     //TODO ADT, immutable objects, DProps, ViewModels, MonadTransfomers, Templates, Localization, Aspects
     //TODO binary output - drawing images??
