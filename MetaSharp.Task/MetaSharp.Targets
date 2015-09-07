@@ -3,7 +3,7 @@
     <CoreCompileDependsOn>$(CoreCompileDependsOn);GenerateToolOutput</CoreCompileDependsOn>
   </PropertyGroup>
   
-  <UsingTask TaskName="MetaSharp.Tasks.MetaSharpTask" AssemblyFile="..\Bin\Debug\MetaSharp.Task.dll" />
+  <UsingTask TaskName="MetaSharp.Tasks.MetaSharpTask" AssemblyFile="MetaSharp.Task.dll" />
   <Target Name="GenerateToolOutput">
     <MetaSharpTask
         InputFiles="@(Compile)" IntermediateOutputPath="$(IntermediateOutputPath)">

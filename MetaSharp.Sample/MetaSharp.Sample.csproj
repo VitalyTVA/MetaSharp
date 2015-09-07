@@ -64,5 +64,5 @@
   <Target Name="AfterBuild">
   </Target>
   -->
-  <Import Project="MetaSharp.targets" />
+  <Import Project="..\Bin\Debug\MetaSharp.targets" />
 </Project>
