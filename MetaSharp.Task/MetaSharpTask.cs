@@ -21,6 +21,8 @@ namespace MetaSharp.Tasks {
         public ITaskItem[] InputFiles { get; set; }
         [Required]
         public string IntermediateOutputPath { get; set; }
+        [Required]
+        public string OutDir { get; set; }
         [Output]
         public ITaskItem[] OutputFiles { get; set; }
 

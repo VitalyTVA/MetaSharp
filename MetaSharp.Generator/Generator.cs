@@ -16,7 +16,7 @@ namespace MetaSharp {
     //TODO exceptions in generator methods
     //TODO non static classes
     //TODO methods with arguments
-    //TODO other environment constants (OutputPath, etc.)
+    //TODO other environment constants (OutDir, etc.) - use in meta context/meta attributes
     //TODO explicit file name mode
     //TODO automatically generate namespace and usings based on usings above and under namespace
     //TODO generate stub types
