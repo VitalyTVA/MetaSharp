@@ -92,13 +92,15 @@ namespace MetaSharp.Tasks {
     public static class PlatformEnvironment {
         public static Environment Create(Func<string, string> readText, Action<string, string> writeText, string intermediateOutputPath) {
             return new Environment(
-                readText: readText, 
+                readText: readText,
                 writeText: writeText,
-                loadAssembly: stream => Assembly.Load(stream.GetBuffer()),
+                loadAssembly: path => Assembly.LoadFile(path),
                 intermediateOutputPath: intermediateOutputPath,
                 getAllMethods: type => type.GetMethods(BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic),
                 getTypeAttributes: type => type.GetCustomAttributes(),
-                getMethodAttributes: method => method.GetCustomAttributes());
+                getMethodAttributes: method => method.GetCustomAttributes(),
+                createFileStream: file => new FileStream(file, FileMode.OpenOrCreate, FileAccess.ReadWrite),
+                getFullPath: file => Path.GetFullPath(file));
         }
         public static readonly ImmutableArray<string> DefaultReferences;
         static PlatformEnvironment() {

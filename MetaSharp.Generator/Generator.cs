@@ -4,6 +4,7 @@ using MetaSharp.Utils;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+using Microsoft.CodeAnalysis.Text;
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
@@ -13,6 +14,7 @@ using System.Reflection;
 using System.Text;
 
 namespace MetaSharp {
+    //TODO make generator non crossplatform??
     //TODO exceptions in generator methods
     //TODO non static classes
     //TODO methods with arguments
@@ -55,7 +57,7 @@ namespace MetaSharp {
         const string DefaultOutputFileEnd_IntellisenseInvisible = DefaultSuffix + ".g" + CShaprFileExtension;
         const string DesignerOutputFileEnd = DefaultSuffix + ".designer" + CShaprFileExtension;
 
-        const string DefaultAssemblyName = "meta.dll";
+        const string DefaultAssemblyName = "meta";
         const string NewLine = "\r\n";
         const string ConditionalConstant = "METASHARP";
 
@@ -92,11 +94,12 @@ namespace MetaSharp {
                 .ToImmutableArray();
             if(errors.Any())
                 return new GeneratorResult(ImmutableArray<string>.Empty, errors);
-            Assembly compiledAssembly;
-            using(var stream = new MemoryStream()) {
-                var compileResult = compilation.Emit(stream);
-                compiledAssembly = environment.LoadAssembly(stream);
+            using(var stream = environment.CreateFileStream("d:\\meta.dll")) {
+                using(var pdb = environment.CreateFileStream("d:\\meta.pdb")) {
+                    var compileResult = compilation.Emit(stream, pdb);
+                }
             }
+            Assembly compiledAssembly = environment.LoadAssembly("d:\\meta.dll");
 
             var methodsMap = compilation
                 .GetSymbolsWithName(name => true, SymbolFilter.Member)
@@ -150,8 +153,10 @@ namespace MetaSharp {
             return compilation.AddReferences(references);
         }
 
-        private static SyntaxTree ParseFile(Environment environment, string x) {
-            return SyntaxFactory.ParseSyntaxTree(environment.ReadText(x), ParseOptions);
+        private static SyntaxTree ParseFile(Environment environment, string path) {
+            using(var stream = environment.CreateFileStream(path)) {
+                return SyntaxFactory.ParseSyntaxTree(SourceText.From(stream), ParseOptions, path: environment.GetFullPath(path));
+            }
         }
 
         static MethodId GetMethodId(MethodInfo method) {
@@ -283,19 +288,23 @@ namespace MetaSharp {
     public class Environment {
         public readonly Func<string, string> ReadText;
         public readonly Action<string, string> WriteText;
-        public readonly Func<MemoryStream, Assembly> LoadAssembly;
+        public readonly Func<string, Assembly> LoadAssembly;
         public readonly Func<Type, IEnumerable<MethodInfo>> GetAllMethods;
         public readonly Func<Type, IEnumerable<Attribute>> GetTypeAttributes;
         public readonly Func<MethodInfo, IEnumerable<Attribute>> GetMethodAttributes;
-        public readonly string IntermediateOutputPath; 
+        public readonly string IntermediateOutputPath;
+        public readonly Func<string, Stream> CreateFileStream;
+        public readonly Func<string, string> GetFullPath;
         public Environment(
             Func<string, string> readText, 
             Action<string, string> writeText, 
-            Func<MemoryStream, Assembly> loadAssembly, 
+            Func<string, Assembly> loadAssembly, 
             string intermediateOutputPath, 
             Func<Type, IEnumerable<MethodInfo>> getAllMethods, 
             Func<Type, IEnumerable<Attribute>> getTypeAttributes, 
-            Func<MethodInfo, IEnumerable<Attribute>> getMethodAttributes) {
+            Func<MethodInfo, IEnumerable<Attribute>> getMethodAttributes,
+            Func<string, Stream> createFileStream,
+            Func<string, string> getFullPath) {
 
             ReadText = readText;
             WriteText = writeText;
@@ -304,6 +313,8 @@ namespace MetaSharp {
             GetAllMethods = getAllMethods;
             GetTypeAttributes = getTypeAttributes;
             GetMethodAttributes = getMethodAttributes;
+            CreateFileStream = createFileStream;
+            GetFullPath = getFullPath;
         }
     }
 }

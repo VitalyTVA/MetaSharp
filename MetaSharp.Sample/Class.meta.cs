@@ -8,6 +8,7 @@ using System.Linq;
 namespace MetaSharp.Sample {
     public static class Class1 {
         public static string Do() {
+            System.Diagnostics.Debugger.Launch();
             var name = ImmutableArray.Create("B").Single();
             return $@"
 namespace Gen {{
