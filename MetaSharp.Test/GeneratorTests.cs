@@ -461,7 +461,7 @@ namespace MetaSharp.HelloWorld {
         static void AssertMultipleFilesResult(ImmutableArray<TestFile> input, Action<GeneratorResult, TestEnvironment> assertion, string intermediateOutputPath) {
             var testEnvironment = CreateEnvironment(intermediateOutputPath);
             input.ForEach(file => testEnvironment.Environment.WriteText(file.Name, file.Text));
-            var result = Generator.Generate(input.Where(file => file.IsInFlow).Select(file => file.Name).ToImmutableArray(), testEnvironment.Environment, PlatformEnvironment.DefaultReferences);
+            var result = Generator.Generate(input.Where(file => file.IsInFlow).Select(file => file.Name).ToImmutableArray(), testEnvironment.Environment);
             AssertFiles(input, testEnvironment);
             assertion(result, testEnvironment);
         }
@@ -531,10 +531,10 @@ namespace MetaSharp.HelloWorld {
 
         static TestEnvironment CreateEnvironment(string intermediateOutputPath) {
             var files = new Dictionary<string, string>();
-            var environment = PlatformEnvironment.Create(
-                fileName => files[fileName],
-                (fileName, text) => files[fileName] = text,
-                intermediateOutputPath
+            var environment = new Environment(
+                readText: fileName => files[fileName],
+                writeText: (fileName, text) => files[fileName] = text,
+                intermediateOutputPath: intermediateOutputPath
             );
             return new TestEnvironment(files, environment);
         }

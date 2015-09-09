@@ -31,11 +31,10 @@ namespace MetaSharp.Tasks {
                 .Select(x => x.ItemSpec)
                 .Where(Generator.IsMetaSharpFile)
                 .ToImmutableArray();
-            var references = PlatformEnvironment.DefaultReferences;
             AppDomain.CurrentDomain.AssemblyResolve += CurrentDomain_AssemblyResolve;
             GeneratorResult result;
             try {
-                result = Generator.Generate(files, CreateEnvironment(), references);
+                result = Generator.Generate(files, CreateEnvironment());
             } finally {
                 AppDomain.CurrentDomain.AssemblyResolve -= CurrentDomain_AssemblyResolve;
             }
@@ -83,29 +82,10 @@ namespace MetaSharp.Tasks {
                         );
         }
         Environment CreateEnvironment() {
-            return PlatformEnvironment.Create(
+            return new Environment(
                 readText: fileName => File.ReadAllText(fileName),
                 writeText: (fileName, text) => File.WriteAllText(fileName, text),
                 intermediateOutputPath: IntermediateOutputPath);
-        }
-    }
-    public static class PlatformEnvironment {
-        public static Environment Create(Func<string, string> readText, Action<string, string> writeText, string intermediateOutputPath) {
-            return new Environment(
-                readText: readText, 
-                writeText: writeText,
-                intermediateOutputPath: intermediateOutputPath);
-        }
-        public static readonly ImmutableArray<string> DefaultReferences;
-        static PlatformEnvironment() {
-            var assemblyPath = Path.GetDirectoryName(typeof(object).Assembly.Location);
-            DefaultReferences = ImmutableArray.Create(
-                Path.Combine(assemblyPath, "mscorlib.dll"),
-                Path.Combine(assemblyPath, "System.dll"),
-                Path.Combine(assemblyPath, "System.Core.dll"),
-                Path.Combine(assemblyPath, "System.Runtime.dll"),
-                typeof(MetaContext).Assembly.Location
-                );
         }
     }
 }

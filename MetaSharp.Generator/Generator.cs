@@ -48,6 +48,17 @@ namespace MetaSharp {
             }
         }
 
+        public static readonly ImmutableArray<string> DefaultReferences;
+        static Generator() {
+            var assemblyPath = Path.GetDirectoryName(typeof(object).Assembly.Location);
+            DefaultReferences = ImmutableArray.Create(
+                Path.Combine(assemblyPath, "mscorlib.dll"),
+                Path.Combine(assemblyPath, "System.dll"),
+                Path.Combine(assemblyPath, "System.Core.dll"),
+                Path.Combine(assemblyPath, "System.Runtime.dll"),
+                typeof(MetaContext).Assembly.Location
+                );
+        }
         const string DefaultSuffix = "meta";
         const string CShaprFileExtension = ".cs";
         const string DefaultInputFileEnd = DefaultSuffix + CShaprFileExtension;
@@ -65,13 +76,13 @@ namespace MetaSharp {
             return fileName.EndsWith(DefaultInputFileEnd);
         }
 
-        public static GeneratorResult Generate(ImmutableArray<string> files, Environment environment, ImmutableArray<string> references) {
+        public static GeneratorResult Generate(ImmutableArray<string> files, Environment environment) {
             var trees = files.ToImmutableDictionary(file => ParseFile(environment, file), file => file);
 
 
             var compilation = CSharpCompilation.Create(
                 DefaultAssemblyName,
-                references: references.Select(x => MetadataReference.CreateFromFile(x)),
+                references: DefaultReferences.Select(x => MetadataReference.CreateFromFile(x)),
                 options: new CSharpCompilationOptions(
                     OutputKind.DynamicallyLinkedLibrary,
                     assemblyIdentityComparer: DesktopAssemblyIdentityComparer.Default
