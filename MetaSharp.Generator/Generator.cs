@@ -202,9 +202,9 @@ namespace MetaSharp {
         static string GetOutputFileName(MetaLocationKind location, string fileName, Environment environment) {
             switch(location) {
             case MetaLocationKind.IntermediateOutput:
-                return Path.Combine(environment.IntermediateOutputPath, fileName.ReplaceEnd(DefaultInputFileEnd, DefaultOutputFileEnd));
+                return Path.Combine(environment.BuildConstants.IntermediateOutputPath, fileName.ReplaceEnd(DefaultInputFileEnd, DefaultOutputFileEnd));
             case MetaLocationKind.IntermediateOutputNoIntellisense:
-                return Path.Combine(environment.IntermediateOutputPath, fileName.ReplaceEnd(DefaultInputFileEnd, DefaultOutputFileEnd_IntellisenseInvisible));
+                return Path.Combine(environment.BuildConstants.IntermediateOutputPath, fileName.ReplaceEnd(DefaultInputFileEnd, DefaultOutputFileEnd_IntellisenseInvisible));
             case MetaLocationKind.Designer:
                 return fileName.ReplaceEnd(DefaultInputFileEnd, DesignerOutputFileEnd);
             default:
@@ -294,15 +294,21 @@ namespace MetaSharp {
     public class Environment {
         public readonly Func<string, string> ReadText;
         public readonly Action<string, string> WriteText;
-        public readonly string IntermediateOutputPath; 
+        public readonly BuildConstants BuildConstants; 
         public Environment(
             Func<string, string> readText, 
-            Action<string, string> writeText, 
-            string intermediateOutputPath) {
-
+            Action<string, string> writeText,
+            BuildConstants buildConstants) {
             ReadText = readText;
             WriteText = writeText;
+            BuildConstants = buildConstants;
+        }
+    }
+    public class BuildConstants {
+        public readonly string IntermediateOutputPath, TargetPath;
+        public BuildConstants(string intermediateOutputPath, string targetPath) {
             IntermediateOutputPath = intermediateOutputPath;
+            TargetPath = targetPath;
         }
     }
 }

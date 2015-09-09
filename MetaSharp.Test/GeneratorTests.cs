@@ -181,7 +181,7 @@ namespace MetaSharp.HelloWorld {
             AssertMultipleFilesOutput(
                 new TestFile(name, input).YieldToImmutable(),
                 new TestFile(GetOutputFileName(name, path), "Hello World!").YieldToImmutable(),
-                path
+                CreateBuildConstants(intermediateOutputPath: path)
             );
         }
         [Fact]
@@ -445,6 +445,7 @@ namespace MetaSharp.HelloWorld {
     }
     public class GeneratorTestsBase {
         const string DefaultIntermediateOutputPath = "obj";
+        const string DefaultTargetPath = "bin";
 
         protected class TestEnvironment {
             public readonly Environment Environment;
@@ -458,14 +459,14 @@ namespace MetaSharp.HelloWorld {
                 Environment = environment;
             }
         }
-        static void AssertMultipleFilesResult(ImmutableArray<TestFile> input, Action<GeneratorResult, TestEnvironment> assertion, string intermediateOutputPath) {
-            var testEnvironment = CreateEnvironment(intermediateOutputPath);
+        static void AssertMultipleFilesResult(ImmutableArray<TestFile> input, Action<GeneratorResult, TestEnvironment> assertion, BuildConstants buildConstants) {
+            var testEnvironment = CreateEnvironment(buildConstants);
             input.ForEach(file => testEnvironment.Environment.WriteText(file.Name, file.Text));
             var result = Generator.Generate(input.Where(file => file.IsInFlow).Select(file => file.Name).ToImmutableArray(), testEnvironment.Environment);
             AssertFiles(input, testEnvironment);
             assertion(result, testEnvironment);
         }
-        protected static void AssertMultipleFilesOutput(ImmutableArray<TestFile> input, ImmutableArray<TestFile> output, string intermediateOutputPath = DefaultIntermediateOutputPath) {
+        protected static void AssertMultipleFilesOutput(ImmutableArray<TestFile> input, ImmutableArray<TestFile> output, BuildConstants buildConstants = null) {
             AssertMultipleFilesResult(input, (result, testEnvironment) => {
                 Assert.Empty(result.Errors);
                 Assert.Equal<string>(
@@ -476,15 +477,15 @@ namespace MetaSharp.HelloWorld {
                     result.Files.OrderBy(x => x));
                 Assert.Equal(input.Length + output.Length, testEnvironment.FileCount);
                 AssertFiles(output, testEnvironment);
-            }, intermediateOutputPath);
+            }, buildConstants);
         }
-        protected static void AssertMultipleFilesErrors(ImmutableArray<TestFile> input, Action<IEnumerable<GeneratorError>> assertErrors, string intermediateOutputPath = DefaultIntermediateOutputPath) {
+        protected static void AssertMultipleFilesErrors(ImmutableArray<TestFile> input, Action<IEnumerable<GeneratorError>> assertErrors, BuildConstants buildConstants = null) {
             AssertMultipleFilesResult(input, (result, testEnvironment) => {
                 Assert.NotEmpty(result.Errors);
                 Assert.Equal(input.Length, testEnvironment.FileCount);
                 Assert.Empty(result.Files);
                 assertErrors(result.Errors.OrderBy(x => x.File));
-            }, intermediateOutputPath);
+            }, buildConstants);
         }
         static void AssertFiles(ImmutableArray<TestFile> files, TestEnvironment environment) {
             files.ForEach(file => Assert.Equal(file.Text, environment.ReadText(file.Name)));
@@ -525,16 +526,22 @@ namespace MetaSharp.HelloWorld {
         protected static string GetOutputFileNameDesigner(string input, string intermediateOutputPath = DefaultIntermediateOutputPath) {
             return GetOutputFileNameCore(input, string.Empty, "designer.cs");
         }
+        protected static BuildConstants CreateBuildConstants(string intermediateOutputPath = DefaultIntermediateOutputPath, string targetPath = DefaultTargetPath) {
+            return new BuildConstants(
+                intermediateOutputPath: intermediateOutputPath, 
+                targetPath: targetPath
+            );
+        }
         static string GetOutputFileNameCore(string input, string intermediateOutputPath, string suffix) {
             return Path.Combine(intermediateOutputPath, input.ReplaceEnd(".meta.cs", ".meta." + suffix));
         }
 
-        static TestEnvironment CreateEnvironment(string intermediateOutputPath) {
+        static TestEnvironment CreateEnvironment(BuildConstants buildConstants) {
             var files = new Dictionary<string, string>();
             var environment = new Environment(
                 readText: fileName => files[fileName],
                 writeText: (fileName, text) => files[fileName] = text,
-                intermediateOutputPath: intermediateOutputPath
+                buildConstants: buildConstants ?? CreateBuildConstants()
             );
             return new TestEnvironment(files, environment);
         }

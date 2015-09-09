@@ -82,10 +82,14 @@ namespace MetaSharp.Tasks {
                         );
         }
         Environment CreateEnvironment() {
+            var buildConstants = new BuildConstants(
+                intermediateOutputPath: IntermediateOutputPath, 
+                targetPath: OutDir
+            );
             return new Environment(
                 readText: fileName => File.ReadAllText(fileName),
                 writeText: (fileName, text) => File.WriteAllText(fileName, text),
-                intermediateOutputPath: IntermediateOutputPath);
+                buildConstants: buildConstants);
         }
     }
 }
