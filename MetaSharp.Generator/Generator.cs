@@ -184,7 +184,7 @@ namespace MetaSharp {
         }
         static OutputFileName GetOutputFileName(MethodInfo method, string fileName, Environment environment) {
             var location = environment.GetMethodAttributes(method).OfType<MetaLocationAttribute>().SingleOrDefault()?.Location
-                ?? environment.GetTypeAttributes(method.DeclaringType).OfType<MetaLocationAttribute>().SingleOrDefault()?.Location 
+                ?? method.DeclaringType.GetCustomAttributes().OfType<MetaLocationAttribute>().SingleOrDefault()?.Location 
                 ?? default(MetaLocationKind);
             return new OutputFileName(GetOutputFileName(location, fileName, environment), location != MetaLocationKind.Designer);
         }
@@ -283,20 +283,17 @@ namespace MetaSharp {
     public class Environment {
         public readonly Func<string, string> ReadText;
         public readonly Action<string, string> WriteText;
-        public readonly Func<Type, IEnumerable<Attribute>> GetTypeAttributes;
         public readonly Func<MethodInfo, IEnumerable<Attribute>> GetMethodAttributes;
         public readonly string IntermediateOutputPath; 
         public Environment(
             Func<string, string> readText, 
             Action<string, string> writeText, 
             string intermediateOutputPath, 
-            Func<Type, IEnumerable<Attribute>> getTypeAttributes, 
             Func<MethodInfo, IEnumerable<Attribute>> getMethodAttributes) {
 
             ReadText = readText;
             WriteText = writeText;
             IntermediateOutputPath = intermediateOutputPath;
-            GetTypeAttributes = getTypeAttributes;
             GetMethodAttributes = getMethodAttributes;
         }
     }

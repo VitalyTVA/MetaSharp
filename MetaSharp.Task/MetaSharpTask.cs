@@ -95,7 +95,6 @@ namespace MetaSharp.Tasks {
                 readText: readText, 
                 writeText: writeText,
                 intermediateOutputPath: intermediateOutputPath,
-                getTypeAttributes: type => type.GetCustomAttributes(),
                 getMethodAttributes: method => method.GetCustomAttributes());
         }
         public static readonly ImmutableArray<string> DefaultReferences;
