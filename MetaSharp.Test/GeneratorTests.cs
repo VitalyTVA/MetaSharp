@@ -435,10 +435,8 @@ namespace MetaSharp.HelloWorld {
         static void AssertSingleFileSimpleOutput(string input, string output) {
             AssertSingleFileOutput(input, GetFullSimpleOutput(output));
         }
-        static string GetFullSimpleOutput(string output) {
-            return output;
-        }
-
+        static string GetFullSimpleOutput(string output)
+            => output;
     }
     public class TestFile {
         public readonly string Name, Text;
@@ -452,6 +450,7 @@ namespace MetaSharp.HelloWorld {
     public class GeneratorTestsBase {
         const string DefaultIntermediateOutputPath = "obj";
         const string DefaultTargetPath = "bin";
+        protected const string SingleInputFileName = "file.meta.cs";
 
         protected class TestEnvironment {
             public readonly Environment Environment;
@@ -497,10 +496,6 @@ namespace MetaSharp.HelloWorld {
             files.ForEach(file => Assert.Equal(file.Text, environment.ReadText(file.Name)));
         }
 
-
-
-
-        protected const string SingleInputFileName = "file.meta.cs";
         protected static void AssertSingleFileOutput(string input, string output, BuildConstants buildConstants = null) {
             AssertMultipleFilesOutput(
                 new TestFile(SingleInputFileName, input).YieldToImmutable(),
@@ -524,24 +519,23 @@ namespace MetaSharp.HelloWorld {
             Assert.Equal(id, error.Id);
         }
 
-        protected static string GetOutputFileName(string input, string intermediateOutputPath = DefaultIntermediateOutputPath) {
-            return GetOutputFileNameCore(input, intermediateOutputPath, "g.i.cs");
-        }
-        protected static string GetOutputFileNameNoIntellisense(string input, string intermediateOutputPath = DefaultIntermediateOutputPath) {
-            return GetOutputFileNameCore(input, intermediateOutputPath, "g.cs");
-        }
-        protected static string GetOutputFileNameDesigner(string input, string intermediateOutputPath = DefaultIntermediateOutputPath) {
-            return GetOutputFileNameCore(input, string.Empty, "designer.cs");
-        }
-        protected static BuildConstants CreateBuildConstants(string intermediateOutputPath = DefaultIntermediateOutputPath, string targetPath = DefaultTargetPath) {
-            return new BuildConstants(
+        protected static string GetOutputFileName(string input, string intermediateOutputPath = DefaultIntermediateOutputPath)
+            => GetOutputFileNameCore(input, intermediateOutputPath, "g.i.cs");
+
+        protected static string GetOutputFileNameNoIntellisense(string input, string intermediateOutputPath = DefaultIntermediateOutputPath)
+            => GetOutputFileNameCore(input, intermediateOutputPath, "g.cs");
+
+        protected static string GetOutputFileNameDesigner(string input, string intermediateOutputPath = DefaultIntermediateOutputPath)
+            => GetOutputFileNameCore(input, string.Empty, "designer.cs");
+
+        protected static BuildConstants CreateBuildConstants(string intermediateOutputPath = DefaultIntermediateOutputPath, string targetPath = DefaultTargetPath)
+            => new BuildConstants(
                 intermediateOutputPath: intermediateOutputPath, 
                 targetPath: targetPath
             );
-        }
-        static string GetOutputFileNameCore(string input, string intermediateOutputPath, string suffix) {
-            return Path.Combine(intermediateOutputPath, input.ReplaceEnd(".meta.cs", ".meta." + suffix));
-        }
+
+        static string GetOutputFileNameCore(string input, string intermediateOutputPath, string suffix)
+            => Path.Combine(intermediateOutputPath, input.ReplaceEnd(".meta.cs", ".meta." + suffix));
 
         static TestEnvironment CreateEnvironment(BuildConstants buildConstants) {
             var files = new Dictionary<string, string>();

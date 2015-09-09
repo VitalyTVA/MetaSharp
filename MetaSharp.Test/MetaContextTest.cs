@@ -15,10 +15,10 @@ namespace MetaSharp.Test {
 
 }";
             var result =
-@"using System;
+@"namespace Some.Namepace {
+using System;
 using System.Linq;
 
-namespace Some.Namepace {
     public class B {
 
     }

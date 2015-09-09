@@ -17,9 +17,10 @@ namespace MetaSharp {
         //TODO replace all string types with tree string builder
         public static string WrapMembers(this MetaContext metaContext, string members) {
             var usings = metaContext.Usings.ConcatStringsWithNewLines();
-            return $@"{usings}
+            return 
+$@"namespace {metaContext.Namespace} {{
+{usings}
 
-namespace {metaContext.Namespace} {{
 {members.AddIndent(4)}
 }}";
         }
