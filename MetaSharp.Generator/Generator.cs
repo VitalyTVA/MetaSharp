@@ -15,6 +15,7 @@ using System.Text;
 
 namespace MetaSharp {
     //TODO exceptions in generator methods
+    //TODO isolate exceptions in generator methods
     //TODO non static classes
     //TODO methods with arguments
     //TODO other environment constants (OutDir, etc.) - use in meta context/meta attributes
