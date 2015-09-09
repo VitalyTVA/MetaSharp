@@ -183,8 +183,8 @@ namespace MetaSharp {
                 .ToImmutableArray();
         }
         static OutputFileName GetOutputFileName(MethodInfo method, string fileName, Environment environment) {
-            var location = environment.GetMethodAttributes(method).OfType<MetaLocationAttribute>().SingleOrDefault()?.Location
-                ?? method.DeclaringType.GetCustomAttributes().OfType<MetaLocationAttribute>().SingleOrDefault()?.Location 
+            var location = method.GetCustomAttribute<MetaLocationAttribute>()?.Location
+                ?? method.DeclaringType.GetCustomAttribute<MetaLocationAttribute>()?.Location 
                 ?? default(MetaLocationKind);
             return new OutputFileName(GetOutputFileName(location, fileName, environment), location != MetaLocationKind.Designer);
         }
