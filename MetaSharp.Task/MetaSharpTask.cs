@@ -94,8 +94,7 @@ namespace MetaSharp.Tasks {
             return new Environment(
                 readText: readText, 
                 writeText: writeText,
-                intermediateOutputPath: intermediateOutputPath,
-                getMethodAttributes: method => method.GetCustomAttributes());
+                intermediateOutputPath: intermediateOutputPath);
         }
         public static readonly ImmutableArray<string> DefaultReferences;
         static PlatformEnvironment() {

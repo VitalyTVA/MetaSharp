@@ -283,18 +283,15 @@ namespace MetaSharp {
     public class Environment {
         public readonly Func<string, string> ReadText;
         public readonly Action<string, string> WriteText;
-        public readonly Func<MethodInfo, IEnumerable<Attribute>> GetMethodAttributes;
         public readonly string IntermediateOutputPath; 
         public Environment(
             Func<string, string> readText, 
             Action<string, string> writeText, 
-            string intermediateOutputPath, 
-            Func<MethodInfo, IEnumerable<Attribute>> getMethodAttributes) {
+            string intermediateOutputPath) {
 
             ReadText = readText;
             WriteText = writeText;
             IntermediateOutputPath = intermediateOutputPath;
-            GetMethodAttributes = getMethodAttributes;
         }
     }
 }
