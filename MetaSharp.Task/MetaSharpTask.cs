@@ -94,9 +94,7 @@ namespace MetaSharp.Tasks {
             return new Environment(
                 readText: readText, 
                 writeText: writeText,
-                loadAssembly: stream => Assembly.Load(stream.GetBuffer()),
                 intermediateOutputPath: intermediateOutputPath,
-                getAllMethods: type => type.GetMethods(BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic),
                 getTypeAttributes: type => type.GetCustomAttributes(),
                 getMethodAttributes: method => method.GetCustomAttributes());
         }

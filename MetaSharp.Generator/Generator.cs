@@ -95,7 +95,7 @@ namespace MetaSharp {
             Assembly compiledAssembly;
             using(var stream = new MemoryStream()) {
                 var compileResult = compilation.Emit(stream);
-                compiledAssembly = environment.LoadAssembly(stream);
+                compiledAssembly = Assembly.Load(stream.GetBuffer());
             }
 
             var methodsMap = compilation
@@ -109,7 +109,7 @@ namespace MetaSharp {
                 );
 
             var outputFiles = compiledAssembly.DefinedTypes
-                .SelectMany(type => environment.GetAllMethods(type.AsType()).Where(method => method.IsPublic && !method.IsSpecialName))
+                .SelectMany(type => type.AsType().GetMethods(BindingFlags.Static | BindingFlags.Public).Where(method => !method.IsSpecialName))
                 .Where(method => methodsMap.ContainsKey(GetMethodId(method)))
                 .GroupBy(method => methodsMap[GetMethodId(method)].Location().SourceTree)
                 .SelectMany(grouping => {
@@ -283,25 +283,19 @@ namespace MetaSharp {
     public class Environment {
         public readonly Func<string, string> ReadText;
         public readonly Action<string, string> WriteText;
-        public readonly Func<MemoryStream, Assembly> LoadAssembly;
-        public readonly Func<Type, IEnumerable<MethodInfo>> GetAllMethods;
         public readonly Func<Type, IEnumerable<Attribute>> GetTypeAttributes;
         public readonly Func<MethodInfo, IEnumerable<Attribute>> GetMethodAttributes;
         public readonly string IntermediateOutputPath; 
         public Environment(
             Func<string, string> readText, 
             Action<string, string> writeText, 
-            Func<MemoryStream, Assembly> loadAssembly, 
             string intermediateOutputPath, 
-            Func<Type, IEnumerable<MethodInfo>> getAllMethods, 
             Func<Type, IEnumerable<Attribute>> getTypeAttributes, 
             Func<MethodInfo, IEnumerable<Attribute>> getMethodAttributes) {
 
             ReadText = readText;
             WriteText = writeText;
-            LoadAssembly = loadAssembly;
             IntermediateOutputPath = intermediateOutputPath;
-            GetAllMethods = getAllMethods;
             GetTypeAttributes = getTypeAttributes;
             GetMethodAttributes = getMethodAttributes;
         }
