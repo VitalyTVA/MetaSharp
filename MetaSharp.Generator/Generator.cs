@@ -108,8 +108,8 @@ namespace MetaSharp {
                     method => method
                 );
 
-            var outputFiles = compiledAssembly.DefinedTypes
-                .SelectMany(type => type.AsType().GetMethods(BindingFlags.Static | BindingFlags.Public).Where(method => !method.IsSpecialName))
+            var outputFiles = compiledAssembly.GetTypes()
+                .SelectMany(type => type.GetMethods(BindingFlags.Static | BindingFlags.Public).Where(method => !method.IsSpecialName))
                 .Where(method => methodsMap.ContainsKey(GetMethodId(method)))
                 .GroupBy(method => methodsMap[GetMethodId(method)].Location().SourceTree)
                 .SelectMany(grouping => {
