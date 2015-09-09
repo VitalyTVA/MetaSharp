@@ -7,6 +7,7 @@ using System.Linq;
 using System.Reflection;
 using Xunit;
 using MetaSharp.Utils;
+using MetaSharp.Native;
 
 namespace MetaSharp.Test {
     public class  HelloWorldTests : GeneratorTestsBase {

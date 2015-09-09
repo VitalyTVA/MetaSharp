@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using MetaSharp.Native;
 
 namespace MetaSharp {
     public class MetaContext {
@@ -10,6 +11,17 @@ namespace MetaSharp {
         public MetaContext(string @namespace, IEnumerable<string> usings) {
             Namespace = @namespace;
             Usings = usings;
+        }
+    }
+    public static class MetaContextExtensions {
+        //TODO replace all string types with tree string builder
+        public static string WrapMembers(this MetaContext metaContext, string members) {
+            var usings = metaContext.Usings.ConcatStringsWithNewLines();
+            return $@"{usings}
+
+namespace {metaContext.Namespace} {{
+{members.AddIndent(4)}
+}}";
         }
     }
     public enum MetaLocationKind {

@@ -1,5 +1,6 @@
 ﻿#define TEST
 #define TEST
+using MetaSharp.Native;
 using MetaSharp.Utils;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
