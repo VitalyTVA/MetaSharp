@@ -32,11 +32,19 @@ namespace MetaSharp {
         }
         public string FileName { get; private set; }
     }
+
+    public enum RelativeLocation {
+        Project,
+        TargetPath,
+    }
+
     [AttributeUsage(AttributeTargets.Assembly, AllowMultiple = true)]
     public sealed class MetaReferenceAttribute : Attribute {
-        public MetaReferenceAttribute(string dllName) {
+        public MetaReferenceAttribute(string dllName, RelativeLocation relativeLocation = RelativeLocation.Project) {
             DllName = dllName;
+            RelativeLocation = relativeLocation;
         }
         public string DllName { get; private set; }
+        public RelativeLocation RelativeLocation { get; private set; }
     }
 }

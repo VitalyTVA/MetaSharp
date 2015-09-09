@@ -406,6 +406,11 @@ namespace MetaSharp.HelloWorld {
         }
         [Fact]
         public void Reference() {
+#if DEBUG
+            var path = "Debug";
+#else
+            var path = "Release";
+#endif
             var input = @"
 using MetaSharp;
 using Xunit;
@@ -413,7 +418,7 @@ using System.Linq;
 using System.Collections.Immutable;
 
 [assembly: MetaReference(""System.Collections.Immutable.dll"")]
-[assembly: MetaReference(""Xunit.Assert.dll"")]
+[assembly: MetaReference(""" + path + @"\\Xunit.Assert.dll"", RelativeLocation.TargetPath)]
 namespace MetaSharp.HelloWorld {
     public static class HelloWorldGenerator {
         public static string SayHello(MetaContext context) {
@@ -423,7 +428,7 @@ namespace MetaSharp.HelloWorld {
     }
 }
 ";
-            AssertSingleFileSimpleOutput(input, "Hello World!");
+            AssertSingleFileOutput(input, GetFullSimpleOutput("Hello World!"), CreateBuildConstants(targetPath: ".."));
         }
 
         static void AssertSingleFileSimpleOutput(string input, string output) {
@@ -495,10 +500,11 @@ namespace MetaSharp.HelloWorld {
 
 
         protected const string SingleInputFileName = "file.meta.cs";
-        protected static void AssertSingleFileOutput(string input, string output) {
+        protected static void AssertSingleFileOutput(string input, string output, BuildConstants buildConstants = null) {
             AssertMultipleFilesOutput(
                 new TestFile(SingleInputFileName, input).YieldToImmutable(),
-                new TestFile(GetOutputFileName(SingleInputFileName), output).YieldToImmutable()
+                new TestFile(GetOutputFileName(SingleInputFileName), output).YieldToImmutable(),
+                buildConstants
             );
         }
         protected static void AssertSingleFileErrors(string input, Action<IEnumerable<GeneratorError>> assertErrors) {

@@ -3,7 +3,7 @@ using System.Collections.Immutable;
 using System.Linq;
 
 [assembly: MetaInclude("helper.cs")]
-[assembly: MetaReference(@"..\packages\System.Collections.Immutable.1.1.36\lib\portable-net45+win8+wp8+wpa81\System.Collections.Immutable.dll")]
+[assembly: MetaReference(@"System.Collections.Immutable.dll", RelativeLocation.TargetPath)]
 
 namespace MetaSharp.Sample {
     public static class Class1 {

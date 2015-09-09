@@ -90,7 +90,7 @@ namespace MetaSharp {
                 syntaxTrees: trees.Keys
             )
             .AddMetaIncludes(environment)
-            .AddMetaReferences();
+            .AddMetaReferences(environment.BuildConstants);
 
             var errors = compilation.GetDiagnostics()
                 .Where(x => x.Severity == DiagnosticSeverity.Error)
@@ -151,13 +151,20 @@ namespace MetaSharp {
         static CSharpCompilation AddMetaIncludes(this CSharpCompilation compilation, Environment environment) {
             var includes = compilation
                 .GetAttributeValues<MetaIncludeAttribute>()
-                .Select(fileName => ParseFile(environment, fileName));
+                .Select(values => ParseFile(environment, (string)values.Single()));
             return compilation.AddSyntaxTrees(includes);
         }
-        static CSharpCompilation AddMetaReferences(this CSharpCompilation compilation) {
+        static CSharpCompilation AddMetaReferences(this CSharpCompilation compilation, BuildConstants buildConsants) {
             var references = compilation
                 .GetAttributeValues<MetaReferenceAttribute>()
-                .Select(dllName => MetadataReference.CreateFromFile(dllName));
+                .Select(values => {
+                    if(values.Length != 2)
+                        throw new InvalidOperationException();
+                    var path = (string)values[0];
+                    var location = (RelativeLocation)values[1];
+                    var relativePath = location == RelativeLocation.Project ? string.Empty : buildConsants.TargetPath;
+                    return MetadataReference.CreateFromFile(Path.Combine(relativePath, path));
+                });
             return compilation.AddReferences(references);
         }
 
@@ -262,11 +269,11 @@ namespace MetaSharp {
         public static Location Location(this IMethodSymbol method) {
             return method.Locations.Single();
         }
-        public static IEnumerable<string> GetAttributeValues<T>(this CSharpCompilation compilation) where T : Attribute {
+        public static IEnumerable<ImmutableArray<object>> GetAttributeValues<T>(this CSharpCompilation compilation) where T : Attribute {
             var attributeSymbol = compilation.GetTypeByMetadataName(typeof(T).FullName);
             return compilation.Assembly.GetAttributes()
                 .Where(attribute => attribute.AttributeClass == attributeSymbol)
-                .Select(attribute => (string)attribute.ConstructorArguments.Single().Value);
+                .Select(attribute => attribute.ConstructorArguments.Select(x => x.Value).ToImmutableArray());
         }
     }
 
