@@ -33,17 +33,17 @@ namespace MetaSharp.Utils {
                 yield return en.Current;
             }
         }
-        public static string ConcatStrings(this IEnumerable<string> source) {
-            return source
-                .Aggregate(new StringBuilder(), (builder, text) => builder.Append(text))
-                .ToString();
-        }
     }
     public static class StringExtensions {
         public static string ReplaceEnd(this string s, string oldEnd, string newEnd) {
             if(!s.EndsWith(oldEnd))
                 throw new InvalidOperationException();
             return s.Substring(0, s.Length - oldEnd.Length) + newEnd;
+        }
+        public static string ConcatStrings(this IEnumerable<string> source) {
+            return source
+                .Aggregate(new StringBuilder(), (builder, text) => builder.Append(text))
+                .ToString();
         }
     }
 }
