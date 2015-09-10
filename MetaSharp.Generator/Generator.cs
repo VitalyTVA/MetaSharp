@@ -63,7 +63,7 @@ namespace MetaSharp {
         }
         const string DefaultSuffix = "meta";
         const string CShaprFileExtension = ".cs";
-        const string DefaultInputFileEnd = DefaultSuffix + CShaprFileExtension;
+        public const string DefaultInputFileEnd = DefaultSuffix + CShaprFileExtension;
         const string DefaultOutputFileEnd = DefaultSuffix + ".g.i" + CShaprFileExtension;
         const string DefaultOutputFileEnd_IntellisenseInvisible = DefaultSuffix + ".g" + CShaprFileExtension;
         const string DesignerOutputFileEnd = DefaultSuffix + ".designer" + CShaprFileExtension;
@@ -341,6 +341,10 @@ namespace MetaSharp {
             ColumnNumber = columnNumber;
             EndLineNumber = endLineNumber;
             EndColumnNumber = endColumnNumber;
+        }
+
+        public override string ToString() {
+            return $"{File}({LineNumber},{ColumnNumber},{EndLineNumber},{EndColumnNumber}): error {Id}: {Message}";
         }
     }
     public class Environment {

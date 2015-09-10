@@ -122,7 +122,10 @@ namespace MetaSharp.HelloWorld {
 ";
             AssertSingleFileErrors(input, errors => {
                 Assert.Collection(errors, 
-                    error => AssertError(error, SingleInputFileName, "CS1002", "; expected", 4, 34),
+                    error => {
+                        AssertError(error, SingleInputFileName, "CS1002", "; expected", 4, 34);
+                        Assert.Equal("file.meta.cs(4,34,4,34): error CS1002: ; expected", error.ToString());
+                    },
                     error => AssertError(error, SingleInputFileName, "CS1513", "} expected", 7, 1));
             });
         }
