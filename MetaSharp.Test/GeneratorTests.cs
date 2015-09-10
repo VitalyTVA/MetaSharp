@@ -410,6 +410,11 @@ namespace MetaSharp.HelloWorld {
         }
         [Fact]
         public void Reference() {
+#if DEBUG
+            var path = "Debug";
+#else
+            var path = "Release";
+#endif
             var input = @"
 using MetaSharp;
 using Xunit;
@@ -417,7 +422,7 @@ using System.Linq;
 using System.Collections.Immutable;
 
 [assembly: MetaReference(""System.Collections.Immutable.dll"")]
-[assembly: MetaReference(""\\Xunit.Assert.dll"", RelativeLocation.TargetPath)]
+[assembly: MetaReference(""" + path + @"\\Xunit.Assert.dll"", RelativeLocation.TargetPath)]
 namespace MetaSharp.HelloWorld {
     public static class HelloWorldGenerator {
         public static string SayHello(MetaContext context) {
