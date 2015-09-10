@@ -8,15 +8,15 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MetaSharp.Generator", "MetaSharp.Generator\MetaSharp.Generator.csproj", "{F20745EB-B266-4C27-A692-F241EA1E3FB7}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MetaSharp.Test", "MetaSharp.Test\MetaSharp.Test.csproj", "{35326999-EEC9-4A53-8F14-EEA954F87F6B}"
-	ProjectSection(ProjectDependencies) = postProject
-		{2F741E62-3CC6-413E-887A-B24DD059DCAE} = {2F741E62-3CC6-413E-887A-B24DD059DCAE}
-	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MetaSharp", "MetaSharp\MetaSharp.csproj", "{78269216-177B-4B14-A61F-B249CB2947F0}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MetaSharp.Console", "MetaSharp.Console\MetaSharp.Console.csproj", "{2F741E62-3CC6-413E-887A-B24DD059DCAE}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MetaSharp.Test.Functional", "MetaSharp.Test.Functional\MetaSharp.Test.Functional.csproj", "{3CB612CB-BBFA-48F4-A8D7-06B1A245C811}"
+	ProjectSection(ProjectDependencies) = postProject
+		{2F741E62-3CC6-413E-887A-B24DD059DCAE} = {2F741E62-3CC6-413E-887A-B24DD059DCAE}
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
