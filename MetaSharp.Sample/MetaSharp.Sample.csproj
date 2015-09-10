@@ -32,7 +32,7 @@
   <ItemGroup>
     <Reference Include="MetaSharp, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\bin\Debug\MetaSharp.dll</HintPath>
+      <HintPath>..\bin\MetaSharp.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Collections.Immutable, Version=1.1.36.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
@@ -64,5 +64,5 @@
   <Target Name="AfterBuild">
   </Target>
   -->
-  <Import Project="..\Bin\Debug\MetaSharp.targets" />
+  <Import Project="..\Bin\MetaSharp.targets" />
 </Project>
