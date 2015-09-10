@@ -3,6 +3,7 @@ using MetaSharp.Native;
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -13,6 +14,9 @@ namespace MetaSharp.Console {
         public static int Main(string[] args) {
             var parser = GetParser();
             var result = parser.Parse(args);
+
+            //Debugger.Launch();
+
             if(result.HasErrors) {
                 System.Console.WriteLine(result.ErrorText);
                 return (int)GeneratorResultCode.Error;
@@ -39,7 +43,7 @@ namespace MetaSharp.Console {
             var p = new FluentCommandLineParser<ApplicationArguments>();
             p.Setup(arg => arg.TargetPath)
                 .As("targetPath")
-                .Required();
+                .SetDefault(string.Empty);
             p.Setup(arg => arg.ProjectPath)
                 .As("projectPath")
                 .Required();

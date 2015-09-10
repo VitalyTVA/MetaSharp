@@ -14,6 +14,7 @@ using System.Reflection;
 using System.Text;
 
 namespace MetaSharp {
+    //TODO push active configuration/constants to meta code (fix metareferences in tests)
     //TODO exceptions in generator methods
     //TODO isolate exceptions in generator methods
     //TODO non static classes

@@ -6,8 +6,6 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-[assembly: MetaReference("System.Collections.Immutable.dll", RelativeLocation.TargetPath)]
-
 namespace MetaSharp.Test.Meta {
     [MetaLocation(MetaLocationKind.Designer)]
     static class ImmutableObjects {
