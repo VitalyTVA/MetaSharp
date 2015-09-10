@@ -31,24 +31,17 @@ namespace MetaSharp.Tasks {
                 .Select(x => x.ItemSpec)
                 .Where(Generator.IsMetaSharpFile)
                 .ToImmutableArray();
-            AppDomain.CurrentDomain.AssemblyResolve += CurrentDomain_AssemblyResolve;
-            GeneratorResult result;
-            try {
-                result = Generator.Generate(files, CreateEnvironment());
-            } finally {
-                AppDomain.CurrentDomain.AssemblyResolve -= CurrentDomain_AssemblyResolve;
-            }
-            if(result.Errors.Any()) {
-                foreach(var error in result.Errors) {
-                    BuildEngine.LogErrorEvent(ToBuildError(error));
-                }
-                return false;
-            } else {
-                OutputFiles = result.Files
-                    .Select(x => new TaskItem(x))
-                    .ToArray();
-                return true;
-            }
+            var buildConstants = new BuildConstants(
+                intermediateOutputPath: IntermediateOutputPath, 
+                targetPath: OutDir
+            );
+            var code = RealEnvironmentGenerator.Generate(
+                files,
+                buildConstants,
+                error => BuildEngine.LogErrorEvent(ToBuildError(error)),
+                output => OutputFiles = output.Select(x => new TaskItem(x)).ToArray()
+             );
+            return code == GeneratorResultCode.Success;
 
             //var type = compilation.GlobalNamespace.GetNamespaceMembers().ElementAt(0).GetNamespaceMembers().ElementAt(0).GetTypeMembers().Single();
             //var tree = type.Locations.Single().SourceTree;
@@ -59,12 +52,6 @@ namespace MetaSharp.Tasks {
             //var symbol = model.GetDeclaredSymbol(node);
             //if(symbol == type) {
             //}
-        }
-
-        private Assembly CurrentDomain_AssemblyResolve(object sender, ResolveEventArgs args) {
-            if(args.Name == typeof(MetaContext).Assembly.FullName)
-                return typeof(MetaContext).Assembly;
-            return null;
         }
 
         static BuildErrorEventArgs ToBuildError(GeneratorError error) {
@@ -80,16 +67,6 @@ namespace MetaSharp.Tasks {
                         helpKeyword: string.Empty,
                         senderName: "MetaSharp"
                         );
-        }
-        Environment CreateEnvironment() {
-            var buildConstants = new BuildConstants(
-                intermediateOutputPath: IntermediateOutputPath, 
-                targetPath: OutDir
-            );
-            return new Environment(
-                readText: fileName => File.ReadAllText(fileName),
-                writeText: (fileName, text) => File.WriteAllText(fileName, text),
-                buildConstants: buildConstants);
         }
     }
 }

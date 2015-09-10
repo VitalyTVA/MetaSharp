@@ -32,7 +32,7 @@ namespace MetaSharp {
     //TODO duplicate includes and references
     //TODO invalid includes and references
 
-    //TODO ADT, immutable objects, DProps, ViewModels, MonadTransfomers, Templates, Localization, Aspects
+    //TODO ADT, immutable objects, DProps, ViewModels, MonadTransfomers, Templates, Localization, Aspects, Pattern Matching (for enums)
     //TODO binary output - drawing images??
     public static class Generator {
         class MethodId {
@@ -204,7 +204,7 @@ namespace MetaSharp {
         }
         static OutputFileName GetOutputFileName(MethodInfo method, string fileName, Environment environment) {
             var location = method.GetCustomAttribute<MetaLocationAttribute>()?.Location
-                ?? method.DeclaringType.GetCustomAttribute<MetaLocationAttribute>()?.Location 
+                ?? method.DeclaringType.GetCustomAttribute<MetaLocationAttribute>()?.Location
                 ?? default(MetaLocationKind);
             return new OutputFileName(GetOutputFileName(location, fileName, environment), location != MetaLocationKind.Designer);
         }
@@ -232,6 +232,49 @@ namespace MetaSharp {
                                     );
         }
     }
+
+
+    public enum GeneratorResultCode {
+        Success = 0,
+        Error = 1,
+    }
+    public static class RealEnvironmentGenerator {
+        public static GeneratorResultCode Generate(
+            ImmutableArray<string> files, 
+            BuildConstants buildConstants, 
+            Action<GeneratorError> reportError, 
+            Action<ImmutableArray<string>> reportOutputFiles) {
+
+            AppDomain.CurrentDomain.AssemblyResolve += CurrentDomain_AssemblyResolve;
+            GeneratorResult result;
+            try {
+                result = Generator.Generate(files, CreateEnvironment(buildConstants));
+            } finally {
+                AppDomain.CurrentDomain.AssemblyResolve -= CurrentDomain_AssemblyResolve;
+            }
+            if(result.Errors.Any()) {
+                foreach(var error in result.Errors) {
+                    reportError(error);
+                }
+                return GeneratorResultCode.Error;
+            } else {
+                reportOutputFiles(result.Files);
+                return GeneratorResultCode.Success;
+            }
+        }
+        static Environment CreateEnvironment(BuildConstants buildConstants) {
+            return new Environment(
+                readText: fileName => File.ReadAllText(fileName),
+                writeText: (fileName, text) => File.WriteAllText(fileName, text),
+                buildConstants: buildConstants);
+        }
+        static Assembly CurrentDomain_AssemblyResolve(object sender, ResolveEventArgs args) {
+            if(args.Name == typeof(MetaContext).Assembly.FullName)
+                return typeof(MetaContext).Assembly;
+            return null;
+        }
+    }
+
     class Output {
         public readonly string Text;
         public readonly OutputFileName FileName;
