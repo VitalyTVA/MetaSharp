@@ -18,7 +18,6 @@ namespace MetaSharp.Console {
                 return (int)GeneratorResultCode.Error;
             }
 
-
             var files = Directory.GetFiles(parser.Object.ProjectPath, "*." + Generator.DefaultInputFileEnd, SearchOption.AllDirectories)
                 .ToImmutableArray();
             var buildConstants = new BuildConstants(
