@@ -60,14 +60,8 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="GeneratedClassesTests.cs" />
     <Compile Include="GeneratorTests.cs" />
     <Compile Include="MetaContextTest.cs" />
-    <Compile Include="Meta\AssemblyInfo.meta.cs" />
-    <Compile Include="Meta\ImmutableObjects.meta.cs" />
-    <Compile Include="Meta\ImmutableObjects.meta.designer.cs">
-      <DependentUpon>ImmutableObjects.meta.cs</DependentUpon>
-    </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -97,7 +91,8 @@
     <Error Condition="!Exists('..\packages\xunit.runner.visualstudio.2.0.1\build\net20\xunit.runner.visualstudio.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\xunit.runner.visualstudio.2.0.1\build\net20\xunit.runner.visualstudio.props'))" />
   </Target>
   <PropertyGroup>
-    <PreBuildEvent>E:\GitHub\MetaSharp\bin\Debug\MetaSharp.Console.exe --projectPath "..\..\Meta"</PreBuildEvent>
+    <PreBuildEvent>
+    </PreBuildEvent>
   </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
