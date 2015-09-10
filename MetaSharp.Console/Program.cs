@@ -23,6 +23,7 @@ namespace MetaSharp.Console {
             }
 
             var files = Directory.GetFiles(parser.Object.ProjectPath, "*." + Generator.DefaultInputFileEnd, SearchOption.AllDirectories)
+                .Select(file => Path.GetFullPath(file))
                 .ToImmutableArray();
             var buildConstants = new BuildConstants(
                 intermediateOutputPath: null,

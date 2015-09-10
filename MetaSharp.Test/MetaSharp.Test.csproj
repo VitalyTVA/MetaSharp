@@ -63,7 +63,7 @@
     <Compile Include="GeneratedClassesTests.cs" />
     <Compile Include="GeneratorTests.cs" />
     <Compile Include="MetaContextTest.cs" />
-    <Compile Include="Meta\AssemblyInfo.Meta.cs" />
+    <Compile Include="Meta\AssemblyInfo.meta.cs" />
     <Compile Include="Meta\ImmutableObjects.meta.cs" />
     <Compile Include="Meta\ImmutableObjects.meta.designer.cs">
       <DependentUpon>ImmutableObjects.meta.cs</DependentUpon>
