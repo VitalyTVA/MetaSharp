@@ -35,6 +35,8 @@ namespace MetaSharp {
 
     //TODO ADT, immutable objects, DProps, ViewModels, MonadTransfomers, Templates, Localization, Aspects, Pattern Matching (for enums)
     //TODO binary output - drawing images??
+	
+	//TODO single usage extension + diagnostic, Unit<T> + only Unit diagnostic
     public static class Generator {
         class MethodId {
             public readonly string Name, Type;
