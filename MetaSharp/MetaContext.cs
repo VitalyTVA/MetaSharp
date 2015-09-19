@@ -65,7 +65,7 @@ $@"namespace {metaContext.Namespace} {{
         public static string Class<T>() {
             throw new NotImplementedException();
         }
-        public static string Class(string name) {
+        public static string Class_(string name) {
             return
 $@"public class {name} {{
 }}".AddIndent(4);

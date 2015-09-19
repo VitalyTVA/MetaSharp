@@ -97,8 +97,43 @@ namespace MetaSharp {
             .AddMetaIncludes(environment)
             .AddMetaReferences(environment.BuildConstants);
 
-            var errors = compilation.GetDiagnostics()
-                .Where(x => x.Severity == DiagnosticSeverity.Error)
+            var draftErrors = compilation.GetErrors();
+            if(draftErrors.Any()) {
+                draftErrors
+                    .Where(x => x.Id == "CS0246")
+                    .ForEach(error => {
+                        var location = error.Location;
+                        var token = location.SourceTree.GetRoot().FindToken(location.SourceSpan.Start);
+
+                        var methodNameSyntax = token.Parent.GetParents().OfType<GenericNameSyntax>().First();
+                        var invocationSyntax = token.Parent.GetParents().OfType<InvocationExpressionSyntax>().First();
+                        var expression = invocationSyntax.Expression as MemberAccessExpressionSyntax;
+
+
+                        //var newNametoken = SyntaxFactory.Identifier("Class_");
+                        var newNameSyntax = (SimpleNameSyntax)SyntaxFactory.ParseName("Class_");
+                        var newInvocationSyntax = invocationSyntax.Update(
+                            expression.WithName(newNameSyntax),
+                            SyntaxFactory.ParseArgumentList($"(\"{token.ToFullString()}\")")
+                        );
+
+                        var newRoot = location.SourceTree.GetRoot().ReplaceNode(invocationSyntax, newInvocationSyntax);
+                        var newTree = location.SourceTree.WithRootAndOptions(newRoot, location.SourceTree.Options);
+                        compilation = compilation.ReplaceSyntaxTree(location.SourceTree, newTree);
+
+                        var oldFile = trees[location.SourceTree];
+                        trees = trees.Remove(location.SourceTree).Add(newTree, oldFile);
+
+                        //var model = compilation.GetSemanticModel(location.SourceTree);
+                        //var symbol = model.GetSymbolInfo(methodNameSyntax).Symbol as IMethodSymbol;
+                        //var dublerSymbol = symbol.ContainingType.
+                        //    GetMembers()
+                        //    .OfType<IMethodSymbol>()
+                        //    .First(x => x.Name == "Class_");
+                    });
+            }
+
+            var errors = compilation.GetErrors()
                 .Select(error => {
                     var span = error.Location.GetLineSpan();
                     return error.ToGeneratorError(
@@ -106,6 +141,7 @@ namespace MetaSharp {
                         span: error.Location.GetLineSpan());
                 })
                 .ToImmutableArray();
+
             if(errors.Any())
                 return new GeneratorResult(ImmutableArray<string>.Empty, errors);
             Assembly compiledAssembly;
@@ -322,6 +358,15 @@ namespace MetaSharp {
             return compilation.Assembly.GetAttributes()
                 .Where(attribute => attribute.AttributeClass == attributeSymbol)
                 .Select(attribute => attribute.ConstructorArguments.Select(x => x.Value).ToImmutableArray());
+        }
+        public static IEnumerable<Diagnostic> GetErrors(this CSharpCompilation compilation) {
+            return compilation.GetDiagnostics().Where(x => x.Severity == DiagnosticSeverity.Error);
+        }
+        public static IEnumerable<SyntaxNode> GetParents(this SyntaxNode node) {
+            while(node.Parent != null) {
+                yield return node.Parent;
+                node = node.Parent;
+            }
         }
     }
 

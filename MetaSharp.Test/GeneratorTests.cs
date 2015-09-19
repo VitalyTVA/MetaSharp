@@ -441,7 +441,7 @@ using MetaSharp;
 namespace MetaSharp.HelloWorld {
     public static class HelloWorldGenerator {
         public static string SayHello() {
-             return ClassGenerator.Class(""Foo"");
+             return ClassGenerator.Class<Foo>();
         }
     }
 }
