@@ -115,6 +115,7 @@ namespace MetaSharp {
                         var newInvocationSyntax = invocationSyntax.Update(
                             expression.WithName(newNameSyntax),
                             SyntaxFactory.ParseArgumentList($"(\"{token.ToFullString()}\")")
+                                //.AddArguments(invocationSyntax.ArgumentList.Arguments.ToArray())
                         );
 
                         var newRoot = location.SourceTree.GetRoot().ReplaceNode(invocationSyntax, newInvocationSyntax);
@@ -122,6 +123,9 @@ namespace MetaSharp {
                         compilation = compilation.ReplaceSyntaxTree(location.SourceTree, newTree);
 
                         var oldFile = trees[location.SourceTree];
+                        //TODO check syntax errors before rewriting anything
+                        //TOTO metadata includes are not in trees dictionary - need rewrite code in includes as well
+                        //TOTO multiple errors in one file
                         trees = trees.Remove(location.SourceTree).Add(newTree, oldFile);
 
                         //var model = compilation.GetSemanticModel(location.SourceTree);
