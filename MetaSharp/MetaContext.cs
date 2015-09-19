@@ -60,4 +60,15 @@ $@"namespace {metaContext.Namespace} {{
         public string DllName { get; private set; }
         public RelativeLocation RelativeLocation { get; private set; }
     }
+
+    public static class ClassGenerator {
+        public static string Class<T>() {
+            throw new NotImplementedException();
+        }
+        public static string Class(string name) {
+            return
+$@"public class {name} {{
+}}".AddIndent(4);
+        }
+    }
 }
