@@ -15,10 +15,10 @@ using MetaSharp;
 namespace MetaSharp.HelloWorld {
     public static class HelloWorldGenerator {
         public static string MakeFoo() {
-             return ClassGenerator.Class<Foo>();
+             return ClassGenerator.Class<Foo>().Generate();
         }
         public static string MakeMoo() {
-             return ClassGenerator.Class<Moo>();
+             return ClassGenerator.Class<Moo>().Generate();
         }
     }
 }
@@ -28,7 +28,7 @@ using MetaSharp;
 namespace MetaSharp.HelloWorld {
     public static class HelloWorldGenerator2 {
         public static string MakeBoo() {
-             return ClassGenerator.Class<Boo>();
+             return ClassGenerator.Class<Boo>().Generate();
         }
     }
 }

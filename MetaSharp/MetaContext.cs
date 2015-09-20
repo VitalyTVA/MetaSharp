@@ -61,11 +61,19 @@ $@"namespace {metaContext.Namespace} {{
         public RelativeLocation RelativeLocation { get; private set; }
     }
 
-    public static class ClassGenerator {
-        public static string Class<T>() {
+    public class ClassGenerator {
+        public static ClassGenerator Class<T>() {
             throw new NotImplementedException();
         }
-        public static string Class_(string name) {
+        public static ClassGenerator Class_(string name)
+            => new ClassGenerator(name);
+        readonly string name;
+
+        public ClassGenerator(string name) {
+            this.name = name;
+        }
+
+        public string Generate() {
             return
 $@"public class {name} {{
 }}".AddIndent(4);
