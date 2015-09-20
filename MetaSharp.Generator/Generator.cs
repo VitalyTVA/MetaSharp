@@ -133,13 +133,16 @@ namespace MetaSharp {
 
 
             var replacements = GetReplacements(compilation);
-            replacements.ForEach(replacement => {
-                var newRoot = replacement.Tree.GetRoot().ReplaceNode(replacement.Old, replacement.New);
-                var newTree = replacement.Tree.WithRootAndOptions(newRoot, replacement.Tree.Options);
-                compilation = compilation.ReplaceSyntaxTree(replacement.Tree, newTree);
-                var oldFile = trees[replacement.Tree];
-                trees = trees.Remove(replacement.Tree).Add(newTree, oldFile);
-            });
+            replacements
+                .GroupBy(x => x.Tree)
+                .ForEach(grouping => {
+                    var tree = grouping.Key;
+                    var newRoot = tree.GetRoot().ReplaceNodes(grouping.Select(x => x.Old), (x, _) => grouping.Single(y => y.Old == x).New);
+                    var newTree = tree.WithRootAndOptions(newRoot, tree.Options);
+                    compilation = compilation.ReplaceSyntaxTree(tree, newTree);
+                    var oldFile = trees[tree];
+                    trees = trees.Remove(tree).Add(newTree, oldFile);
+                });
 
             var errors = compilation.GetErrors()
                 .Select(error => {

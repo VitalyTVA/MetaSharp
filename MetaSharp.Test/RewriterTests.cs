@@ -24,6 +24,8 @@ namespace MetaSharp.HelloWorld {
 ";
             string output =
 @"    public class Foo {
+    }
+    public class Moo {
     }";
             AssertSingleFileSimpleOutput(input, output);
         }
