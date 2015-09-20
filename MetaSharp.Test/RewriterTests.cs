@@ -13,8 +13,11 @@ namespace MetaSharp.Test {
 using MetaSharp;
 namespace MetaSharp.HelloWorld {
     public static class HelloWorldGenerator {
-        public static string SayHello() {
+        public static string MakeFoo() {
              return ClassGenerator.Class<Foo>();
+        }
+        public static string MakeMoo() {
+             return ClassGenerator.Class<Moo>();
         }
     }
 }

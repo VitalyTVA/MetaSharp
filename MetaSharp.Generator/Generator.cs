@@ -81,6 +81,40 @@ namespace MetaSharp {
             return fileName.EndsWith(DefaultInputFileEnd);
         }
 
+        static ImmutableArray<SyntaxtReplacement> GetReplacements(CSharpCompilation compilation) {
+            return compilation.GetErrors()
+                .Where(x => x.Id == "CS0246")
+                .Select(error => {
+                    var location = error.Location;
+                    var token = location.SourceTree.GetRoot().FindToken(location.SourceSpan.Start);
+
+                    var methodNameSyntax = token.Parent.GetParents().OfType<GenericNameSyntax>().First();
+                    var invocationSyntax = token.Parent.GetParents().OfType<InvocationExpressionSyntax>().First();
+                    var expression = invocationSyntax.Expression as MemberAccessExpressionSyntax;
+
+
+                    //var newNametoken = SyntaxFactory.Identifier("Class_");
+                    var newNameSyntax = (SimpleNameSyntax)SyntaxFactory.ParseName("Class_");
+                    var newInvocationSyntax = invocationSyntax.Update(
+                        expression.WithName(newNameSyntax),
+                        SyntaxFactory.ParseArgumentList($"(\"{token.ToFullString()}\")")
+                    //.AddArguments(invocationSyntax.ArgumentList.Arguments.ToArray())
+                    );
+                    return new SyntaxtReplacement(location.SourceTree, invocationSyntax, newInvocationSyntax);
+
+                    //TODO check syntax errors before rewriting anything
+                    //TOTO metadata includes are not in trees dictionary - need rewrite code in includes as well
+                    //TOTO multiple errors in one file
+
+                    //var model = compilation.GetSemanticModel(location.SourceTree);
+                    //var symbol = model.GetSymbolInfo(methodNameSyntax).Symbol as IMethodSymbol;
+                    //var dublerSymbol = symbol.ContainingType.
+                    //    GetMembers()
+                    //    .OfType<IMethodSymbol>()
+                    //    .First(x => x.Name == "Class_");
+                }).ToImmutableArray();
+        }
+
         public static GeneratorResult Generate(ImmutableArray<string> files, Environment environment) {
             var trees = files.ToImmutableDictionary(file => ParseFile(environment, file), file => file);
 
@@ -97,45 +131,15 @@ namespace MetaSharp {
             .AddMetaIncludes(environment)
             .AddMetaReferences(environment.BuildConstants);
 
-            var draftErrors = compilation.GetErrors();
-            if(draftErrors.Any()) {
-                draftErrors
-                    .Where(x => x.Id == "CS0246")
-                    .ForEach(error => {
-                        var location = error.Location;
-                        var token = location.SourceTree.GetRoot().FindToken(location.SourceSpan.Start);
 
-                        var methodNameSyntax = token.Parent.GetParents().OfType<GenericNameSyntax>().First();
-                        var invocationSyntax = token.Parent.GetParents().OfType<InvocationExpressionSyntax>().First();
-                        var expression = invocationSyntax.Expression as MemberAccessExpressionSyntax;
-
-
-                        //var newNametoken = SyntaxFactory.Identifier("Class_");
-                        var newNameSyntax = (SimpleNameSyntax)SyntaxFactory.ParseName("Class_");
-                        var newInvocationSyntax = invocationSyntax.Update(
-                            expression.WithName(newNameSyntax),
-                            SyntaxFactory.ParseArgumentList($"(\"{token.ToFullString()}\")")
-                                //.AddArguments(invocationSyntax.ArgumentList.Arguments.ToArray())
-                        );
-
-                        var newRoot = location.SourceTree.GetRoot().ReplaceNode(invocationSyntax, newInvocationSyntax);
-                        var newTree = location.SourceTree.WithRootAndOptions(newRoot, location.SourceTree.Options);
-                        compilation = compilation.ReplaceSyntaxTree(location.SourceTree, newTree);
-
-                        var oldFile = trees[location.SourceTree];
-                        //TODO check syntax errors before rewriting anything
-                        //TOTO metadata includes are not in trees dictionary - need rewrite code in includes as well
-                        //TOTO multiple errors in one file
-                        trees = trees.Remove(location.SourceTree).Add(newTree, oldFile);
-
-                        //var model = compilation.GetSemanticModel(location.SourceTree);
-                        //var symbol = model.GetSymbolInfo(methodNameSyntax).Symbol as IMethodSymbol;
-                        //var dublerSymbol = symbol.ContainingType.
-                        //    GetMembers()
-                        //    .OfType<IMethodSymbol>()
-                        //    .First(x => x.Name == "Class_");
-                    });
-            }
+            var replacements = GetReplacements(compilation);
+            replacements.ForEach(replacement => {
+                var newRoot = replacement.Tree.GetRoot().ReplaceNode(replacement.Old, replacement.New);
+                var newTree = replacement.Tree.WithRootAndOptions(newRoot, replacement.Tree.Options);
+                compilation = compilation.ReplaceSyntaxTree(replacement.Tree, newTree);
+                var oldFile = trees[replacement.Tree];
+                trees = trees.Remove(replacement.Tree).Add(newTree, oldFile);
+            });
 
             var errors = compilation.GetErrors()
                 .Select(error => {
@@ -417,6 +421,15 @@ namespace MetaSharp {
         public BuildConstants(string intermediateOutputPath, string targetPath) {
             IntermediateOutputPath = intermediateOutputPath;
             TargetPath = targetPath;
+        }
+    }
+    struct SyntaxtReplacement {
+        public readonly SyntaxTree Tree;
+        public readonly SyntaxNode Old, New;
+        public SyntaxtReplacement(SyntaxTree tree, SyntaxNode old, SyntaxNode @new) {
+            Tree = tree;    
+            Old = old;
+            New = @new;
         }
     }
 }
