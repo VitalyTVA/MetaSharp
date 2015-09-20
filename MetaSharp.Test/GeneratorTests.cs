@@ -434,29 +434,6 @@ namespace MetaSharp.HelloWorld {
 ";
             AssertSingleFileOutput(input, GetFullSimpleOutput("Hello World!"), CreateBuildConstants(targetPath: ".."));
         }
-        [Fact]
-        public void RewriteClassName() {
-            var input = @"
-using MetaSharp;
-namespace MetaSharp.HelloWorld {
-    public static class HelloWorldGenerator {
-        public static string SayHello() {
-             return ClassGenerator.Class<Foo>();
-        }
-    }
-}
-";
-            string output =
-@"    public class Foo {
-    }";
-            AssertSingleFileSimpleOutput(input, output);
-        }
-
-        static void AssertSingleFileSimpleOutput(string input, string output) {
-            AssertSingleFileOutput(input, GetFullSimpleOutput(output));
-        }
-        static string GetFullSimpleOutput(string output)
-            => output;
     }
     public class TestFile {
         public readonly string Name, Text;
@@ -516,6 +493,11 @@ namespace MetaSharp.HelloWorld {
             files.ForEach(file => Assert.Equal(file.Text, environment.ReadText(file.Name)));
         }
 
+        protected static void AssertSingleFileSimpleOutput(string input, string output) {
+            AssertSingleFileOutput(input, GetFullSimpleOutput(output));
+        }
+        protected static string GetFullSimpleOutput(string output)
+            => output;
         protected static void AssertSingleFileOutput(string input, string output, BuildConstants buildConstants = null) {
             AssertMultipleFilesOutput(
                 new TestFile(SingleInputFileName, input).YieldToImmutable(),
