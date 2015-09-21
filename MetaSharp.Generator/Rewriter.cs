@@ -12,60 +12,62 @@ using System.Threading.Tasks;
 namespace MetaSharp {
     public static class Rewriter {
         public static ImmutableArray<TreeReplacement> GetReplacements(CSharpCompilation compilation) {
-            var replacements = GetReplacementsCore(compilation);
-            return replacements
-                .GroupBy(x => x.Tree)
-                .Select(grouping => {
-                    var tree = grouping.Key;
-                    var newRoot = tree.GetRoot().ReplaceNodes(grouping.Select(x => x.Old), (x, _) => grouping.Single(y => y.Old == x).New);
+            return compilation.GetErrors()
+                .Where(x => x.Id == "CS0246")
+                .GroupBy(x => x.Location.SourceTree)
+                .Select(group => {
+                    var tree = group.Key;
+                    var root = tree.GetRoot();
+                    var errorNodes = group
+                        .Select(x => root.FindNode(x.Location.SourceSpan))
+                        .ToImmutableArray();
+                    var rewriter = new MetaRewriter(errorNodes);
+                    var newRoot = rewriter.Visit(root);
                     var newTree = tree.WithRootAndOptions(newRoot, tree.Options);
                     return new TreeReplacement(tree, newTree);
                 })
                 .ToImmutableArray();
         }
-        static ImmutableArray<SyntaxtReplacement> GetReplacementsCore(CSharpCompilation compilation) {
-            return compilation.GetErrors()
-                .Where(x => x.Id == "CS0246")
-                .Select(error => {
-                    var location = error.Location;
-                    var node = location.SourceTree.GetRoot().FindNode(location.SourceSpan);
+    }
+    public class MetaRewriter : CSharpSyntaxRewriter {
+        readonly ImmutableArray<SyntaxNode> errorNodes;
+        public MetaRewriter(ImmutableArray<SyntaxNode> errorNodes) {
+            this.errorNodes = errorNodes;
+        }
 
-                    var methodNameSyntax = node.GetParents().OfType<GenericNameSyntax>().First();
-                    var invocationSyntax = node.GetParents().OfType<InvocationExpressionSyntax>().First();
-                    var expression = invocationSyntax.Expression as MemberAccessExpressionSyntax;
+        public override SyntaxNode VisitInvocationExpression(InvocationExpressionSyntax invocationSyntax) {
+            var errorNode = errorNodes.FirstOrDefault(x => Equals(x.GetParents().OfType<InvocationExpressionSyntax>().First(), invocationSyntax));
+            if(errorNode == null)
+                return base.VisitInvocationExpression(invocationSyntax);
+
+            var methodNameSyntax = errorNode.GetParents().OfType<GenericNameSyntax>().First();
+            var expression = invocationSyntax.Expression as MemberAccessExpressionSyntax;
 
 
-                    //var newNametoken = SyntaxFactory.Identifier("Class_");
-                    var newNameSyntax = (SimpleNameSyntax)SyntaxFactory.ParseName(methodNameSyntax.Identifier.ValueText + "_");
-                    var newInvocationSyntax = invocationSyntax.Update(
-                        expression.WithName(newNameSyntax),
-                        SyntaxFactory.ParseArgumentList($"(\"{node.ToFullString()}\")")
-                    //.AddArguments(invocationSyntax.ArgumentList.Arguments.ToArray())
-                    );
-                    return new SyntaxtReplacement(location.SourceTree, invocationSyntax, newInvocationSyntax);
+            //var newNametoken = SyntaxFactory.Identifier("Class_");
+            var newNameSyntax = (SimpleNameSyntax)SyntaxFactory.ParseName(methodNameSyntax.Identifier.ValueText + "_");
+            var newInvocationSyntax = invocationSyntax.Update(
+                expression
+                    .WithName(newNameSyntax)
+                    .WithExpression((ExpressionSyntax)Visit(expression.Expression)),
+                SyntaxFactory.ParseArgumentList($"(\"{errorNode.ToFullString()}\")")
+            //.AddArguments(invocationSyntax.ArgumentList.Arguments.ToArray())
+            );
 
-                    //TODO check syntax errors before rewriting anything
-                    //TOTO metadata includes are not in trees dictionary - need rewrite code in includes as well
-                    //TOTO multiple errors in one file
+            //TODO check syntax errors before rewriting anything
+            //TOTO metadata includes are not in trees dictionary - need rewrite code in includes as well
+            //TOTO multiple errors in one file
 
-                    //var model = compilation.GetSemanticModel(location.SourceTree);
-                    //var symbol = model.GetSymbolInfo(methodNameSyntax).Symbol as IMethodSymbol;
-                    //var dublerSymbol = symbol.ContainingType.
-                    //    GetMembers()
-                    //    .OfType<IMethodSymbol>()
-                    //    .First(x => x.Name == "Class_");
-                }).ToImmutableArray();
+            //var model = compilation.GetSemanticModel(location.SourceTree);
+            //var symbol = model.GetSymbolInfo(methodNameSyntax).Symbol as IMethodSymbol;
+            //var dublerSymbol = symbol.ContainingType.
+            //    GetMembers()
+            //    .OfType<IMethodSymbol>()
+            //    .First(x => x.Name == "Class_");
+
+            return newInvocationSyntax;
         }
     }
-    //public class MetaRewriter : CSharpSyntaxRewriter {
-    //    public MetaRewriter(CSharpCompilation) {
-
-    //    }
-
-    //    public override SyntaxNode VisitInvocationExpression(InvocationExpressionSyntax node) {
-    //        return base.VisitInvocationExpression(node);
-    //    }
-    //}
     public struct TreeReplacement {
         public readonly SyntaxTree Old, New;
         public TreeReplacement(SyntaxTree old, SyntaxTree @new) {
