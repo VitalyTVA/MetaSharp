@@ -35,11 +35,14 @@ namespace MetaSharp.HelloWorld {
 ";
             string output1 =
 @"    public class Foo {
+
     }
     public class Moo {
+
     }";
             string output2 =
 @"    public class Boo {
+
     }";
             var name1 = "file1.meta.cs";
             var name2 = "file2.meta.cs";
@@ -50,6 +53,25 @@ namespace MetaSharp.HelloWorld {
                     new TestFile(GetOutputFileName(name2), output2)
                 )
             );
+        }
+        [Fact]
+        public void RewriteProperties() {
+            var input = @"
+using MetaSharp;
+namespace MetaSharp.HelloWorld {
+    public static class HelloWorldGenerator {
+        public static string MakeFoo() {
+             return ClassGenerator.Class<Foo>().Property_(""Boo"").Property_(""Moo"").Generate();
+        }
+    }
+}
+";
+            string output =
+@"    public class Foo {
+        public Boo Property0 { get; set; }
+        public Moo Property1 { get; set; }
+    }";
+            AssertSingleFileOutput(input, output);
         }
     }
 }

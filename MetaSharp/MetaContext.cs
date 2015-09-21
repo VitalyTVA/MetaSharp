@@ -61,6 +61,7 @@ $@"namespace {metaContext.Namespace} {{
         public RelativeLocation RelativeLocation { get; private set; }
     }
 
+    //TODO make immutable
     public class ClassGenerator {
         public static ClassGenerator Class<T>() {
             throw new NotImplementedException();
@@ -68,14 +69,29 @@ $@"namespace {metaContext.Namespace} {{
         public static ClassGenerator Class_(string name)
             => new ClassGenerator(name);
         readonly string name;
+        readonly List<string> properties;
 
         public ClassGenerator(string name) {
             this.name = name;
+            this.properties = new List<string>();
+        }
+
+        public ClassGenerator Property<T>() {
+            //TODO implement
+            throw new NotImplementedException();
+        }
+        public ClassGenerator Property_(string propertyType) {
+            properties.Add(propertyType);
+            return this;
         }
 
         public string Generate() {
+            var propertiesList = properties
+                .Select((x, i) => $"public {x} Property{i} {{ get; set; }}")
+                .ConcatStringsWithNewLines();
             return
 $@"public class {name} {{
+{propertiesList.AddIndent(4)}
 }}".AddIndent(4);
         }
     }
