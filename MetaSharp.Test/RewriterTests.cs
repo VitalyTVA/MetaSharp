@@ -61,7 +61,10 @@ using MetaSharp;
 namespace MetaSharp.HelloWorld {
     public static class HelloWorldGenerator {
         public static string MakeFoo() {
-             return ClassGenerator.Class<Foo>().Property<Boo>().Property<Moo>().Generate();
+             return ClassGenerator.Class<Foo>()
+                .Property<Boo>()
+                .Property<Moo>()
+                .Generate();
         }
     }
 }
