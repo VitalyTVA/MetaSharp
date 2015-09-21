@@ -28,18 +28,18 @@ namespace MetaSharp {
                 .Where(x => x.Id == "CS0246")
                 .Select(error => {
                     var location = error.Location;
-                    var token = location.SourceTree.GetRoot().FindToken(location.SourceSpan.Start);
+                    var node = location.SourceTree.GetRoot().FindNode(location.SourceSpan);
 
-                    var methodNameSyntax = token.Parent.GetParents().OfType<GenericNameSyntax>().First();
-                    var invocationSyntax = token.Parent.GetParents().OfType<InvocationExpressionSyntax>().First();
+                    var methodNameSyntax = node.GetParents().OfType<GenericNameSyntax>().First();
+                    var invocationSyntax = node.GetParents().OfType<InvocationExpressionSyntax>().First();
                     var expression = invocationSyntax.Expression as MemberAccessExpressionSyntax;
 
 
                     //var newNametoken = SyntaxFactory.Identifier("Class_");
-                    var newNameSyntax = (SimpleNameSyntax)SyntaxFactory.ParseName("Class_");
+                    var newNameSyntax = (SimpleNameSyntax)SyntaxFactory.ParseName(methodNameSyntax.Identifier.ValueText + "_");
                     var newInvocationSyntax = invocationSyntax.Update(
                         expression.WithName(newNameSyntax),
-                        SyntaxFactory.ParseArgumentList($"(\"{token.ToFullString()}\")")
+                        SyntaxFactory.ParseArgumentList($"(\"{node.ToFullString()}\")")
                     //.AddArguments(invocationSyntax.ArgumentList.Arguments.ToArray())
                     );
                     return new SyntaxtReplacement(location.SourceTree, invocationSyntax, newInvocationSyntax);
@@ -57,6 +57,15 @@ namespace MetaSharp {
                 }).ToImmutableArray();
         }
     }
+    //public class MetaRewriter : CSharpSyntaxRewriter {
+    //    public MetaRewriter(CSharpCompilation) {
+
+    //    }
+
+    //    public override SyntaxNode VisitInvocationExpression(InvocationExpressionSyntax node) {
+    //        return base.VisitInvocationExpression(node);
+    //    }
+    //}
     public struct TreeReplacement {
         public readonly SyntaxTree Old, New;
         public TreeReplacement(SyntaxTree old, SyntaxTree @new) {
