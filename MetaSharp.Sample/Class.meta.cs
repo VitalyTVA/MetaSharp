@@ -10,7 +10,7 @@ namespace MetaSharp.Sample {
         public static string Do(MetaContext context) {
             var name = ImmutableArray.Create("B").Single();
             return context.WrapMembers(
-$@"public static class {name} {{
+$@"public class {name} {{
     public static void Bla2() {{
     }}
 }}");
@@ -20,7 +20,7 @@ $@"public static class {name} {{
 
         [MetaLocation(MetaLocationKind.IntermediateOutputNoIntellisense)]
         public static string Do3(MetaContext context) {
-            return context.WrapMembers(ClassGenerator.Class<D3>().Generate());
+            return context.WrapMembers(ClassGenerator.Class<D3>().Property<B>().Generate());
         }
     }
 }
