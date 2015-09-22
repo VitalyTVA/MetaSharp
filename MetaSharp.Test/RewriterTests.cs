@@ -76,9 +76,9 @@ namespace MetaSharp.HelloWorld {
     public static class HelloWorldGenerator {
         public static string MakeFoo(MetaContext context) {
              var classText = ClassGenerator.Class<Foo>()
-                .Property<Boo>()
-                .Property<Moo>()
-                .Property<int>()
+                .Property<Boo>(x => x.BooProperty)
+                .Property<Moo>(x => x.MooProperty)
+                //.Property<int>(x => x.IntProperty)
                 .Generate();
             return context.WrapMembers(classText);
         }
@@ -90,9 +90,8 @@ namespace MetaSharp.HelloWorld {
 using System;
 
     public class Foo {
-        public Boo Property0 { get; set; }
-        public Moo Property1 { get; set; }
-        public Int32 Property2 { get; set; }
+        public Boo BooProperty { get; set; }
+        public Moo MooProperty { get; set; }
     }
 }";
 
@@ -104,5 +103,32 @@ namespace MetaSharp.HelloWorld {
             AssertSingleFileOutput(input, output);
             AssertCompiles(input, output, additionalClasses);
         }
+
+//        [Fact]
+//        public void SandBox_______________________() {
+//            var input = @"
+//using MetaSharp;
+//namespace MetaSharp.HelloWorld {
+//    public static class HelloWorldGenerator {
+//        public static string MakeFoo(MetaContext context) {
+//             var classText = ClassGenerator.Class<Foo>()
+//                .Property<Boo>(x => x.BooProperty)
+//                .Generate();
+//            return context.WrapMembers(classText);
+//        }
+//    }
+//}
+//";
+//            string output =
+//@"namespace MetaSharp.HelloWorld {
+
+
+//    public class Foo {
+//        public Boo BooProperty { get; set; }
+//    }
+//}";
+
+//            AssertSingleFileOutput(input, output);
+//        }
     }
 }

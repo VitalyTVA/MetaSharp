@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using MetaSharp.Native;
+using System.Linq.Expressions;
 
 namespace MetaSharp {
     public class MetaContext {
@@ -61,18 +62,15 @@ $@"namespace {metaContext.Namespace} {{
         public RelativeLocation RelativeLocation { get; private set; }
     }
 
-    //TODO make immutable
-    public class ClassGenerator {
-        public static ClassGenerator Class<T>() {
+    public static class ClassGenerator {
+        public static ClassGenerator<T> Class<T>() {
             throw new NotImplementedException();
         }
         public static ClassGenerator_ Class_(string name)
             => new ClassGenerator_(name);
-
-
-
-        public ClassGenerator Property<T>() {
-            //TODO implement in real generator
+    }
+    public class ClassGenerator<T> {
+        public ClassGenerator<T> Property<TProperty>(Expression<Func<T, TProperty>> property) {
             throw new NotImplementedException();
         }
         public string Generate() {
@@ -80,23 +78,31 @@ $@"namespace {metaContext.Namespace} {{
         }
     }
     public class ClassGenerator_ {
+        struct PropertyInfo {
+            public readonly string Type, Name;
+            public PropertyInfo(string type, string name) {
+                Type = type;
+                Name = name;
+            }
+        }
         readonly string name;
-        readonly List<string> properties;
+        //TODO make immutable
+        readonly List<PropertyInfo> properties;
         public ClassGenerator_(string name) {
             this.name = name;
-            this.properties = new List<string>();
+            this.properties = new List<PropertyInfo>();
         }
-        public ClassGenerator_ Property_(string propertyType) {
-            properties.Add(propertyType);
+        public ClassGenerator_ Property_(string propertyType, string propertyName) {
+            properties.Add(new PropertyInfo(propertyType, propertyName));
             return this;
         }
-        public ClassGenerator_ Property<T>() {
+        public ClassGenerator_ Property<T>(string propertyName) {
             //TODO use simple name ('int' istead 'Int32')
-            return Property_(typeof(T).Name);
+            return Property_(typeof(T).Name, propertyName);
         }
         public string Generate() {
             var propertiesList = properties
-                .Select((x, i) => $"public {x} Property{i} {{ get; set; }}")
+                .Select(x => $"public {x.Type} {x.Name} {{ get; set; }}")
                 .ConcatStringsWithNewLines();
             return
 $@"public class {name} {{

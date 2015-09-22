@@ -44,14 +44,27 @@ namespace MetaSharp {
             var expression = invocationSyntax.Expression as MemberAccessExpressionSyntax;
 
 
-            //var newNametoken = SyntaxFactory.Identifier("Class_");
             var newNameSyntax = (SimpleNameSyntax)SyntaxFactory.ParseName(methodNameSyntax.Identifier.ValueText + "_");
+            var newArguments = invocationSyntax.ArgumentList.Arguments
+                .Select(argument => {
+                    //TODO custom args order (named parameters)
+                    //TODO works only for 'Property' methods
+                    //TODO semantic model checks
+
+                    //SyntaxFactory.InterpolatedStringExpression(SyntaxFactory.Token(SyntaxKind)
+                    var lambda = (SimpleLambdaExpressionSyntax)argument.Expression;
+                    var body = (MemberAccessExpressionSyntax)lambda.Body;
+                    var property = body.Name.Identifier.Text;
+                    var literal = SyntaxFactory.Literal(property);
+                    return SyntaxFactory.Argument(SyntaxFactory.LiteralExpression(SyntaxKind.StringLiteralExpression, literal));
+                })
+                .ToArray();
             var newInvocationSyntax = invocationSyntax.Update(
                 expression
                     .WithName(newNameSyntax)
                     .WithExpression((ExpressionSyntax)Visit(expression.Expression)),
                 SyntaxFactory.ParseArgumentList($"(\"{errorNode.ToFullString()}\")")
-            //.AddArguments(invocationSyntax.ArgumentList.Arguments.ToArray())
+                    .AddArguments(newArguments)
             );
 
             //TODO check syntax errors before rewriting anything
