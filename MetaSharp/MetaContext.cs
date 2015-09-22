@@ -66,25 +66,30 @@ $@"namespace {metaContext.Namespace} {{
         public static ClassGenerator Class<T>() {
             throw new NotImplementedException();
         }
-        public static ClassGenerator Class_(string name)
-            => new ClassGenerator(name);
+        public static ClassGenerator_ Class_(string name)
+            => new ClassGenerator_(name);
+
+
+
+        public ClassGenerator Property<T>() {
+            //TODO implement in real generator
+            throw new NotImplementedException();
+        }
+        public string Generate() {
+            throw new NotImplementedException();
+        }
+    }
+    public class ClassGenerator_ {
         readonly string name;
         readonly List<string> properties;
-
-        public ClassGenerator(string name) {
+        public ClassGenerator_(string name) {
             this.name = name;
             this.properties = new List<string>();
         }
-
-        public ClassGenerator Property<T>() {
-            //TODO implement
-            throw new NotImplementedException();
-        }
-        public ClassGenerator Property_(string propertyType) {
+        public ClassGenerator_ Property_(string propertyType) {
             properties.Add(propertyType);
             return this;
         }
-
         public string Generate() {
             var propertiesList = properties
                 .Select((x, i) => $"public {x} Property{i} {{ get; set; }}")
