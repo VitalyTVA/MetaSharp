@@ -21,7 +21,7 @@ namespace MetaSharp {
                     var errorNodes = group
                         .Select(x => root.FindNode(x.Location.SourceSpan))
                         .ToImmutableArray();
-                    var rewriter = new MetaRewriter(errorNodes);
+                    var rewriter = new MetaRewriter(compilation.GetSemanticModel(tree), errorNodes);
                     var newRoot = rewriter.Visit(root);
                     var newTree = tree.WithRootAndOptions(newRoot, tree.Options);
                     return new TreeReplacement(tree, newTree);
@@ -31,7 +31,9 @@ namespace MetaSharp {
     }
     public class MetaRewriter : CSharpSyntaxRewriter {
         readonly ImmutableArray<SyntaxNode> errorNodes;
-        public MetaRewriter(ImmutableArray<SyntaxNode> errorNodes) {
+        readonly SemanticModel model;
+        public MetaRewriter(SemanticModel model, ImmutableArray<SyntaxNode> errorNodes) {
+            this.model = model;
             this.errorNodes = errorNodes;
         }
 
@@ -79,12 +81,13 @@ namespace MetaSharp {
             return VisitLambdaExpression(lambda);
         }
 
-        static SyntaxNode VisitLambdaExpression(LambdaExpressionSyntax lambda) {
+        SyntaxNode VisitLambdaExpression(LambdaExpressionSyntax lambda) {
             //TODO check parents and semantic of parents
-            //var parents = node.GetParents();
+            //var parents = lambda.GetParents();
+            //var argument = lambda.Parent;
+            //var symbol = model.GetSymbolInfo(argument.Parent.Parent).Symbol as IMethodSymbol;
 
             //TODO check lambda expression parameters (1 parameter, type is same as method's generic parameter)
-            //TODO parentesized lambda expression
             //TODO custom args order (named parameters)
             //TODO works only for 'Property' methods
             //TODO semantic model checks
