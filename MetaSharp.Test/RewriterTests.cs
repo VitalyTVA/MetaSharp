@@ -78,7 +78,7 @@ namespace MetaSharp.HelloWorld {
              var classText = ClassGenerator.Class<Foo>()
                 .Property<Boo>(x => x.BooProperty)
                 .Property<Moo>(y => y.MooProperty)
-                .Property<int>(x => x.IntProperty)
+                .Property<int>((Foo x) => x.IntProperty)
                 .Generate();
             return context.WrapMembers(classText);
         }

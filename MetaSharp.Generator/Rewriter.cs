@@ -40,7 +40,10 @@ namespace MetaSharp {
             if(errorNode == null)
                 return base.VisitInvocationExpression(invocationSyntax);
 
-            var methodNameSyntax = errorNode.GetParents().OfType<GenericNameSyntax>().First();
+            var methodNameSyntax = errorNode.GetParents().OfType<GenericNameSyntax>().FirstOrDefault();
+            //TODO check semantic if methodNameSyntax
+            if(methodNameSyntax == null)
+                return base.VisitInvocationExpression(invocationSyntax);
             var expression = invocationSyntax.Expression as MemberAccessExpressionSyntax;
 
 
@@ -56,8 +59,9 @@ namespace MetaSharp {
 
             //TODO type name is alias (using Foo = Bla.Bla.Doo);
             //TODO check syntax errors before rewriting anything
-            //TOTO metadata includes are not in trees dictionary - need rewrite code in includes as well
-            //TOTO multiple errors in one file
+            //TODO metadata includes are not in trees dictionary - need rewrite code in includes as well
+            //TODO multiple errors in one file
+            //TODO rewrite explicit generator type (ClassGenerator g = ...; g.Property ...)
 
             //var model = compilation.GetSemanticModel(location.SourceTree);
             //var symbol = model.GetSymbolInfo(methodNameSyntax).Symbol as IMethodSymbol;
@@ -69,9 +73,17 @@ namespace MetaSharp {
             return newInvocationSyntax;
         }
         public override SyntaxNode VisitSimpleLambdaExpression(SimpleLambdaExpressionSyntax lambda) {
+            return VisitLambdaExpression(lambda);
+        }
+        public override SyntaxNode VisitParenthesizedLambdaExpression(ParenthesizedLambdaExpressionSyntax lambda) {
+            return VisitLambdaExpression(lambda);
+        }
+
+        static SyntaxNode VisitLambdaExpression(LambdaExpressionSyntax lambda) {
             //TODO check parents and semantic of parents
             //var parents = node.GetParents();
 
+            //TODO check lambda expression parameters (1 parameter, type is same as method's generic parameter)
             //TODO parentesized lambda expression
             //TODO custom args order (named parameters)
             //TODO works only for 'Property' methods
