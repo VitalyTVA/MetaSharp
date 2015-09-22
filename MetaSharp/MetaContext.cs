@@ -90,6 +90,10 @@ $@"namespace {metaContext.Namespace} {{
             properties.Add(propertyType);
             return this;
         }
+        public ClassGenerator_ Property<T>() {
+            //TODO use simple name ('int' istead 'Int32')
+            return Property_(typeof(T).Name);
+        }
         public string Generate() {
             var propertiesList = properties
                 .Select((x, i) => $"public {x} Property{i} {{ get; set; }}")

@@ -72,11 +72,13 @@ namespace MetaSharp.HelloWorld {
             var input = @"
 using MetaSharp;
 namespace MetaSharp.HelloWorld {
+    using System;
     public static class HelloWorldGenerator {
         public static string MakeFoo(MetaContext context) {
              var classText = ClassGenerator.Class<Foo>()
                 .Property<Boo>()
                 .Property<Moo>()
+                .Property<int>()
                 .Generate();
             return context.WrapMembers(classText);
         }
@@ -85,11 +87,12 @@ namespace MetaSharp.HelloWorld {
 ";
             string output =
 @"namespace MetaSharp.HelloWorld {
-
+using System;
 
     public class Foo {
         public Boo Property0 { get; set; }
         public Moo Property1 { get; set; }
+        public Int32 Property2 { get; set; }
     }
 }";
 
