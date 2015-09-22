@@ -14,11 +14,11 @@ namespace MetaSharp.Test {
 using MetaSharp;
 namespace MetaSharp.HelloWorld {
     public static class HelloWorldGenerator {
-        public static string MakeFoo() {
-             return ClassGenerator.Class<Foo>().Generate();
+        public static string MakeFoo(MetaContext context) {
+             return context.WrapMembers(ClassGenerator.Class<Foo>().Generate());
         }
-        public static string MakeMoo() {
-             return ClassGenerator.Class<Moo>().Generate();
+        public static string MakeMoo(MetaContext context) {
+             return context.WrapMembers(ClassGenerator.Class<Moo>().Generate());
         }
     }
 }
@@ -27,23 +27,35 @@ namespace MetaSharp.HelloWorld {
 using MetaSharp;
 namespace MetaSharp.HelloWorld {
     public static class HelloWorldGenerator2 {
-        public static string MakeBoo() {
-             return ClassGenerator.Class<Boo>().Generate();
+        public static string MakeBoo(MetaContext context) {
+             return context.WrapMembers(ClassGenerator.Class<Boo>().Generate());
         }
     }
 }
 ";
             string output1 =
-@"    public class Foo {
+@"namespace MetaSharp.HelloWorld {
+
+
+    public class Foo {
 
     }
+}
+namespace MetaSharp.HelloWorld {
+
+
     public class Moo {
 
-    }";
+    }
+}";
             string output2 =
-@"    public class Boo {
+@"namespace MetaSharp.HelloWorld {
 
-    }";
+
+    public class Boo {
+
+    }
+}";
             var name1 = "file1.meta.cs";
             var name2 = "file2.meta.cs";
             AssertMultipleFilesOutput(
@@ -60,20 +72,25 @@ namespace MetaSharp.HelloWorld {
 using MetaSharp;
 namespace MetaSharp.HelloWorld {
     public static class HelloWorldGenerator {
-        public static string MakeFoo() {
-             return ClassGenerator.Class<Foo>()
+        public static string MakeFoo(MetaContext context) {
+             var classText = ClassGenerator.Class<Foo>()
                 .Property<Boo>()
                 .Property<Moo>()
                 .Generate();
+            return context.WrapMembers(classText);
         }
     }
 }
 ";
             string output =
-@"    public class Foo {
+@"namespace MetaSharp.HelloWorld {
+
+
+    public class Foo {
         public Boo Property0 { get; set; }
         public Moo Property1 { get; set; }
-    }";
+    }
+}";
             AssertSingleFileOutput(input, output);
         }
     }

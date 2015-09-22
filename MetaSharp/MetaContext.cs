@@ -97,7 +97,7 @@ $@"namespace {metaContext.Namespace} {{
             return
 $@"public class {name} {{
 {propertiesList.AddIndent(4)}
-}}".AddIndent(4);
+}}";
         }
     }
 }
