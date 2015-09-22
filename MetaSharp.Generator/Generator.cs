@@ -28,6 +28,7 @@ namespace MetaSharp {
     //TODO use SourceReferenceResolver?
     //TODO option to insert delimeters between output from different classes and methods
     //TODO debugging
+    //TODO return ClassGenerator and other generators directly from methods
 
     //TODO recursive includes and references
     //TODO duplicate includes and references

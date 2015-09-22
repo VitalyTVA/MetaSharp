@@ -20,7 +20,10 @@ $@"public class {name} {{
 
         [MetaLocation(MetaLocationKind.IntermediateOutputNoIntellisense)]
         public static string Do3(MetaContext context) {
-            return context.WrapMembers(ClassGenerator.Class<D3>().Property<B>().Generate());
+            var classGenerator = ClassGenerator.Class<D3>()
+                .Property<B>(x => x.Some2)
+                .Property<int>(x => x.Some);
+            return context.WrapMembers(classGenerator.Generate());
         }
     }
 }
