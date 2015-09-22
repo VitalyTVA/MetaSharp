@@ -65,6 +65,7 @@ namespace MetaSharp.HelloWorld {
                     new TestFile(GetOutputFileName(name2), output2)
                 )
             );
+            AssertCompiles(input1, input2, output1, output2);
         }
         [Fact]
         public void RewriteProperties() {
@@ -91,7 +92,14 @@ namespace MetaSharp.HelloWorld {
         public Moo Property1 { get; set; }
     }
 }";
+
+            string additionalClasses = @"
+namespace MetaSharp.HelloWorld {
+    public class Boo { }
+    public class Moo { }
+}";
             AssertSingleFileOutput(input, output);
+            AssertCompiles(input, output, additionalClasses);
         }
     }
 }

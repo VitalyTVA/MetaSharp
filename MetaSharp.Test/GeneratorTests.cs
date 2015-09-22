@@ -8,6 +8,8 @@ using System.Reflection;
 using Xunit;
 using MetaSharp.Utils;
 using MetaSharp.Native;
+using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis;
 
 namespace MetaSharp.Test {
     public class  HelloWorldTests : GeneratorTestsBase {
@@ -547,6 +549,21 @@ namespace MetaSharp.HelloWorld {
                 buildConstants: buildConstants ?? CreateBuildConstants()
             );
             return new TestEnvironment(files, environment);
+        }
+
+        protected static void AssertCompiles(params string[] files) {
+            var trees = files.Select(x => SyntaxFactory.ParseSyntaxTree(x));
+            var compilation = CSharpCompilation.Create(
+                "temp",
+                references: Generator.DefaultReferences,
+                options: new CSharpCompilationOptions(
+                    OutputKind.DynamicallyLinkedLibrary,
+                    assemblyIdentityComparer: DesktopAssemblyIdentityComparer.Default
+                ),
+                syntaxTrees: files.Select(x => SyntaxFactory.ParseSyntaxTree(x))
+            );
+            var errors = compilation.GetDiagnostics().Where(x => x.Severity == DiagnosticSeverity.Error);
+            Assert.Empty(errors);
         }
     }
 }
