@@ -45,20 +45,7 @@ namespace MetaSharp {
 
 
             var newNameSyntax = (SimpleNameSyntax)SyntaxFactory.ParseName(methodNameSyntax.Identifier.ValueText + "_");
-            var newArguments = invocationSyntax.ArgumentList.Arguments
-                .Select(argument => {
-                    //TODO custom args order (named parameters)
-                    //TODO works only for 'Property' methods
-                    //TODO semantic model checks
-
-                    //SyntaxFactory.InterpolatedStringExpression(SyntaxFactory.Token(SyntaxKind)
-                    var lambda = (SimpleLambdaExpressionSyntax)argument.Expression;
-                    var body = (MemberAccessExpressionSyntax)lambda.Body;
-                    var property = body.Name.Identifier.Text;
-                    var literal = SyntaxFactory.Literal(property);
-                    return SyntaxFactory.Argument(SyntaxFactory.LiteralExpression(SyntaxKind.StringLiteralExpression, literal));
-                })
-                .ToArray();
+            var newArguments = ((ArgumentListSyntax)VisitArgumentList(invocationSyntax.ArgumentList)).Arguments.ToArray();
             var newInvocationSyntax = invocationSyntax.Update(
                 expression
                     .WithName(newNameSyntax)
@@ -67,6 +54,7 @@ namespace MetaSharp {
                     .AddArguments(newArguments)
             );
 
+            //TODO type name is alias (using Foo = Bla.Bla.Doo);
             //TODO check syntax errors before rewriting anything
             //TOTO metadata includes are not in trees dictionary - need rewrite code in includes as well
             //TOTO multiple errors in one file
@@ -79,6 +67,20 @@ namespace MetaSharp {
             //    .First(x => x.Name == "Class_");
 
             return newInvocationSyntax;
+        }
+        public override SyntaxNode VisitSimpleLambdaExpression(SimpleLambdaExpressionSyntax lambda) {
+            //TODO check parents and semantic of parents
+            //var parents = node.GetParents();
+
+            //TODO parentesized lambda expression
+            //TODO custom args order (named parameters)
+            //TODO works only for 'Property' methods
+            //TODO semantic model checks
+
+            var body = (MemberAccessExpressionSyntax)lambda.Body;
+            var property = body.Name.Identifier.Text;
+            var literal = SyntaxFactory.Literal(property);
+            return SyntaxFactory.LiteralExpression(SyntaxKind.StringLiteralExpression, literal);
         }
     }
     public struct TreeReplacement {

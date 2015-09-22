@@ -77,8 +77,8 @@ namespace MetaSharp.HelloWorld {
         public static string MakeFoo(MetaContext context) {
              var classText = ClassGenerator.Class<Foo>()
                 .Property<Boo>(x => x.BooProperty)
-                .Property<Moo>(x => x.MooProperty)
-                //.Property<int>(x => x.IntProperty)
+                .Property<Moo>(y => y.MooProperty)
+                .Property<int>(x => x.IntProperty)
                 .Generate();
             return context.WrapMembers(classText);
         }
@@ -92,6 +92,7 @@ using System;
     public class Foo {
         public Boo BooProperty { get; set; }
         public Moo MooProperty { get; set; }
+        public Int32 IntProperty { get; set; }
     }
 }";
 
@@ -112,7 +113,7 @@ namespace MetaSharp.HelloWorld {
 //    public static class HelloWorldGenerator {
 //        public static string MakeFoo(MetaContext context) {
 //             var classText = ClassGenerator.Class<Foo>()
-//                .Property<Boo>(x => x.BooProperty)
+//                .Property<int>(x => x.IntProperty)
 //                .Generate();
 //            return context.WrapMembers(classText);
 //        }
@@ -124,7 +125,7 @@ namespace MetaSharp.HelloWorld {
 
 
 //    public class Foo {
-//        public Boo BooProperty { get; set; }
+//        public Int32 IntProperty { get; set; }
 //    }
 //}";
 
