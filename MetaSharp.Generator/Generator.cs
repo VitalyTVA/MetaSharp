@@ -34,7 +34,7 @@ namespace MetaSharp {
     //TODO duplicate includes and references
     //TODO invalid includes and references
 
-    //TODO ADT, immutable objects, DProps, ViewModels, MonadTransfomers, Templates, Localization, Aspects, Pattern Matching (for enums)
+    //TODO ADT, immutable objects, DProps, ViewModels, MonadTransfomers, Templates, Localization, Aspects, Pattern Matching (+for enums), POCO
     //TODO binary output - drawing images??
 	
 	//TODO single usage extension + diagnostic, Unit<T> + only Unit diagnostic
