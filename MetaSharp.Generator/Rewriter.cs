@@ -82,6 +82,7 @@ namespace MetaSharp {
         }
 
         SyntaxNode VisitLambdaExpression(LambdaExpressionSyntax lambda) {
+            //TODO use visit argument and check lambda inside
             //TODO check parents and semantic of parents
             //var parents = lambda.GetParents();
             //var argument = lambda.Parent;
