@@ -14,7 +14,7 @@ using System.Reflection;
 using System.Text;
 
 namespace MetaSharp {
-    //TODO push active configuration/compile constants to meta code to make same evnironment in meta code as in main
+    //TODO push active configuration/compile constants (DEBUG, etc.) to meta code to make same evnironment in meta code as in main
     //TODO exceptions in generator methods
     //TODO isolate exceptions in generator methods
     //TODO non static classes
@@ -101,7 +101,7 @@ namespace MetaSharp {
             .AddMetaReferences(environment.BuildConstants);
 
 
-            var replacements = Rewriter.GetReplacements(compilation);
+            var replacements = Rewriter.GetReplacements(compilation, trees.Keys);
             replacements
                 .ForEach(replacement => {
                     var tree = replacement.Old;

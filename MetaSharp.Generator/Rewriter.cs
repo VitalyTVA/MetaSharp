@@ -11,17 +11,12 @@ using System.Threading.Tasks;
 
 namespace MetaSharp {
     public static class Rewriter {
-        public static ImmutableArray<TreeReplacement> GetReplacements(CSharpCompilation compilation) {
-            return compilation.GetErrors()
-                .Where(x => x.Id == "CS0246")
-                .GroupBy(x => x.Location.SourceTree)
-                .Select(group => {
-                    var tree = group.Key;
+        public static ImmutableArray<TreeReplacement> GetReplacements(CSharpCompilation compilation, IEnumerable<SyntaxTree> trees) {
+            //TODO remove trees argument (need add included files to trees dictionary in generator and rewrite code in them as well)
+            return trees
+                .Select(tree => {
                     var root = tree.GetRoot();
-                    var errorNodes = group
-                        .Select(x => root.FindNode(x.Location.SourceSpan))
-                        .ToImmutableArray();
-                    var rewriter = new MetaRewriter(compilation.GetSemanticModel(tree), errorNodes);
+                    var rewriter = new MetaRewriter(compilation.GetSemanticModel(tree));
                     var newRoot = rewriter.Visit(root);
                     var newTree = tree.WithRootAndOptions(newRoot, tree.Options);
                     return new TreeReplacement(tree, newTree);
@@ -31,11 +26,9 @@ namespace MetaSharp {
     }
     public class MetaRewriter : CSharpSyntaxRewriter {
         //TODO improve performance by skipping non-rewritable nodes
-        readonly ImmutableArray<SyntaxNode> errorNodes;
         readonly SemanticModel model;
-        public MetaRewriter(SemanticModel model, ImmutableArray<SyntaxNode> errorNodes) {
+        public MetaRewriter(SemanticModel model) {
             this.model = model;
-            this.errorNodes = errorNodes;
         }
 
         public override SyntaxNode VisitInvocationExpression(InvocationExpressionSyntax invocationSyntax) {
@@ -60,7 +53,6 @@ namespace MetaSharp {
 
             //TODO type name is alias (using Foo = Bla.Bla.Doo);
             //TODO check syntax errors before rewriting anything
-            //TODO metadata includes are not in trees dictionary - need rewrite code in includes as well
             //TODO multiple errors in one file
             //TODO rewrite explicit generator type (ClassGenerator g = ...; g.Property ...)
 

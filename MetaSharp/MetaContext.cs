@@ -97,11 +97,6 @@ $@"namespace {metaContext.Namespace} {{
             properties.Add(new PropertyInfo(propertyType, propertyName, defaultValue));
             return this;
         }
-        //public ClassGenerator_ Property<T>(string propertyName, string defaultValue = null) {
-        //    //TODO use simple name ('int' istead 'Int32')
-        //    //TODO use default value!!!!!!!!!!!!!
-        //    return Property_(typeof(T).Name, propertyName);
-        //}
         //TODO all properties with default value should be in the end, but try preserve original order
         public string Generate() {
             var propertiesList = properties
