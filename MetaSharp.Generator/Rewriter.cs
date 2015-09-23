@@ -30,6 +30,7 @@ namespace MetaSharp {
         }
     }
     public class MetaRewriter : CSharpSyntaxRewriter {
+        //TODO improve performance by skipping non-rewritable nodes
         readonly ImmutableArray<SyntaxNode> errorNodes;
         readonly SemanticModel model;
         public MetaRewriter(SemanticModel model, ImmutableArray<SyntaxNode> errorNodes) {
