@@ -39,6 +39,8 @@ namespace MetaSharp.HelloWorld {
 
     public class Foo {
 
+        public Foo() {
+        }
     }
 }
 namespace MetaSharp.HelloWorld {
@@ -46,6 +48,8 @@ namespace MetaSharp.HelloWorld {
 
     public class Moo {
 
+        public Moo() {
+        }
     }
 }";
             string output2 =
@@ -54,6 +58,8 @@ namespace MetaSharp.HelloWorld {
 
     public class Boo {
 
+        public Boo() {
+        }
     }
 }";
             var name1 = "file1.meta.cs";
@@ -90,9 +96,11 @@ namespace MetaSharp.HelloWorld {
 using System;
 
     public class Foo {
-        public Boo BooProperty { get; set; }
-        public Moo MooProperty { get; set; }
-        public Int32 IntProperty { get; set; }
+        public Boo BooProperty { get; }
+        public Moo MooProperty { get; }
+        public Int32 IntProperty { get; }
+        public Foo(Boo booProperty, Moo mooProperty, Int32 intProperty) {
+        }
     }
 }";
 
@@ -105,31 +113,33 @@ namespace MetaSharp.HelloWorld {
             AssertCompiles(input, output, additionalClasses);
         }
 
-//        [Fact]
-//        public void SandBox_______________________() {
-//            var input = @"
-//using MetaSharp;
-//namespace MetaSharp.HelloWorld {
-//    public static class HelloWorldGenerator {
-//        public static string MakeFoo(MetaContext context) {
-//             var classText = ClassGenerator.Class<Foo>()
-//                .Property<int>(x => x.IntProperty)
-//                .Generate();
-//            return context.WrapMembers(classText);
-//        }
-//    }
-//}
-//";
-//            string output =
-//@"namespace MetaSharp.HelloWorld {
+        [Fact]
+        public void SandBox_______________________() {
+            var input = @"
+using MetaSharp;
+namespace MetaSharp.HelloWorld {
+    public static class HelloWorldGenerator {
+        public static string MakeFoo(MetaContext context) {
+             var classText = ClassGenerator.Class<Foo>()
+                .Property<Boo>(x => x.IntProperty)
+                .Generate();
+            return context.WrapMembers(classText);
+        }
+    }
+}
+";
+            string output =
+@"namespace MetaSharp.HelloWorld {
 
 
-//    public class Foo {
-//        public Int32 IntProperty { get; set; }
-//    }
-//}";
+    public class Foo {
+        public Boo IntProperty { get; }
+        public Foo(Boo intProperty) {
+        }
+    }
+}";
 
-//            AssertSingleFileOutput(input, output);
-//        }
+            AssertSingleFileOutput(input, output);
+        }
     }
 }

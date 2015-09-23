@@ -32,6 +32,10 @@ namespace MetaSharp.Native {
         }
     }
     public static class StringExtensions {
+        public static string ToCamelCase(this string s) {
+            //TODO correct camel case
+            return char.ToLower(s[0]) + s.Substring(1);
+        }
         public static string ReplaceEnd(this string s, string oldEnd, string newEnd) {
             if(!s.EndsWith(oldEnd))
                 throw new InvalidOperationException();

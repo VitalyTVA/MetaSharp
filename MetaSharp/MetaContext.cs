@@ -70,7 +70,7 @@ $@"namespace {metaContext.Namespace} {{
             => new ClassGenerator_(name);
     }
     public class ClassGenerator<T> {
-        public ClassGenerator<T> Property<TProperty>(Expression<Func<T, TProperty>> property) {
+        public ClassGenerator<T> Property<TProperty>(Expression<Func<T, TProperty>> property, TProperty defaultValue = default(TProperty)) {
             throw new NotImplementedException();
         }
         public string Generate() {
@@ -79,10 +79,11 @@ $@"namespace {metaContext.Namespace} {{
     }
     public class ClassGenerator_ {
         struct PropertyInfo {
-            public readonly string Type, Name;
-            public PropertyInfo(string type, string name) {
+            public readonly string Type, Name, DefaultValue;
+            public PropertyInfo(string type, string name, string defaultValue) {
                 Type = type;
                 Name = name;
+                DefaultValue = defaultValue;
             }
         }
         readonly string name;
@@ -92,21 +93,34 @@ $@"namespace {metaContext.Namespace} {{
             this.name = name;
             this.properties = new List<PropertyInfo>();
         }
-        public ClassGenerator_ Property_(string propertyType, string propertyName) {
-            properties.Add(new PropertyInfo(propertyType, propertyName));
+        public ClassGenerator_ Property_(string propertyType, string propertyName, string defaultValue = null) {
+            properties.Add(new PropertyInfo(propertyType, propertyName, defaultValue));
             return this;
         }
-        public ClassGenerator_ Property<T>(string propertyName) {
+        public ClassGenerator_ Property<T>(string propertyName, string defaultValue = null) {
             //TODO use simple name ('int' istead 'Int32')
+            //TODO use default value!!!!!!!!!!!!!
             return Property_(typeof(T).Name, propertyName);
         }
+        //TODO all properties with default value should be in the end
         public string Generate() {
             var propertiesList = properties
-                .Select(x => $"public {x.Type} {x.Name} {{ get; set; }}")
+                .Select(x => $"public {x.Type} {x.Name} {{ get; }}")
                 .ConcatStringsWithNewLines();
+
+            var arguments = properties
+                .Select(x => {
+                    var defaultValuePart = !string.IsNullOrEmpty(x.DefaultValue) ? (" = " + x.DefaultValue) : string.Empty;
+                    return $"{x.Type} {x.Name.ToCamelCase()}{defaultValuePart}";
+                })
+                .InsertDelimeter(", ")
+                .ConcatStrings();
+
             return
 $@"public class {name} {{
 {propertiesList.AddIndent(4)}
+    public {name}({arguments}) {{
+    }}
 }}";
         }
     }
