@@ -113,33 +113,33 @@ namespace MetaSharp.HelloWorld {
             AssertCompiles(input, output, additionalClasses);
         }
 
-        [Fact]
-        public void SandBox_______________________() {
-            var input = @"
-using MetaSharp;
-namespace MetaSharp.HelloWorld {
-    public static class HelloWorldGenerator {
-        public static string MakeFoo(MetaContext context) {
-             var classText = ClassGenerator.Class<Foo>()
-                .Property<Boo>(x => x.IntProperty, default(Boo))
-                .Generate();
-            return context.WrapMembers(classText);
-        }
-    }
-}
-";
-            string output =
-@"namespace MetaSharp.HelloWorld {
+//        [Fact]
+//        public void SandBox_______________________() {
+//            var input = @"
+//using MetaSharp;
+//namespace MetaSharp.HelloWorld {
+//    public static class HelloWorldGenerator {
+//        public static string MakeFoo(MetaContext context) {
+//             var classText = ClassGenerator.Class<Foo>()
+//                .Property<Boo>(x => x.IntProperty, default(Boo))
+//                .Generate();
+//            return context.WrapMembers(classText);
+//        }
+//    }
+//}
+//";
+//            string output =
+//@"namespace MetaSharp.HelloWorld {
 
 
-    public class Foo {
-        public Boo IntProperty { get; }
-        public Foo(Boo intProperty = default(Boo)) {
-        }
-    }
-}";
+//    public class Foo {
+//        public Boo IntProperty { get; }
+//        public Foo(Boo intProperty = default(Boo)) {
+//        }
+//    }
+//}";
 
-            AssertSingleFileOutput(input, output);
-        }
+//            AssertSingleFileOutput(input, output);
+//        }
     }
 }
