@@ -66,10 +66,20 @@ namespace MetaSharp {
             return newInvocationSyntax;
         }
         public override SyntaxNode VisitArgument(ArgumentSyntax node) {
+            var invocationSyntax = node.Parent.Parent as InvocationExpressionSyntax;
+            if(invocationSyntax == null)
+                return base.VisitArgument(node);
+            var methodNameSyntax = (invocationSyntax.Expression as MemberAccessExpressionSyntax).Name as GenericNameSyntax;
+            if(methodNameSyntax == null || methodNameSyntax.Identifier.ValueText != "Property")
+                return base.VisitArgument(node);
+
             var lambda = node.Expression as LambdaExpressionSyntax;
-            if(lambda != null)
+            if(lambda != null) {
+                //TODO check that parameter name preserved if specified, otherwise order can be broken
                 return node.WithExpression(VisitLambdaExpression(lambda));
-            return base.VisitArgument(node);
+            }
+            return node.WithExpression(SyntaxFactory.LiteralExpression(SyntaxKind.StringLiteralExpression, SyntaxFactory.Literal(node.Expression.ToFullString())));
+            //return base.VisitArgument(node);
         }
 
         LiteralExpressionSyntax VisitLambdaExpression(LambdaExpressionSyntax lambda) {
