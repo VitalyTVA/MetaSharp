@@ -65,15 +65,14 @@ namespace MetaSharp {
 
             return newInvocationSyntax;
         }
-        public override SyntaxNode VisitSimpleLambdaExpression(SimpleLambdaExpressionSyntax lambda) {
-            return VisitLambdaExpression(lambda);
-        }
-        public override SyntaxNode VisitParenthesizedLambdaExpression(ParenthesizedLambdaExpressionSyntax lambda) {
-            return VisitLambdaExpression(lambda);
+        public override SyntaxNode VisitArgument(ArgumentSyntax node) {
+            var lambda = node.Expression as LambdaExpressionSyntax;
+            if(lambda != null)
+                return node.WithExpression(VisitLambdaExpression(lambda));
+            return base.VisitArgument(node);
         }
 
-        SyntaxNode VisitLambdaExpression(LambdaExpressionSyntax lambda) {
-            //TODO use visit argument and check lambda inside
+        LiteralExpressionSyntax VisitLambdaExpression(LambdaExpressionSyntax lambda) {
             //TODO check parents and semantic of parents
             //var parents = lambda.GetParents();
             //var argument = lambda.Parent;
