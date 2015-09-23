@@ -38,14 +38,12 @@ namespace MetaSharp {
         }
 
         public override SyntaxNode VisitInvocationExpression(InvocationExpressionSyntax invocationSyntax) {
-            var errorNode = errorNodes.FirstOrDefault(x => Equals(x.GetParents().OfType<InvocationExpressionSyntax>().First(), invocationSyntax));
-            if(errorNode == null)
-                return base.VisitInvocationExpression(invocationSyntax);
 
-            var methodNameSyntax = errorNode.GetParents().OfType<GenericNameSyntax>().FirstOrDefault();
+            var methodNameSyntax = (invocationSyntax.Expression as MemberAccessExpressionSyntax).Name as GenericNameSyntax;
             //TODO check semantic if methodNameSyntax
             if(methodNameSyntax == null)
                 return base.VisitInvocationExpression(invocationSyntax);
+            var genericTypeNode = methodNameSyntax.TypeArgumentList.Arguments.Single(); //TODO multiple or missed generic arguments
             var expression = invocationSyntax.Expression as MemberAccessExpressionSyntax;
 
 
@@ -55,7 +53,7 @@ namespace MetaSharp {
                 expression
                     .WithName(newNameSyntax)
                     .WithExpression((ExpressionSyntax)Visit(expression.Expression)),
-                SyntaxFactory.ParseArgumentList($"(\"{errorNode.ToFullString()}\")")
+                SyntaxFactory.ParseArgumentList($"(\"{genericTypeNode.ToFullString()}\")")
                     .AddArguments(newArguments)
             );
 

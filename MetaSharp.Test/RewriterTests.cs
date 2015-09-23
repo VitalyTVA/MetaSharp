@@ -98,8 +98,8 @@ using System;
     public class Foo {
         public Boo BooProperty { get; }
         public Moo MooProperty { get; }
-        public Int32 IntProperty { get; }
-        public Foo(Boo booProperty, Moo mooProperty, Int32 intProperty) {
+        public int IntProperty { get; }
+        public Foo(Boo booProperty, Moo mooProperty, int intProperty) {
         }
     }
 }";
