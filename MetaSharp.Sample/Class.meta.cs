@@ -5,6 +5,7 @@ using System.Collections.Immutable;
 [assembly: MetaReference(@"System.Collections.Immutable.dll", RelativeLocation.TargetPath)]
 
 namespace MetaSharp.Sample {
+    using System;
     using System.Linq;
     public static class Class1 {
         public static string Do(MetaContext context) {
