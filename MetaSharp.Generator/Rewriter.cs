@@ -38,7 +38,7 @@ namespace MetaSharp {
                 return base.VisitInvocationExpression(invocationSyntax);
 
             var symbol = model.GetSymbolInfo(methodNameSyntax).Symbol as IMethodSymbol;
-            if(symbol == null || !symbol.HasAttribute<RewriteGenericArgsToStringArgsAttribute>(model.Compilation))
+            if(symbol == null || !symbol.HasAttribute<MetaRewriteAttribute>(model.Compilation))
                 return base.VisitInvocationExpression(invocationSyntax);
 
             var genericTypeNodes = methodNameSyntax.TypeArgumentList.Arguments;

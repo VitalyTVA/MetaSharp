@@ -129,7 +129,7 @@ namespace MetaSharp.HelloWorld {
             public string Generate() {
                 return ""I am not rewritten!"";
             }
-            [RewriteGenericArgsToStringArgs]
+            [MetaRewrite]
             public static string TwoGenericArgs<T1, T2>() {
                 throw new NotImplementedException();
             }
@@ -160,7 +160,7 @@ namespace MetaSharp.HelloWorld {
     using System;
     public static class HelloWorldGenerator {
         public class ClassGenerator {
-            [RewriteGenericArgsToStringArgs]
+            [MetaRewrite]
             public static string Rewriteable<T>() {
                 throw new NotImplementedException();
             }
