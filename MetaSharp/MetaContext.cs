@@ -64,6 +64,7 @@ $@"namespace {metaContext.Namespace} {{
     [AttributeUsage(AttributeTargets.Method)]
     public sealed class MetaRewriteAttribute : Attribute {
         //TODO specify method to rewrite explicitly
+        //TODO apply to classes, not only methods
     }
     public static class ClassGenerator {
         [MetaRewrite]
