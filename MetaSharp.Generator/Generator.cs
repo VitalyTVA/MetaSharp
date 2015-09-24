@@ -128,11 +128,13 @@ namespace MetaSharp {
                 compiledAssembly = Assembly.Load(stream.GetBuffer());
             }
 
+            //TODO ignore nested methods
+            //TODO support overloaded methods
             var methodsMap = compilation
                 .GetSymbolsWithName(name => true, SymbolFilter.Member)
                 .Where(member => member.Kind == SymbolKind.Method && !member.IsImplicitlyDeclared)
                 .Cast<IMethodSymbol>()
-                .Where(method => trees.ContainsKey(method.Location().SourceTree))
+                .Where(method => trees.ContainsKey(method.Location().SourceTree) && !method.TypeParameters.Any())
                 .ToImmutableDictionary(
                     method => new MethodId(method.Name, method.ContainingType.FullName()),
                     method => method

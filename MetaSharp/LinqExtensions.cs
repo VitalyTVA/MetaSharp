@@ -46,10 +46,14 @@ namespace MetaSharp.Native {
                 .Aggregate(new StringBuilder(), (builder, text) => builder.Append(text))
                 .ToString();
 
-        public static string ConcatStringsWithNewLines(this IEnumerable<string> source)
+        public static string ConcatStrings(this IEnumerable<string> source, string delimeter)
             => source
-                .InsertDelimeter(Environment.NewLine)
+                .InsertDelimeter(delimeter)
                 .ConcatStrings();
+
+
+        public static string ConcatStringsWithNewLines(this IEnumerable<string> source)
+            => source.ConcatStrings(Environment.NewLine);
 
         public static string AddIndent(this string s, int indentLength) {
             var indent = new string(' ', indentLength);

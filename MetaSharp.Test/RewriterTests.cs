@@ -113,7 +113,7 @@ namespace MetaSharp.HelloWorld {
             AssertCompiles(input, output, additionalClasses);
         }
         [Fact]
-        public void RewriteOnlyMethodsWithAttributes() {
+        public void RewriteOnlyMethodsWithAttributes_RewriteMultypleTypeArgs() {
             var input = @"
 namespace MetaSharp.HelloWorld {
     using System;
@@ -129,18 +129,29 @@ namespace MetaSharp.HelloWorld {
             public string Generate() {
                 return ""I am not rewritten!"";
             }
+            [RewriteGenericArgsToStringArgs]
+            public static string TwoGenericArgs<T1, T2>() {
+                throw new NotImplementedException();
+            }
+            public static string TwoGenericArgs(string t1, string t2) {
+                return t1 + "" "" + t2;
+            }
         }
         public static string MakeFoo(MetaContext context) {
-             return ClassGenerator.Class<string>()
-                .Property<int>()
-                .Generate();
+             return ClassGenerator.Class<string>().Property<int>().Generate()
+                + "" "" + ClassGenerator.TwoGenericArgs<Boo, Moo>() ;
         }
     }
 }
 ";
-            string output = "I am not rewritten!";
+            string additionalClasses = @"
+namespace MetaSharp.HelloWorld {
+    public class Boo { }
+    public class Moo { }
+}";
+            string output = "I am not rewritten! Boo Moo";
             AssertSingleFileOutput(input, output);
-            AssertCompiles(input);
+            AssertCompiles(input, additionalClasses);
         }
 
         //        [Fact]

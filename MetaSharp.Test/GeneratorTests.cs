@@ -106,6 +106,9 @@ namespace MetaSharp.HelloWorld {
         static string EpicFail() {
              throw new NotImplementedException();
         }
+        public static string GenericFail<T>() {
+             throw new NotImplementedException();
+        }
     }
 }
 ";

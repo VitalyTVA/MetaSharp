@@ -41,16 +41,17 @@ namespace MetaSharp {
             if(!symbol.HasAttribute<RewriteGenericArgsToStringArgsAttribute>(model.Compilation))
                 return base.VisitInvocationExpression(invocationSyntax);
 
-            var genericTypeNode = methodNameSyntax.TypeArgumentList.Arguments.Single(); //TODO multiple or missed generic arguments
+            var genericTypeNodes = methodNameSyntax.TypeArgumentList.Arguments; //TODO missed generic arguments
             var expression = invocationSyntax.Expression as MemberAccessExpressionSyntax;
             var newNameSyntax = (SimpleNameSyntax)SyntaxFactory.ParseName(methodNameSyntax.Identifier.ValueText);
 
             var newArguments = ((ArgumentListSyntax)VisitArgumentList(invocationSyntax.ArgumentList)).Arguments.ToArray();
+            var typeArgs = genericTypeNodes.Select(x => "\"" + x.ToFullString() + "\"").ConcatStrings(", ");
             var newInvocationSyntax = invocationSyntax.Update(
                 expression
                     .WithName(newNameSyntax)
-                    .WithExpression((ExpressionSyntax)Visit(expression.Expression)),
-                SyntaxFactory.ParseArgumentList($"(\"{genericTypeNode.ToFullString()}\")")
+                    .WithExpression((ExpressionSyntax)base.Visit(expression.Expression)),
+                SyntaxFactory.ParseArgumentList($"({typeArgs})")
                     .AddArguments(newArguments)
             );
 

@@ -63,6 +63,7 @@ $@"namespace {metaContext.Namespace} {{
     }
     [AttributeUsage(AttributeTargets.Method)]
     public sealed class RewriteGenericArgsToStringArgsAttribute : Attribute {
+        //TODO specify method to rewrite explicitly
     }
     public static class ClassGenerator {
         [RewriteGenericArgsToStringArgsAttribute]
@@ -112,8 +113,7 @@ $@"namespace {metaContext.Namespace} {{
                     var defaultValuePart = !string.IsNullOrEmpty(x.DefaultValue) ? (" = " + x.DefaultValue) : string.Empty;
                     return $"{x.Type} {x.Name.ToCamelCase()}{defaultValuePart}";
                 })
-                .InsertDelimeter(", ")
-                .ConcatStrings();
+                .ConcatStrings(", ");
 
             return
 $@"public class {name} {{
