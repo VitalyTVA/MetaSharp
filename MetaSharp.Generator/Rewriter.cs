@@ -38,10 +38,10 @@ namespace MetaSharp {
                 return base.VisitInvocationExpression(invocationSyntax);
 
             var symbol = model.GetSymbolInfo(methodNameSyntax).Symbol as IMethodSymbol;
-            if(!symbol.HasAttribute<RewriteGenericArgsToStringArgsAttribute>(model.Compilation))
+            if(symbol == null || !symbol.HasAttribute<RewriteGenericArgsToStringArgsAttribute>(model.Compilation))
                 return base.VisitInvocationExpression(invocationSyntax);
 
-            var genericTypeNodes = methodNameSyntax.TypeArgumentList.Arguments; //TODO too many generic arguments
+            var genericTypeNodes = methodNameSyntax.TypeArgumentList.Arguments;
             var expression = invocationSyntax.Expression as MemberAccessExpressionSyntax;
             var newNameSyntax = (SimpleNameSyntax)SyntaxFactory.ParseName(methodNameSyntax.Identifier.ValueText);
 

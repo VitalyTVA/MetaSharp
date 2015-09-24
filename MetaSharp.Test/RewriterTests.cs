@@ -154,7 +154,7 @@ namespace MetaSharp.HelloWorld {
             AssertCompiles(input, additionalClasses);
         }
         [Fact]
-        public void MissingTypeArguments() {
+        public void MissingTypeArguments_TooManyTypeArguments() {
             var input = @"
 namespace MetaSharp.HelloWorld {
     using System;
@@ -169,12 +169,16 @@ namespace MetaSharp.HelloWorld {
             }
         }
         public static string MakeFoo(MetaContext context) {
-             return ClassGenerator.Rewriteable<>() ;
+             return ClassGenerator.Rewriteable<>() + ClassGenerator.Rewriteable<string, int>();
         }
     }
 }
 ";
-            AssertSingleFileErrors(input, errors => AssertError(errors.Single(), SingleInputFileName, "CS0305"));
+            AssertSingleFileErrors(input, errors => {
+                Assert.Collection(errors,
+                    error => AssertError(error, SingleInputFileName, "CS0305"),
+                    error => AssertError(error, SingleInputFileName, "CS0305"));
+            });
         }
 
         //        [Fact]
