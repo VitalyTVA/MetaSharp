@@ -153,6 +153,29 @@ namespace MetaSharp.HelloWorld {
             AssertSingleFileOutput(input, output);
             AssertCompiles(input, additionalClasses);
         }
+        [Fact]
+        public void MissingTypeArguments() {
+            var input = @"
+namespace MetaSharp.HelloWorld {
+    using System;
+    public static class HelloWorldGenerator {
+        public class ClassGenerator {
+            [RewriteGenericArgsToStringArgs]
+            public static string Rewriteable<T>() {
+                throw new NotImplementedException();
+            }
+            public static string Rewriteable(string t) {
+                throw new NotImplementedException();
+            }
+        }
+        public static string MakeFoo(MetaContext context) {
+             return ClassGenerator.Rewriteable<>() ;
+        }
+    }
+}
+";
+            AssertSingleFileErrors(input, errors => AssertError(errors.Single(), SingleInputFileName, "CS0305"));
+        }
 
         //        [Fact]
         //        public void SandBox_______________________() {
