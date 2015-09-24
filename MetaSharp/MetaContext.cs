@@ -66,7 +66,7 @@ $@"namespace {metaContext.Namespace} {{
         //TODO specify method to rewrite explicitly
     }
     public static class ClassGenerator {
-        [RewriteGenericArgsToStringArgsAttribute]
+        [RewriteGenericArgsToStringArgs]
         public static ClassGenerator<T> Class<T>() {
             throw new NotImplementedException();
         }
@@ -74,7 +74,7 @@ $@"namespace {metaContext.Namespace} {{
             => new ClassGenerator_(name);
     }
     public class ClassGenerator<T> {
-        [RewriteGenericArgsToStringArgsAttribute]
+        [RewriteGenericArgsToStringArgs]
         public ClassGenerator<T> Property<TProperty>(Expression<Func<T, TProperty>> property, TProperty defaultValue = default(TProperty)) {
             throw new NotImplementedException();
         }
