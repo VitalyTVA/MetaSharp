@@ -41,7 +41,7 @@ namespace MetaSharp {
             var expression = invocationSyntax.Expression as MemberAccessExpressionSyntax;
 
 
-            var newNameSyntax = (SimpleNameSyntax)SyntaxFactory.ParseName(methodNameSyntax.Identifier.ValueText + "_");
+            var newNameSyntax = (SimpleNameSyntax)SyntaxFactory.ParseName(methodNameSyntax.Identifier.ValueText);
             var newArguments = ((ArgumentListSyntax)VisitArgumentList(invocationSyntax.ArgumentList)).Arguments.ToArray();
             var newInvocationSyntax = invocationSyntax.Update(
                 expression

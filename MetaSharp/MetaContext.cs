@@ -61,15 +61,19 @@ $@"namespace {metaContext.Namespace} {{
         public string DllName { get; private set; }
         public RelativeLocation RelativeLocation { get; private set; }
     }
-
+    [AttributeUsage(AttributeTargets.Method)]
+    public sealed class MetaRewriteTypeArgsToStringArgs : Attribute {
+    }
     public static class ClassGenerator {
+        [MetaRewriteTypeArgsToStringArgs]
         public static ClassGenerator<T> Class<T>() {
             throw new NotImplementedException();
         }
-        public static ClassGenerator_ Class_(string name)
+        public static ClassGenerator_ Class(string name)
             => new ClassGenerator_(name);
     }
     public class ClassGenerator<T> {
+        [MetaRewriteTypeArgsToStringArgs]
         public ClassGenerator<T> Property<TProperty>(Expression<Func<T, TProperty>> property, TProperty defaultValue = default(TProperty)) {
             throw new NotImplementedException();
         }
@@ -93,7 +97,7 @@ $@"namespace {metaContext.Namespace} {{
             this.name = name;
             this.properties = new List<PropertyInfo>();
         }
-        public ClassGenerator_ Property_(string propertyType, string propertyName, string defaultValue = null) {
+        public ClassGenerator_ Property(string propertyType, string propertyName, string defaultValue = null) {
             properties.Add(new PropertyInfo(propertyType, propertyName, defaultValue));
             return this;
         }
