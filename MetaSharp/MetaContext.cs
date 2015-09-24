@@ -75,7 +75,7 @@ $@"namespace {metaContext.Namespace} {{
     }
     public class ClassGenerator<T> {
         [RewriteGenericArgsToStringArgs]
-        public ClassGenerator<T> Property<TProperty>(Expression<Func<T, TProperty>> property, TProperty defaultValue = default(TProperty)) {
+        public ClassGenerator<T> Property<TProperty>(Func<T, TProperty> property, TProperty defaultValue = default(TProperty)) {
             throw new NotImplementedException();
         }
         public string Generate() {
