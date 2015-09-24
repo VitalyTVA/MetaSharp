@@ -31,14 +31,18 @@ namespace MetaSharp {
             this.model = model;
         }
 
+        bool IsRewritableMethod(GenericNameSyntax methodNameSyntax) {
+            var symbol = model.GetSymbolInfo(methodNameSyntax).Symbol as IMethodSymbol;
+            return symbol != null && symbol.HasAttribute<MetaRewriteAttribute>(model.Compilation);
+        }
+
         public override SyntaxNode VisitInvocationExpression(InvocationExpressionSyntax invocationSyntax) {
 
             var methodNameSyntax = (invocationSyntax.Expression as MemberAccessExpressionSyntax).Name as GenericNameSyntax;
             if(methodNameSyntax == null)
                 return base.VisitInvocationExpression(invocationSyntax);
 
-            var symbol = model.GetSymbolInfo(methodNameSyntax).Symbol as IMethodSymbol;
-            if(symbol == null || !symbol.HasAttribute<MetaRewriteAttribute>(model.Compilation))
+            if(!IsRewritableMethod(methodNameSyntax))
                 return base.VisitInvocationExpression(invocationSyntax);
 
             var genericTypeNodes = methodNameSyntax.TypeArgumentList.Arguments;
@@ -70,7 +74,8 @@ namespace MetaSharp {
             if(invocationSyntax == null)
                 return base.VisitArgument(node);
             var methodNameSyntax = (invocationSyntax.Expression as MemberAccessExpressionSyntax).Name as GenericNameSyntax;
-            if(methodNameSyntax == null || methodNameSyntax.Identifier.ValueText != "Property")
+            //TODO rewrite non generic names if attribute specified
+            if(methodNameSyntax == null || !IsRewritableMethod(methodNameSyntax))
                 return base.VisitArgument(node);
 
             var lambda = node.Expression as LambdaExpressionSyntax;

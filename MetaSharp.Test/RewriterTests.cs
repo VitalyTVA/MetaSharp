@@ -123,11 +123,11 @@ namespace MetaSharp.HelloWorld {
             public static ClassGenerator Class<T>() {
                 return new ClassGenerator();
             }
-            public ClassGenerator Property<T>() {
+            public ClassGenerator Property<T>(int number) {
                 return this;
             }
-            public string Generate() {
-                return ""I am not rewritten!"";
+            public string Generate(string text) {
+                return ""I am not "" + text + ""!"";
             }
             [MetaRewrite]
             public static string TwoGenericArgs<T1, T2>() {
@@ -138,7 +138,8 @@ namespace MetaSharp.HelloWorld {
             }
         }
         public static string MakeFoo(MetaContext context) {
-             return ClassGenerator.Class<string>().Property<int>().Generate()
+            var text = ""rewritten"";
+            return ClassGenerator.Class<string>().Property<int>(42).Generate(text)
                 + "" "" + ClassGenerator.TwoGenericArgs<Boo, Moo>() ;
         }
     }
