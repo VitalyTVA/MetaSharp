@@ -28,6 +28,7 @@ namespace MetaSharp {
     //TODO use SourceReferenceResolver?
     //TODO option to insert delimeters between output from different classes and methods
     //TODO debugging
+    //TODO save rewritten files to disk to show errors from them and for debugging
     //TODO return ClassGenerator and other generators directly from methods
 
     //TODO recursive includes and references
@@ -36,9 +37,9 @@ namespace MetaSharp {
 
     //TODO ADT, immutable objects, DProps, ViewModels, MonadTransfomers, Templates, Localization, Aspects, Pattern Matching (+for enums), POCO
     //TODO binary output - drawing images??
-	
-	//TODO single usage extension + diagnostic, Unit<T> + only Unit diagnostic
-	//TODO diagnostic - always name parameters with same type, always name default parameters, specify named parameters in correct order etc.
+
+    //TODO single usage extension + diagnostic, Unit<T> + only Unit diagnostic
+    //TODO diagnostic - always name parameters with same type, always name default parameters, specify named parameters in correct order etc.
     public static class Generator {
         class MethodId {
             public readonly string Name, Type;
