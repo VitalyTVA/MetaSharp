@@ -332,11 +332,20 @@ namespace MetaSharp {
             return method.Locations.Single();
         }
         public static IEnumerable<ImmutableArray<object>> GetAttributeValues<T>(this CSharpCompilation compilation) where T : Attribute {
-            var attributeSymbol = compilation.GetTypeByMetadataName(typeof(T).FullName);
+            var attributeSymbol = compilation.GetType<T>();
             return compilation.Assembly.GetAttributes()
                 .Where(attribute => attribute.AttributeClass == attributeSymbol)
                 .Select(attribute => attribute.ConstructorArguments.Select(x => x.Value).ToImmutableArray());
         }
+        public static bool HasAttribute<T>(this ISymbol symbol, Compilation compilation) where T : Attribute {
+            var attributeSymbol = compilation.GetType<T>();
+            return symbol.GetAttributes().Any(x => x.AttributeClass == attributeSymbol);
+        }
+
+        public static INamedTypeSymbol GetType<T>(this Compilation compilation) {
+            return compilation.GetTypeByMetadataName(typeof(T).FullName);
+        }
+
         public static IEnumerable<Diagnostic> GetErrors(this CSharpCompilation compilation) {
             return compilation.GetDiagnostics().Where(x => x.Severity == DiagnosticSeverity.Error);
         }

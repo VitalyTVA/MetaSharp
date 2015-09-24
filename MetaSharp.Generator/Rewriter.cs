@@ -34,14 +34,17 @@ namespace MetaSharp {
         public override SyntaxNode VisitInvocationExpression(InvocationExpressionSyntax invocationSyntax) {
 
             var methodNameSyntax = (invocationSyntax.Expression as MemberAccessExpressionSyntax).Name as GenericNameSyntax;
-            //TODO check semantic if methodNameSyntax
             if(methodNameSyntax == null)
                 return base.VisitInvocationExpression(invocationSyntax);
+
+            var symbol = model.GetSymbolInfo(methodNameSyntax).Symbol as IMethodSymbol;
+            if(!symbol.HasAttribute<RewriteGenericArgsToStringArgsAttribute>(model.Compilation))
+                return base.VisitInvocationExpression(invocationSyntax);
+
             var genericTypeNode = methodNameSyntax.TypeArgumentList.Arguments.Single(); //TODO multiple or missed generic arguments
             var expression = invocationSyntax.Expression as MemberAccessExpressionSyntax;
-
-
             var newNameSyntax = (SimpleNameSyntax)SyntaxFactory.ParseName(methodNameSyntax.Identifier.ValueText);
+
             var newArguments = ((ArgumentListSyntax)VisitArgumentList(invocationSyntax.ArgumentList)).Arguments.ToArray();
             var newInvocationSyntax = invocationSyntax.Update(
                 expression
@@ -53,15 +56,7 @@ namespace MetaSharp {
 
             //TODO type name is alias (using Foo = Bla.Bla.Doo);
             //TODO check syntax errors before rewriting anything
-            //TODO multiple errors in one file
             //TODO rewrite explicit generator type (ClassGenerator g = ...; g.Property ...)
-
-            //var model = compilation.GetSemanticModel(location.SourceTree);
-            //var symbol = model.GetSymbolInfo(methodNameSyntax).Symbol as IMethodSymbol;
-            //var dublerSymbol = symbol.ContainingType.
-            //    GetMembers()
-            //    .OfType<IMethodSymbol>()
-            //    .First(x => x.Name == "Class_");
 
             return newInvocationSyntax;
         }

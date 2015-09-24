@@ -112,35 +112,64 @@ namespace MetaSharp.HelloWorld {
             AssertSingleFileOutput(input, output);
             AssertCompiles(input, output, additionalClasses);
         }
+        [Fact]
+        public void RewriteOnlyMethodsWithAttributes() {
+            var input = @"
+namespace MetaSharp.HelloWorld {
+    using System;
+    public static class HelloWorldGenerator {
+        public class ClassGenerator {
+            [System.Runtime.InteropServices.ComVisible(true)] //mere attempt to distract rewriter
+            public static ClassGenerator Class<T>() {
+                return new ClassGenerator();
+            }
+            public ClassGenerator Property<T>() {
+                return this;
+            }
+            public string Generate() {
+                return ""I am not rewritten!"";
+            }
+        }
+        public static string MakeFoo(MetaContext context) {
+             return ClassGenerator.Class<string>()
+                .Property<int>()
+                .Generate();
+        }
+    }
+}
+";
+            string output = "I am not rewritten!";
+            AssertSingleFileOutput(input, output);
+            AssertCompiles(input);
+        }
+
+        //        [Fact]
+        //        public void SandBox_______________________() {
+        //            var input = @"
+        //using MetaSharp;
+        //namespace MetaSharp.HelloWorld {
+        //    public static class HelloWorldGenerator {
+        //        public static string MakeFoo(MetaContext context) {
+        //             var classText = ClassGenerator.Class<Foo>()
+        //                .Property<Boo>(x => x.IntProperty, default(Boo))
+        //                .Generate();
+        //            return context.WrapMembers(classText);
+        //        }
+        //    }
+        //}
+        //";
+        //            string output =
+        //@"namespace MetaSharp.HelloWorld {
 
 
-//        [Fact]
-//        public void SandBox_______________________() {
-//            var input = @"
-//using MetaSharp;
-//namespace MetaSharp.HelloWorld {
-//    public static class HelloWorldGenerator {
-//        public static string MakeFoo(MetaContext context) {
-//             var classText = ClassGenerator.Class<Foo>()
-//                .Property<Boo>(x => x.IntProperty, default(Boo))
-//                .Generate();
-//            return context.WrapMembers(classText);
-//        }
-//    }
-//}
-//";
-//            string output =
-//@"namespace MetaSharp.HelloWorld {
+        //    public class Foo {
+        //        public Boo IntProperty { get; }
+        //        public Foo(Boo intProperty = default(Boo)) {
+        //        }
+        //    }
+        //}";
 
-
-//    public class Foo {
-//        public Boo IntProperty { get; }
-//        public Foo(Boo intProperty = default(Boo)) {
-//        }
-//    }
-//}";
-
-//            AssertSingleFileOutput(input, output);
-//        }
+        //            AssertSingleFileOutput(input, output);
+        //        }
     }
 }

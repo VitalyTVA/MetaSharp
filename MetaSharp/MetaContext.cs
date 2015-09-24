@@ -62,10 +62,10 @@ $@"namespace {metaContext.Namespace} {{
         public RelativeLocation RelativeLocation { get; private set; }
     }
     [AttributeUsage(AttributeTargets.Method)]
-    public sealed class MetaRewriteTypeArgsToStringArgs : Attribute {
+    public sealed class RewriteGenericArgsToStringArgsAttribute : Attribute {
     }
     public static class ClassGenerator {
-        [MetaRewriteTypeArgsToStringArgs]
+        [RewriteGenericArgsToStringArgsAttribute]
         public static ClassGenerator<T> Class<T>() {
             throw new NotImplementedException();
         }
@@ -73,7 +73,7 @@ $@"namespace {metaContext.Namespace} {{
             => new ClassGenerator_(name);
     }
     public class ClassGenerator<T> {
-        [MetaRewriteTypeArgsToStringArgs]
+        [RewriteGenericArgsToStringArgsAttribute]
         public ClassGenerator<T> Property<TProperty>(Expression<Func<T, TProperty>> property, TProperty defaultValue = default(TProperty)) {
             throw new NotImplementedException();
         }
