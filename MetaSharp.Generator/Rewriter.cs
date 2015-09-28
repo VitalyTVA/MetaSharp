@@ -31,14 +31,9 @@ namespace MetaSharp {
             this.model = model;
         }
 
-        RewriteTypeArgMode? GetMethodRewriteMode(NameSyntax methodNameSyntax) {
+        bool IsRewritableMethod(NameSyntax methodNameSyntax) {
             var symbol = model.GetSymbolInfo(methodNameSyntax).Symbol as IMethodSymbol;
-            if(symbol == null)
-                return null;
-            var values = symbol.GetAttributeValues<MetaRewriteTypeArgsAttribute>(model.Compilation);
-            if(!values.Any())
-                return null;
-            return (RewriteTypeArgMode)values.Single().Single();
+            return symbol != null && symbol.HasAttribute<MetaRewriteTypeArgsAttribute>(model.Compilation);
         }
 
         public override SyntaxNode VisitInvocationExpression(InvocationExpressionSyntax invocationSyntax) {
@@ -47,8 +42,7 @@ namespace MetaSharp {
             if(methodNameSyntax == null)
                 return base.VisitInvocationExpression(invocationSyntax);
 
-            var rewriteMode = GetMethodRewriteMode(methodNameSyntax);
-            if(rewriteMode == null)
+            if(!IsRewritableMethod(methodNameSyntax))
                 return base.VisitInvocationExpression(invocationSyntax);
 
             var genericTypeNodes = methodNameSyntax.TypeArgumentList.Arguments;
@@ -60,10 +54,6 @@ namespace MetaSharp {
                 return base.VisitInvocationExpression(invocationSyntax);
             var typeArgs = genericTypeNodes
                 .Select(x => "\"" + x.ToFullString() + "\"")
-                //.Select(x => {
-                //    var type = (ITypeSymbol)model.GetSymbolInfo(x).Symbol;
-                //    return "\"" + (rewriteMode.Value == RewriteTypeArgMode.FullName ? type.ContainingNamespace + "." : string.Empty) + type.Name + "\"";
-                //})
                 .ConcatStrings(", ");
             var newInvocationSyntax = invocationSyntax.Update(
                 expression

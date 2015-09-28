@@ -61,17 +61,10 @@ $@"namespace {metaContext.Namespace} {{
         public string DllName { get; private set; }
         public RelativeLocation RelativeLocation { get; private set; }
     }
-    public enum RewriteTypeArgMode {
-        Name//, FullName
-    }
     [AttributeUsage(AttributeTargets.Method)]
     public sealed class MetaRewriteTypeArgsAttribute : Attribute {
-        public RewriteTypeArgMode Mode { get; }
-        public MetaRewriteTypeArgsAttribute(RewriteTypeArgMode mode = RewriteTypeArgMode.Name) {
-
-        }
-        //TODO skip to rewrite some attributes
         //TODO specify method to rewrite explicitly
+        //TODO apply to classes, not only methods
     }
     [AttributeUsage(AttributeTargets.Parameter)]
     public sealed class MetaRewriteLambdaParamAttribute : Attribute {

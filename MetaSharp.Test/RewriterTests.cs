@@ -142,21 +142,12 @@ namespace MetaSharp.HelloWorld {
             public static string NoGenericArgs(string val) {
                 return val;
             }
-            /*[MetaRewriteTypeArgs(RewriteTypeArgMode.FullName)]
-            public static string RewriteFullName<T>() {
-                throw new NotImplementedException();
-            }
-            public static string RewriteFullName(string t) {
-                return t;
-            }*/
         }
         public static string MakeFoo(MetaContext context) {
             var text = ""rewritten"";
             return ClassGenerator.Class<string>().Property<int>(42).Generate(text)
                 + "" "" + ClassGenerator.TwoGenericArgs<Boo, Moo>(x => x.BooProp, x => x.MooProp, 42) 
-                + "" "" + ClassGenerator.NoGenericArgs(x => x.Length)
-                //+ "" "" + ClassGenerator.RewriteFullName<Boo>()
-                ;
+                + "" "" + ClassGenerator.NoGenericArgs(x => x.Length);
         }
     }
 }
@@ -170,7 +161,7 @@ namespace MetaSharp.HelloWorld {
         public int MooProp { get; set; }
     }
 }";
-            string output = "I am not rewritten! Boo Moo BooProp x => x.MooProp 42 x => x.Length"; //MetaSharp.HelloWorld.Boo";
+            string output = "I am not rewritten! Boo Moo BooProp x => x.MooProp 42 x => x.Length";
             AssertSingleFileOutput(input, output);
             AssertCompiles(input, additionalClasses);
         }
