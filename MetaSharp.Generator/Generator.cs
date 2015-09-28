@@ -98,11 +98,10 @@ namespace MetaSharp {
                     assemblyIdentityComparer: DesktopAssemblyIdentityComparer.Default
                 ),
                 syntaxTrees: trees.Keys
-            )
-            .AddFiles<MetaIncludeAttribute>(environment)
-            .AddMetaReferences(environment.BuildConstants);
-
-            var compilationWithPrototypes = compilation.AddFiles<MetaProtoAttribute>(environment);
+            );
+            compilation = compilation
+                .AddSyntaxTrees(compilation.GetFiles<MetaIncludeAttribute>(environment).Keys)
+                .AddMetaReferences(environment.BuildConstants);
 
             var replacements = Rewriter.GetReplacements(compilation, trees.Keys);
             replacements
@@ -112,6 +111,8 @@ namespace MetaSharp {
                     var oldFile = trees[tree];
                     trees = trees.Remove(tree).Add(replacement.New, oldFile);
                 });
+
+            var completions = Completer.GetCompletions(compilation, environment);
 
             var errors = compilation.GetErrors()
                 .Select(error => {
@@ -178,11 +179,11 @@ namespace MetaSharp {
             return new GeneratorResult(outputFiles, ImmutableArray<GeneratorError>.Empty);
         }
 
-        static CSharpCompilation AddFiles<T>(this CSharpCompilation compilation, Environment environment) where T : Attribute {
-            var includes = compilation
+        internal static ImmutableDictionary<SyntaxTree, string> GetFiles<T>(this CSharpCompilation compilation, Environment environment) where T : Attribute {
+            return compilation
                 .GetAttributeValues<T>()
-                .Select(values => ParseFile(environment, (string)values.Single()));
-            return compilation.AddSyntaxTrees(includes);
+                .Select(x => (string)x.Single())
+                .ToImmutableDictionary(x => ParseFile(environment, x), x => x);
         }
         static CSharpCompilation AddMetaReferences(this CSharpCompilation compilation, BuildConstants buildConsants) {
             var references = compilation

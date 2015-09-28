@@ -10,6 +10,13 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace MetaSharp {
+    public static class Completer {
+        public static ImmutableArray<TreeReplacement> GetCompletions(CSharpCompilation compilation, Environment environment) {
+            var prototypes = compilation.GetFiles<MetaProtoAttribute>(environment);
+            var compilationWithPrototypes = compilation.AddSyntaxTrees();
+            return ImmutableArray<TreeReplacement>.Empty;
+        }
+    }
     public static class Rewriter {
         public static ImmutableArray<TreeReplacement> GetReplacements(CSharpCompilation compilation, IEnumerable<SyntaxTree> trees) {
             //TODO remove trees argument (need add included files to trees dictionary in generator and rewrite code in them as well)
@@ -111,15 +118,6 @@ namespace MetaSharp {
     public struct TreeReplacement {
         public readonly SyntaxTree Old, New;
         public TreeReplacement(SyntaxTree old, SyntaxTree @new) {
-            Old = old;
-            New = @new;
-        }
-    }
-    public struct SyntaxtReplacement {
-        public readonly SyntaxTree Tree;
-        public readonly SyntaxNode Old, New;
-        public SyntaxtReplacement(SyntaxTree tree, SyntaxNode old, SyntaxNode @new) {
-            Tree = tree;
             Old = old;
             New = @new;
         }
