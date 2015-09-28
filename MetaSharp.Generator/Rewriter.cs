@@ -74,17 +74,24 @@ namespace MetaSharp {
             if(invocationSyntax == null)
                 return base.VisitArgument(node);
             var methodNameSyntax = (invocationSyntax.Expression as MemberAccessExpressionSyntax).Name as GenericNameSyntax;
-            //TODO rewrite non generic names if attribute specified
+            //TODO rewrite non generic names if attribute specified!!!!!!!!!!!!
             if(methodNameSyntax == null || !IsRewritableMethod(methodNameSyntax))
                 return base.VisitArgument(node);
 
+            var method = model.GetSymbolInfo(methodNameSyntax).Symbol as IMethodSymbol;
+            var argList = (ArgumentListSyntax)node.Parent;
+            //TODO check that parameter name preserved if specified, otherwise order can be broken
+            var argIndex = argList.Arguments.IndexOf(node);
+            var parameterSymbol = method.Parameters[argIndex];
+
             var lambda = node.Expression as LambdaExpressionSyntax;
-            if(lambda != null) {
-                //TODO check that parameter name preserved if specified, otherwise order can be broken
+            if(parameterSymbol.HasAttribute<MetaRewriteLambdaAttribute>(model.Compilation) && lambda != null) {
+                //TODO error if value is not lambda
                 return node.WithExpression(VisitLambdaExpression(lambda));
             }
-            return node.WithExpression(SyntaxFactory.LiteralExpression(SyntaxKind.StringLiteralExpression, SyntaxFactory.Literal(node.Expression.ToFullString())));
-            //return base.VisitArgument(node);
+            if(parameterSymbol.HasAttribute<MetaRewriteAttribute>(model.Compilation))
+                return node.WithExpression(SyntaxFactory.LiteralExpression(SyntaxKind.StringLiteralExpression, SyntaxFactory.Literal(node.Expression.ToFullString())));
+            return base.VisitArgument(node);
         }
 
         LiteralExpressionSyntax VisitLambdaExpression(LambdaExpressionSyntax lambda) {

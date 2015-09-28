@@ -130,27 +130,31 @@ namespace MetaSharp.HelloWorld {
                 return ""I am not "" + text + ""!"";
             }
             [MetaRewrite]
-            public static string TwoGenericArgs<T1, T2>() {
+            public static string TwoGenericArgs<T1, T2>([MetaRewriteLambda] Func<T1, string> lambda1, [MetaRewrite] Func<T2, int> lambda2, int noRewrite) {
                 throw new NotImplementedException();
             }
-            public static string TwoGenericArgs(string t1, string t2) {
-                return t1 + "" "" + t2;
+            public static string TwoGenericArgs(string t1, string t2, string t1Member, string t2Lambda, int noRewrite) {
+                return t1 + "" "" + t2 + "" "" + t1Member + "" "" + t2Lambda + "" "" + noRewrite;
             }
         }
         public static string MakeFoo(MetaContext context) {
             var text = ""rewritten"";
             return ClassGenerator.Class<string>().Property<int>(42).Generate(text)
-                + "" "" + ClassGenerator.TwoGenericArgs<Boo, Moo>() ;
+                + "" "" + ClassGenerator.TwoGenericArgs<Boo, Moo>(x => x.BooProp, x => x.MooProp, 42) ;
         }
     }
 }
 ";
             string additionalClasses = @"
 namespace MetaSharp.HelloWorld {
-    public class Boo { }
-    public class Moo { }
+    public class Boo {
+        public string BooProp { get; set; }
+    }
+    public class Moo { 
+        public int MooProp { get; set; }
+    }
 }";
-            string output = "I am not rewritten! Boo Moo";
+            string output = "I am not rewritten! Boo Moo BooProp x => x.MooProp 42";
             AssertSingleFileOutput(input, output);
             AssertCompiles(input, additionalClasses);
         }

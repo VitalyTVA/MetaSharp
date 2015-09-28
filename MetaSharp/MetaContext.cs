@@ -61,8 +61,13 @@ $@"namespace {metaContext.Namespace} {{
         public string DllName { get; private set; }
         public RelativeLocation RelativeLocation { get; private set; }
     }
-    [AttributeUsage(AttributeTargets.Method)]
+    [AttributeUsage(AttributeTargets.Method | AttributeTargets.Parameter)]
     public sealed class MetaRewriteAttribute : Attribute {
+        //TODO specify method to rewrite explicitly
+        //TODO apply to classes, not only methods
+    }
+    [AttributeUsage(AttributeTargets.Parameter)]
+    public sealed class MetaRewriteLambdaAttribute : Attribute {
         //TODO specify method to rewrite explicitly
         //TODO apply to classes, not only methods
     }
@@ -76,7 +81,7 @@ $@"namespace {metaContext.Namespace} {{
     }
     public class ClassGenerator<T> {
         [MetaRewrite]
-        public ClassGenerator<T> Property<TProperty>(Func<T, TProperty> property, TProperty defaultValue = default(TProperty)) {
+        public ClassGenerator<T> Property<TProperty>([MetaRewriteLambda] Func<T, TProperty> property, [MetaRewrite] TProperty defaultValue = default(TProperty)) {
             throw new NotImplementedException();
         }
         public string Generate() {
