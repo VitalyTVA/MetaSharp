@@ -179,13 +179,13 @@ namespace MetaSharp {
 
         static CSharpCompilation AddMetaIncludes(this CSharpCompilation compilation, Environment environment) {
             var includes = compilation
-                .GetAttributeValues<MetaIncludeAttribute>()
+                .GetAssemblyAttributeValues<MetaIncludeAttribute>()
                 .Select(values => ParseFile(environment, (string)values.Single()));
             return compilation.AddSyntaxTrees(includes);
         }
         static CSharpCompilation AddMetaReferences(this CSharpCompilation compilation, BuildConstants buildConsants) {
             var references = compilation
-                .GetAttributeValues<MetaReferenceAttribute>()
+                .GetAssemblyAttributeValues<MetaReferenceAttribute>()
                 .Select(values => {
                     if(values.Length != 2)
                         throw new InvalidOperationException();
@@ -341,9 +341,12 @@ namespace MetaSharp {
         public static Location Location(this IMethodSymbol method) {
             return method.Locations.Single();
         }
-        public static IEnumerable<ImmutableArray<object>> GetAttributeValues<T>(this CSharpCompilation compilation) where T : Attribute {
+        public static IEnumerable<ImmutableArray<object>> GetAssemblyAttributeValues<T>(this Compilation compilation) where T : Attribute {
+            return compilation.Assembly.GetAttributeValues<T>(compilation);
+        }
+        public static IEnumerable<ImmutableArray<object>> GetAttributeValues<T>(this ISymbol symbol, Compilation compilation) where T : Attribute {
             var attributeSymbol = compilation.GetType<T>();
-            return compilation.Assembly.GetAttributes()
+            return symbol.GetAttributes()
                 .Where(attribute => attribute.AttributeClass == attributeSymbol)
                 .Select(attribute => attribute.ConstructorArguments.Select(x => x.Value).ToImmutableArray());
         }
