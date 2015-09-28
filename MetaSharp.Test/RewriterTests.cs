@@ -129,14 +129,14 @@ namespace MetaSharp.HelloWorld {
             public string Generate(string text) {
                 return ""I am not "" + text + ""!"";
             }
-            [MetaRewrite]
-            public static string TwoGenericArgs<T1, T2>([MetaRewriteLambda] Func<T1, string> lambda1, [MetaRewrite] Func<T2, int> lambda2, int noRewrite) {
+            [MetaRewriteTypeArgs]
+            public static string TwoGenericArgs<T1, T2>([MetaRewriteLambdaParam] Func<T1, string> lambda1, [MetaRewriteParam] Func<T2, int> lambda2, int noRewrite) {
                 throw new NotImplementedException();
             }
             public static string TwoGenericArgs(string t1, string t2, string t1Member, string t2Lambda, int noRewrite) {
                 return t1 + "" "" + t2 + "" "" + t1Member + "" "" + t2Lambda + "" "" + noRewrite;
             }
-            public static string NoGenericArgs([MetaRewrite] Func<string, int> lambda) {
+            public static string NoGenericArgs([MetaRewriteParam] Func<string, int> lambda) {
                 throw new NotImplementedException();
             }
             public static string NoGenericArgs(string val) {
@@ -172,7 +172,7 @@ namespace MetaSharp.HelloWorld {
     using System;
     public static class HelloWorldGenerator {
         public class ClassGenerator {
-            [MetaRewrite]
+            [MetaRewriteTypeArgs]
             public static string Rewriteable<T>() {
                 throw new NotImplementedException();
             }

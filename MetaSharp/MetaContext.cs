@@ -61,18 +61,19 @@ $@"namespace {metaContext.Namespace} {{
         public string DllName { get; private set; }
         public RelativeLocation RelativeLocation { get; private set; }
     }
-    [AttributeUsage(AttributeTargets.Method | AttributeTargets.Parameter)]
-    public sealed class MetaRewriteAttribute : Attribute {
+    [AttributeUsage(AttributeTargets.Method)]
+    public sealed class MetaRewriteTypeArgsAttribute : Attribute {
         //TODO specify method to rewrite explicitly
         //TODO apply to classes, not only methods
     }
     [AttributeUsage(AttributeTargets.Parameter)]
-    public sealed class MetaRewriteLambdaAttribute : Attribute {
-        //TODO specify method to rewrite explicitly
-        //TODO apply to classes, not only methods
+    public sealed class MetaRewriteLambdaParamAttribute : Attribute {
+    }
+    [AttributeUsage(AttributeTargets.Parameter)]
+    public sealed class MetaRewriteParamAttribute : Attribute {
     }
     public static class ClassGenerator {
-        [MetaRewrite]
+        [MetaRewriteTypeArgs]
         public static ClassGenerator<T> Class<T>() {
             throw new NotImplementedException();
         }
@@ -80,8 +81,8 @@ $@"namespace {metaContext.Namespace} {{
             => new ClassGenerator_(name);
     }
     public class ClassGenerator<T> {
-        [MetaRewrite]
-        public ClassGenerator<T> Property<TProperty>([MetaRewriteLambda] Func<T, TProperty> property, [MetaRewrite] TProperty defaultValue = default(TProperty)) {
+        [MetaRewriteTypeArgs]
+        public ClassGenerator<T> Property<TProperty>([MetaRewriteLambdaParam] Func<T, TProperty> property, [MetaRewriteParam] TProperty defaultValue = default(TProperty)) {
             throw new NotImplementedException();
         }
         public string Generate() {

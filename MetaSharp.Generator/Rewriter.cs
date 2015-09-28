@@ -33,7 +33,7 @@ namespace MetaSharp {
 
         bool IsRewritableMethod(NameSyntax methodNameSyntax) {
             var symbol = model.GetSymbolInfo(methodNameSyntax).Symbol as IMethodSymbol;
-            return symbol != null && symbol.HasAttribute<MetaRewriteAttribute>(model.Compilation);
+            return symbol != null && symbol.HasAttribute<MetaRewriteTypeArgsAttribute>(model.Compilation);
         }
 
         public override SyntaxNode VisitInvocationExpression(InvocationExpressionSyntax invocationSyntax) {
@@ -82,11 +82,11 @@ namespace MetaSharp {
             var parameterSymbol = method.Parameters[argIndex];
 
             var lambda = node.Expression as LambdaExpressionSyntax;
-            if(parameterSymbol.HasAttribute<MetaRewriteLambdaAttribute>(model.Compilation) && lambda != null) {
+            if(parameterSymbol.HasAttribute<MetaRewriteLambdaParamAttribute>(model.Compilation) && lambda != null) {
                 //TODO error if value is not lambda
                 return node.WithExpression(VisitLambdaExpression(lambda));
             }
-            if(parameterSymbol.HasAttribute<MetaRewriteAttribute>(model.Compilation))
+            if(parameterSymbol.HasAttribute<MetaRewriteParamAttribute>(model.Compilation))
                 return node.WithExpression(SyntaxFactory.LiteralExpression(SyntaxKind.StringLiteralExpression, SyntaxFactory.Literal(node.Expression.ToFullString())));
             return base.VisitArgument(node);
         }
