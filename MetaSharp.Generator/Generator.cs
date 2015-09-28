@@ -99,9 +99,10 @@ namespace MetaSharp {
                 ),
                 syntaxTrees: trees.Keys
             )
-            .AddMetaIncludes(environment)
+            .AddFiles<MetaIncludeAttribute>(environment)
             .AddMetaReferences(environment.BuildConstants);
 
+            var compilationWithPrototypes = compilation.AddFiles<MetaProtoAttribute>(environment);
 
             var replacements = Rewriter.GetReplacements(compilation, trees.Keys);
             replacements
@@ -177,9 +178,9 @@ namespace MetaSharp {
             return new GeneratorResult(outputFiles, ImmutableArray<GeneratorError>.Empty);
         }
 
-        static CSharpCompilation AddMetaIncludes(this CSharpCompilation compilation, Environment environment) {
+        static CSharpCompilation AddFiles<T>(this CSharpCompilation compilation, Environment environment) where T : Attribute {
             var includes = compilation
-                .GetAttributeValues<MetaIncludeAttribute>()
+                .GetAttributeValues<T>()
                 .Select(values => ParseFile(environment, (string)values.Single()));
             return compilation.AddSyntaxTrees(includes);
         }

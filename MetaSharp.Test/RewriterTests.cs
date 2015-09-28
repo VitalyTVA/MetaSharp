@@ -193,6 +193,42 @@ namespace MetaSharp.HelloWorld {
             });
         }
 
+        [Fact]
+        public void CompletePrototypeFiles() {
+            var input = @"
+using MetaSharp;
+[assembly: MetaProtoAttribute]
+";
+            string incomplete =
+@"namespace MetaSharp.HelloWorld {
+    public partial class Foo {
+        public Boo BooProperty { get; }
+        public Moo MooProperty { get; }
+        public int IntProperty { get; }
+    }
+}";
+
+            string output =
+@"namespace MetaSharp.HelloWorld {
+
+
+    partial class Foo {
+
+        public Foo(Boo booProperty, Moo mooProperty = default(Moo), int intProperty) {
+        }
+    }
+}";
+
+            var name = "IncompleteClasses.cs";
+            AssertMultipleFilesOutput(
+                ImmutableArray.Create(new TestFile(SingleInputFileName, input), new TestFile(name, incomplete)),
+                ImmutableArray.Create(
+                    new TestFile(GetOutputFileName(name), output)
+                )
+            );
+            //AssertCompiles(input, output, additionalClasses);
+        }
+
         //        [Fact]
         //        public void SandBox_______________________() {
         //            var input = @"

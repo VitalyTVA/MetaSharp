@@ -47,6 +47,14 @@ $@"namespace {metaContext.Namespace} {{
         public string FileName { get; private set; }
     }
 
+    [AttributeUsage(AttributeTargets.Assembly, AllowMultiple = true)]
+    public sealed class MetaProtoAttribute : Attribute {
+        public MetaProtoAttribute(string fileName) {
+            FileName = fileName;
+        }
+        public string FileName { get; private set; }
+    }
+
     public enum RelativeLocation {
         Project,
         TargetPath,
