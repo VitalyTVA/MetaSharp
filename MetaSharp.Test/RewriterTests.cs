@@ -136,7 +136,6 @@ namespace MetaSharp.HelloWorld {
             public static string TwoGenericArgs(string t1, string t2, string t1Member, string t2Lambda, int noRewrite) {
                 return t1 + "" "" + t2 + "" "" + t1Member + "" "" + t2Lambda + "" "" + noRewrite;
             }
-            [MetaRewrite]
             public static string NoGenericArgs([MetaRewrite] Func<string, int> lambda) {
                 throw new NotImplementedException();
             }

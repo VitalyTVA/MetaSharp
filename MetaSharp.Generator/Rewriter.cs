@@ -74,8 +74,6 @@ namespace MetaSharp {
             if(invocationSyntax == null)
                 return base.VisitArgument(node);
             var methodNameSyntax = (invocationSyntax.Expression as MemberAccessExpressionSyntax).Name as SimpleNameSyntax;
-            if(methodNameSyntax == null || !IsRewritableMethod(methodNameSyntax))
-                return base.VisitArgument(node);
 
             var method = model.GetSymbolInfo(methodNameSyntax).Symbol as IMethodSymbol;
             var argList = (ArgumentListSyntax)node.Parent;
