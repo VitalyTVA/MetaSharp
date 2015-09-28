@@ -11,10 +11,21 @@ using System.Threading.Tasks;
 
 namespace MetaSharp {
     public static class Completer {
-        public static ImmutableArray<TreeReplacement> GetCompletions(CSharpCompilation compilation, Environment environment) {
+        internal static ImmutableArray<Output> GetCompletions(CSharpCompilation compilation, Environment environment) {
             var prototypes = compilation.GetFiles<MetaProtoAttribute>(environment);
-            var compilationWithPrototypes = compilation.AddSyntaxTrees();
-            return ImmutableArray<TreeReplacement>.Empty;
+            var compilationWithPrototypes = compilation.AddSyntaxTrees(prototypes.Keys);
+            //TODO check syntax errors first
+
+            foreach(var tree in prototypes.Keys) {
+                var model = compilationWithPrototypes.GetSemanticModel(tree);
+                var classSyntaxes = tree.GetRoot().DescendantNodes(x => !(x is ClassDeclarationSyntax)).OfType<ClassDeclarationSyntax>();
+                var type = classSyntaxes.Select(x => model.GetDeclaredSymbol(x)).ToArray().Single();
+                var members = type.GetMembers();
+            }
+
+            var names = compilation.Assembly.TypeNames;
+
+            return ImmutableArray<Output>.Empty;
         }
     }
     public static class Rewriter {

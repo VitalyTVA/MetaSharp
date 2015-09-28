@@ -192,12 +192,17 @@ namespace MetaSharp.HelloWorld {
                     error => AssertError(error, SingleInputFileName, "CS0305"));
             });
         }
-
         [Fact]
         public void CompletePrototypeFiles() {
             var input = @"
 using MetaSharp;
-[assembly: MetaProtoAttribute]
+[assembly: MetaProtoAttribute(""IncompleteClasses.cs"")]
+
+namespace MetaSharp.HelloWorld {
+    public partial class NoCompletion {
+        public int IntProperty { get; }
+    }
+}
 ";
             string incomplete =
 @"namespace MetaSharp.HelloWorld {
@@ -221,9 +226,9 @@ using MetaSharp;
 
             var name = "IncompleteClasses.cs";
             AssertMultipleFilesOutput(
-                ImmutableArray.Create(new TestFile(SingleInputFileName, input), new TestFile(name, incomplete)),
+                ImmutableArray.Create(new TestFile(SingleInputFileName, input), new TestFile(name, incomplete, isInFlow: false)),
                 ImmutableArray.Create(
-                    new TestFile(GetOutputFileName(name), output)
+                    new TestFile(GetProtoOutputFileName(name), output)
                 )
             );
             //AssertCompiles(input, output, additionalClasses);
