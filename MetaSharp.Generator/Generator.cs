@@ -131,10 +131,17 @@ namespace MetaSharp {
 
             //TODO ignore nested methods
             //TODO support overloaded methods
+            var metaContextType = compilation.GetType<MetaContext>();
             var methodsMap = compilation
                 .GetSymbolsWithName(name => true, SymbolFilter.Member)
                 .Where(member => member.Kind == SymbolKind.Method && !member.IsImplicitlyDeclared)
                 .Cast<IMethodSymbol>()
+                .Where(method => {
+                    return !method.Parameters.Any() 
+                    || (method.Parameters.Length == 1 
+                        && method.Parameters.Single().Type == metaContextType
+                        && method.Parameters.Single().RefKind == RefKind.None);
+                })
                 .Where(method => trees.ContainsKey(method.Location().SourceTree) && !method.TypeParameters.Any())
                 .ToImmutableDictionary(
                     method => new MethodId(method.Name, method.ContainingType.FullName()),

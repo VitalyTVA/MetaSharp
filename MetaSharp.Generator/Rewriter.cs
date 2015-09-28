@@ -31,7 +31,7 @@ namespace MetaSharp {
             this.model = model;
         }
 
-        bool IsRewritableMethod(GenericNameSyntax methodNameSyntax) {
+        bool IsRewritableMethod(NameSyntax methodNameSyntax) {
             var symbol = model.GetSymbolInfo(methodNameSyntax).Symbol as IMethodSymbol;
             return symbol != null && symbol.HasAttribute<MetaRewriteAttribute>(model.Compilation);
         }
@@ -73,8 +73,7 @@ namespace MetaSharp {
             var invocationSyntax = node.Parent.Parent as InvocationExpressionSyntax;
             if(invocationSyntax == null)
                 return base.VisitArgument(node);
-            var methodNameSyntax = (invocationSyntax.Expression as MemberAccessExpressionSyntax).Name as GenericNameSyntax;
-            //TODO rewrite non generic names if attribute specified!!!!!!!!!!!!
+            var methodNameSyntax = (invocationSyntax.Expression as MemberAccessExpressionSyntax).Name as SimpleNameSyntax;
             if(methodNameSyntax == null || !IsRewritableMethod(methodNameSyntax))
                 return base.VisitArgument(node);
 

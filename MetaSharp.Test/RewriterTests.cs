@@ -136,11 +136,19 @@ namespace MetaSharp.HelloWorld {
             public static string TwoGenericArgs(string t1, string t2, string t1Member, string t2Lambda, int noRewrite) {
                 return t1 + "" "" + t2 + "" "" + t1Member + "" "" + t2Lambda + "" "" + noRewrite;
             }
+            [MetaRewrite]
+            public static string NoGenericArgs([MetaRewrite] Func<string, int> lambda) {
+                throw new NotImplementedException();
+            }
+            public static string NoGenericArgs(string val) {
+                return val;
+            }
         }
         public static string MakeFoo(MetaContext context) {
             var text = ""rewritten"";
             return ClassGenerator.Class<string>().Property<int>(42).Generate(text)
-                + "" "" + ClassGenerator.TwoGenericArgs<Boo, Moo>(x => x.BooProp, x => x.MooProp, 42) ;
+                + "" "" + ClassGenerator.TwoGenericArgs<Boo, Moo>(x => x.BooProp, x => x.MooProp, 42) 
+                + "" "" + ClassGenerator.NoGenericArgs(x => x.Length);
         }
     }
 }
@@ -154,7 +162,7 @@ namespace MetaSharp.HelloWorld {
         public int MooProp { get; set; }
     }
 }";
-            string output = "I am not rewritten! Boo Moo BooProp x => x.MooProp 42";
+            string output = "I am not rewritten! Boo Moo BooProp x => x.MooProp 42 x => x.Length";
             AssertSingleFileOutput(input, output);
             AssertCompiles(input, additionalClasses);
         }

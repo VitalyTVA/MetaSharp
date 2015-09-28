@@ -109,6 +109,9 @@ namespace MetaSharp.HelloWorld {
         public static string GenericFail<T>() {
              throw new NotImplementedException();
         }
+        public static string CannotSayHelloWithWrongParameters(int some) {
+             throw new NotImplementedException();
+        }
     }
 }
 ";
@@ -297,6 +300,12 @@ namespace MetaSharp.HelloWorld {
     public static class HelloWorldGenerator {
         public static string SayHello(MetaContext context) {
              return context.Usings.Count() + string.Concat(context.Usings) + ""Hello World from "" + context.Namespace;
+        }
+        public static string CannotSayHelloWithOutParameter(out MetaContext context) {
+            throw new NotImplementedException();
+        }
+        public static string CannotSayHelloWithRefParameter(ref MetaContext context) {
+            throw new NotImplementedException();
         }
     }
 }
