@@ -10,6 +10,7 @@ namespace MetaSharp.Sample {
             typeof(B).ToString();
             typeof(D2).ToString();
             typeof(D3).ToString();
+            new Incomplete(42, 117);
         }
     }
 }

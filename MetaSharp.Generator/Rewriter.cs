@@ -27,7 +27,7 @@ namespace MetaSharp {
                     new ClassGenerator_(type.Name, ClassModifiers.Partial, skipProperties: true), 
                     (acc, p) => acc.Property(p.Type.Name, p.Name) //TODO use simple type name
                 );
-                return new Output(context.WrapMembers(generator.Generate()), OutputFileName.Create(pair.Value, environment, MetaLocationKind.IntermediateOutput));
+                return new Output(context.WrapMembers(generator.Generate()), OutputFileName.Create(pair.Value, environment, MetaLocationKind.IntermediateOutput)); //TODO specify output type
                 //properties.ElementAt(0).Is
             }).ToImmutableArray();
         }
