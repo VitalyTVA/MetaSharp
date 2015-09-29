@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 
 namespace MetaSharp.Sample {
     using System;
+    [MetaCompleteClass]
     public partial class Incomplete {
         public int Foo { get; }
         public int Boo { get; }
