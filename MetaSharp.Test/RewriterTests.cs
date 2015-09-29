@@ -207,6 +207,7 @@ namespace MetaSharp.HelloWorld {
             string incomplete =
 @"namespace MetaSharp.Incomplete {
     using FooBoo;
+    using System;
     public partial class Foo {
         public Boo BooProperty { get; }
         public Moo MooProperty { get; }
@@ -217,6 +218,7 @@ namespace MetaSharp.HelloWorld {
             string output =
 @"namespace MetaSharp.Incomplete {
 using FooBoo;
+using System;
 
     partial class Foo {
 
@@ -224,7 +226,15 @@ using FooBoo;
         }
     }
 }";
-
+            string additionalClasses = @"
+namespace FooBoo {
+    public class Boo {
+        public string BooProp { get; set; }
+    }
+    public class Moo { 
+        public int MooProp { get; set; }
+    }
+}";
             var name = "IncompleteClasses.cs";
             AssertMultipleFilesOutput(
                 ImmutableArray.Create(new TestFile(SingleInputFileName, input), new TestFile(name, incomplete, isInFlow: false)),
@@ -232,7 +242,7 @@ using FooBoo;
                     new TestFile(GetProtoOutputFileName(name), output)
                 )
             );
-            //AssertCompiles(input, output, additionalClasses);
+            AssertCompiles(input, incomplete, output, additionalClasses);
         }
 
         //        [Fact]
