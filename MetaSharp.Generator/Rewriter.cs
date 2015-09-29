@@ -16,17 +16,17 @@ namespace MetaSharp {
             var compilationWithPrototypes = compilation.AddSyntaxTrees(prototypes.Keys);
             //TODO check syntax errors first
 
-            foreach(var tree in prototypes.Keys) {
+            return prototypes.Select(pair => {
+                var tree = pair.Key;
                 var model = compilationWithPrototypes.GetSemanticModel(tree);
                 var classSyntaxes = tree.GetRoot().DescendantNodes(x => !(x is ClassDeclarationSyntax)).OfType<ClassDeclarationSyntax>();
                 var type = classSyntaxes.Select(x => model.GetDeclaredSymbol(x)).ToArray().Single();
                 var properties = type.GetMembers().OfType<IPropertySymbol>();
+                var context = type.Location().CreateContext(type.ContainingNamespace.ToString());
+                var generator = properties.Aggregate(ClassGenerator.Class(type.Name), (acc, p) => acc.Property(p.Type.Name, p.Name));
+                return new Output(context.WrapMembers(generator.Generate()), OutputFileName.Create(pair.Value, environment, MetaLocationKind.IntermediateOutput));
                 //properties.ElementAt(0).Is
-            }
-
-            var names = compilation.Assembly.TypeNames;
-
-            return ImmutableArray<Output>.Empty;
+            }).ToImmutableArray();
         }
     }
     public static class Rewriter {

@@ -205,7 +205,8 @@ namespace MetaSharp.HelloWorld {
 }
 ";
             string incomplete =
-@"namespace MetaSharp.HelloWorld {
+@"namespace MetaSharp.Incomplete {
+    using FooBoo;
     public partial class Foo {
         public Boo BooProperty { get; }
         public Moo MooProperty { get; }
@@ -214,7 +215,7 @@ namespace MetaSharp.HelloWorld {
 }";
 
             string output =
-@"namespace MetaSharp.HelloWorld {
+@"namespace MetaSharp.Incomplete {
 
 
     partial class Foo {

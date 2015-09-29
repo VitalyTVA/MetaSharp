@@ -70,11 +70,11 @@ namespace MetaSharp {
             .ToImmutableArray();
         }
         const string DefaultSuffix = "meta";
-        const string CShaprFileExtension = ".cs";
+        public const string CShaprFileExtension = ".cs";
         public const string DefaultInputFileEnd = DefaultSuffix + CShaprFileExtension;
-        const string DefaultOutputFileEnd = DefaultSuffix + ".g.i" + CShaprFileExtension;
-        const string DefaultOutputFileEnd_IntellisenseInvisible = DefaultSuffix + ".g" + CShaprFileExtension;
-        const string DesignerOutputFileEnd = DefaultSuffix + ".designer" + CShaprFileExtension;
+        public const string DefaultOutputFileEnd = ".g.i" + CShaprFileExtension;
+        public const string DefaultOutputFileEnd_IntellisenseInvisible = ".g" + CShaprFileExtension;
+        public const string DesignerOutputFileEnd = ".designer" + CShaprFileExtension;
 
         const string DefaultAssemblyName = "meta.dll";
         const string NewLine = "\r\n";
@@ -112,8 +112,6 @@ namespace MetaSharp {
                     trees = trees.Remove(tree).Add(replacement.New, oldFile);
                 });
 
-            var completions = Completer.GetCompletions(compilation, environment);
-
             var errors = compilation.GetErrors()
                 .Select(error => {
                     var span = error.Location.GetLineSpan();
@@ -150,7 +148,7 @@ namespace MetaSharp {
                     method => method
                 );
 
-            var outputFiles = compiledAssembly.GetTypes()
+            var outputs = compiledAssembly.GetTypes()
                 .SelectMany(type => type.GetMethods(BindingFlags.Static | BindingFlags.Public).Where(method => !method.IsSpecialName))
                 .Where(method => methodsMap.ContainsKey(GetMethodId(method)))
                 .GroupBy(method => methodsMap[GetMethodId(method)].Location().SourceTree)
@@ -162,24 +160,25 @@ namespace MetaSharp {
                         })
                         .OrderBy(info => info.Symbol.Location().GetLineSpan().StartLinePosition)
                         .Select(info => {
-                            var context = CreateContext(info.Method.DeclaringType.Namespace, info.Symbol);
+                            var context = info.Symbol.Location().CreateContext(info.Method.DeclaringType.Namespace);
                             return new MethodContext(info.Method, context);
                         })
                         .ToImmutableArray();
-                    var outputs = GenerateOutputs(methods, trees[grouping.Key], environment);
-                    outputs.ForEach(output => environment.WriteText(output.FileName.FileName, output.Text));
-                    return outputs
-                        .Where(output => output.FileName.IncludeInOutput)
-                        .Select(output => output.FileName.FileName);
+                    return GenerateOutputs(methods, trees[grouping.Key], environment);
                 })
                 .ToImmutableArray();
+
+            var completions = Completer.GetCompletions(compilation, environment);
+
+            var outputFiles = outputs.Concat(completions)
+                .Select(output => { 
+                    environment.WriteText(output.FileName.FileName, output.Text);
+                    return output;
+                })
+                .Where(output => output.FileName.IncludeInOutput)
+                .Select(output => output.FileName.FileName)
+                .ToImmutableArray();
             return new GeneratorResult(outputFiles, ImmutableArray<GeneratorError>.Empty);
-        }
-        static MetaContext CreateContext(string @namespace, IMethodSymbol method) {
-            var location = method.Location();
-            var nodes = location.SourceTree.GetCompilationUnitRoot().DescendantNodes(location.SourceSpan);
-            var namespaces = nodes.OfType<NamespaceDeclarationSyntax>().Single(); //TODO nested namespaces
-            return new MetaContext(@namespace, namespaces.Usings.Select(x => x.ToString()).ToArray());
         }
         internal static ImmutableDictionary<SyntaxTree, string> GetFiles<T>(this CSharpCompilation compilation, Environment environment) where T : Attribute {
             return compilation
@@ -237,19 +236,7 @@ namespace MetaSharp {
             var location = method.GetCustomAttribute<MetaLocationAttribute>()?.Location
                 ?? method.DeclaringType.GetCustomAttribute<MetaLocationAttribute>()?.Location
                 ?? default(MetaLocationKind);
-            return new OutputFileName(GetOutputFileName(location, fileName, environment), location != MetaLocationKind.Designer);
-        }
-        static string GetOutputFileName(MetaLocationKind location, string fileName, Environment environment) {
-            switch(location) {
-            case MetaLocationKind.IntermediateOutput:
-                return Path.Combine(environment.BuildConstants.IntermediateOutputPath, fileName.ReplaceEnd(DefaultInputFileEnd, DefaultOutputFileEnd));
-            case MetaLocationKind.IntermediateOutputNoIntellisense:
-                return Path.Combine(environment.BuildConstants.IntermediateOutputPath, fileName.ReplaceEnd(DefaultInputFileEnd, DefaultOutputFileEnd_IntellisenseInvisible));
-            case MetaLocationKind.Designer:
-                return fileName.ReplaceEnd(DefaultInputFileEnd, DesignerOutputFileEnd);
-            default:
-                throw new InvalidOperationException();
-            }
+            return OutputFileName.Create(fileName, environment, location);
         }
         static GeneratorError ToGeneratorError(this Diagnostic error, string file, FileLinePositionSpan span) {
             return new GeneratorError(
@@ -315,10 +302,27 @@ namespace MetaSharp {
         }
     }
     class OutputFileName {
+        public static OutputFileName Create(string fileName, Environment environment, MetaLocationKind location) {
+            return new OutputFileName(GetOutputFileName(location, fileName, environment), location != MetaLocationKind.Designer);
+        }
+        static string GetOutputFileName(MetaLocationKind location, string fileName, Environment environment) {
+            switch(location) {
+            case MetaLocationKind.IntermediateOutput:
+                return Path.Combine(environment.BuildConstants.IntermediateOutputPath, fileName.ReplaceEnd(Generator.CShaprFileExtension, Generator.DefaultOutputFileEnd));
+            case MetaLocationKind.IntermediateOutputNoIntellisense:
+                return Path.Combine(environment.BuildConstants.IntermediateOutputPath, fileName.ReplaceEnd(Generator.CShaprFileExtension, Generator.DefaultOutputFileEnd_IntellisenseInvisible));
+            case MetaLocationKind.Designer:
+                return fileName.ReplaceEnd(Generator.CShaprFileExtension, Generator.DesignerOutputFileEnd);
+            default:
+                throw new InvalidOperationException();
+            }
+        }
+
+
         public readonly string FileName;
         public readonly bool IncludeInOutput;
 
-        public OutputFileName(string fileName, bool includeInOutput) {
+        OutputFileName(string fileName, bool includeInOutput) {
             FileName = fileName;
             IncludeInOutput = includeInOutput;
         }
@@ -342,7 +346,7 @@ namespace MetaSharp {
         public static string FullName(this INamedTypeSymbol type) {
             return type.ContainingNamespace + "." + type.Name;
         }
-        public static Location Location(this IMethodSymbol method) {
+        public static Location Location(this ISymbol method) {
             return method.Locations.Single();
         }
         public static IEnumerable<ImmutableArray<object>> GetAttributeValues<T>(this CSharpCompilation compilation) where T : Attribute {
@@ -368,6 +372,11 @@ namespace MetaSharp {
                 yield return node.Parent;
                 node = node.Parent;
             }
+        }
+        public static MetaContext CreateContext(this Location location, string @namespace) {
+            var nodes = location.SourceTree.GetCompilationUnitRoot().DescendantNodes(location.SourceSpan);
+            var namespaces = nodes.OfType<NamespaceDeclarationSyntax>().Single(); //TODO nested namespaces
+            return new MetaContext(@namespace, namespaces.Usings.Select(x => x.ToString()).ToArray());
         }
     }
 
