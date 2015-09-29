@@ -55,7 +55,7 @@ namespace MetaSharp.Native {
         public static string ConcatStringsWithNewLines(this IEnumerable<string> source)
             => source.ConcatStrings(Environment.NewLine);
 
-        public static string AddIndent(this string s, int indentLength) {
+        public static string AddIndent(this string s, int indentLength) {//TODO replace with add tabs
             var indent = new string(' ', indentLength);
             return s
                 .Split(Environment.NewLine.YieldToArray(), StringSplitOptions.None)

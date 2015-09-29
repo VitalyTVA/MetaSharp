@@ -40,6 +40,7 @@ namespace MetaSharp.HelloWorld {
     public class Foo {
 
         public Foo() {
+
         }
     }
 }
@@ -49,6 +50,7 @@ namespace MetaSharp.HelloWorld {
     public class Moo {
 
         public Moo() {
+
         }
     }
 }";
@@ -59,6 +61,7 @@ namespace MetaSharp.HelloWorld {
     public class Boo {
 
         public Boo() {
+
         }
     }
 }";
@@ -100,6 +103,9 @@ using System;
         public Moo MooProperty { get; }
         public int IntProperty { get; }
         public Foo(Boo booProperty, Moo mooProperty = default(Moo), int intProperty = 117) {
+            BooProperty = booProperty;
+            MooProperty = mooProperty;
+            IntProperty = intProperty;
         }
     }
 }";
@@ -233,6 +239,9 @@ using System;
     partial class Foo {
 
         public Foo(Boo booProperty, Moo mooProperty, Int32 intProperty) {
+            BooProperty = booProperty;
+            MooProperty = mooProperty;
+            IntProperty = intProperty;
         }
     }
 }
@@ -243,6 +252,7 @@ using System;
     partial class Foo2 {
 
         public Foo2(Boo booProperty) {
+            BooProperty = booProperty;
         }
     }
 }";

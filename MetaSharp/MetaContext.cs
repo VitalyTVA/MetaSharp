@@ -108,6 +108,7 @@ $@"namespace {metaContext.Namespace} {{
     public class ClassGenerator_ {
         struct PropertyInfo {
             public readonly string Type, Name, DefaultValue;
+            public string CtorParameterName => Name.ToCamelCase();
             public PropertyInfo(string type, string name, string defaultValue) {
                 Type = type;
                 Name = name;
@@ -140,14 +141,21 @@ $@"namespace {metaContext.Namespace} {{
             var arguments = properties
                 .Select(x => {
                     var defaultValuePart = !string.IsNullOrEmpty(x.DefaultValue) ? (" = " + x.DefaultValue) : string.Empty;
-                    return $"{x.Type} {x.Name.ToCamelCase()}{defaultValuePart}";
+                    return $"{x.Type} {x.CtorParameterName}{defaultValuePart}";
                 })
                 .ConcatStrings(", ");
+
+            var assignments = properties
+                .Select(x => {
+                    return $"{x.Name} = {x.CtorParameterName};";
+                })
+                .ConcatStringsWithNewLines();
 
             return
 $@"{modifiers.ToString().ToLower()} class {name} {{
 {propertiesList.AddIndent(4)}
     public {name}({arguments}) {{
+{assignments.AddIndent(8)}
     }}
 }}";
         }
