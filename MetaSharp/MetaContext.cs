@@ -55,6 +55,10 @@ $@"namespace {metaContext.Namespace} {{
         public string FileName { get; private set; }
     }
 
+    [AttributeUsage(AttributeTargets.Class)]
+    public sealed class MetaCompleteClassAttribute : Attribute {
+    }
+
     public enum RelativeLocation {
         Project,
         TargetPath,

@@ -213,6 +213,9 @@ namespace MetaSharp.HelloWorld {
         public Moo MooProperty { get; }
         public int IntProperty { get; }
     }
+    public partial class Foo2 {
+        public Boo BooProperty { get; }
+    }
 }";
 
             string output =
@@ -223,6 +226,16 @@ using System;
     partial class Foo {
 
         public Foo(Boo booProperty, Moo mooProperty, Int32 intProperty) {
+        }
+    }
+}
+namespace MetaSharp.Incomplete {
+using FooBoo;
+using System;
+
+    partial class Foo2 {
+
+        public Foo2(Boo booProperty) {
         }
     }
 }";
