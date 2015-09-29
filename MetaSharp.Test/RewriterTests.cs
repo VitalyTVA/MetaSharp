@@ -216,11 +216,11 @@ namespace MetaSharp.HelloWorld {
 
             string output =
 @"namespace MetaSharp.Incomplete {
-
+using FooBoo;
 
     partial class Foo {
 
-        public Foo(Boo booProperty, Moo mooProperty = default(Moo), int intProperty) {
+        public Foo(Boo booProperty, Moo mooProperty, Int32 intProperty) {
         }
     }
 }";

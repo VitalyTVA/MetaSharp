@@ -86,7 +86,7 @@ $@"namespace {metaContext.Namespace} {{
             throw new NotImplementedException();
         }
         public static ClassGenerator_ Class(string name)
-            => new ClassGenerator_(name);
+            => new ClassGenerator_(name, ClassModifiers.Public, false);
     }
     public class ClassGenerator<T> {
         [MetaRewriteTypeArgs]
@@ -96,6 +96,10 @@ $@"namespace {metaContext.Namespace} {{
         public string Generate() {
             throw new NotImplementedException();
         }
+    }
+    public enum ClassModifiers {
+        Public,
+        Partial,
     }
     public class ClassGenerator_ {
         struct PropertyInfo {
@@ -107,10 +111,14 @@ $@"namespace {metaContext.Namespace} {{
             }
         }
         readonly string name;
+        readonly ClassModifiers modifiers;
+        readonly bool skipProperties;
         //TODO make immutable
         readonly List<PropertyInfo> properties;
-        public ClassGenerator_(string name) {
+        public ClassGenerator_(string name, ClassModifiers modifiers, bool skipProperties) {
             this.name = name;
+            this.modifiers = modifiers;
+            this.skipProperties = skipProperties;
             this.properties = new List<PropertyInfo>();
         }
         public ClassGenerator_ Property(string propertyType, string propertyName, string defaultValue = null) {
@@ -119,9 +127,11 @@ $@"namespace {metaContext.Namespace} {{
         }
         //TODO all properties with default value should be in the end, but try preserve original order
         public string Generate() {
-            var propertiesList = properties
-                .Select(x => $"public {x.Type} {x.Name} {{ get; }}")
-                .ConcatStringsWithNewLines();
+            var propertiesList = skipProperties 
+                ? string.Empty 
+                : properties
+                    .Select(x => $"public {x.Type} {x.Name} {{ get; }}")
+                    .ConcatStringsWithNewLines();
 
             var arguments = properties
                 .Select(x => {
@@ -131,7 +141,7 @@ $@"namespace {metaContext.Namespace} {{
                 .ConcatStrings(", ");
 
             return
-$@"public class {name} {{
+$@"{modifiers.ToString().ToLower()} class {name} {{
 {propertiesList.AddIndent(4)}
     public {name}({arguments}) {{
     }}

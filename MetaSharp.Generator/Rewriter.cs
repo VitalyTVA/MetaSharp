@@ -23,7 +23,10 @@ namespace MetaSharp {
                 var type = classSyntaxes.Select(x => model.GetDeclaredSymbol(x)).ToArray().Single();
                 var properties = type.GetMembers().OfType<IPropertySymbol>();
                 var context = type.Location().CreateContext(type.ContainingNamespace.ToString());
-                var generator = properties.Aggregate(ClassGenerator.Class(type.Name), (acc, p) => acc.Property(p.Type.Name, p.Name));
+                var generator = properties.Aggregate(
+                    new ClassGenerator_(type.Name, ClassModifiers.Partial, skipProperties: true), 
+                    (acc, p) => acc.Property(p.Type.Name, p.Name) //TODO use simple type name
+                );
                 return new Output(context.WrapMembers(generator.Generate()), OutputFileName.Create(pair.Value, environment, MetaLocationKind.IntermediateOutput));
                 //properties.ElementAt(0).Is
             }).ToImmutableArray();
