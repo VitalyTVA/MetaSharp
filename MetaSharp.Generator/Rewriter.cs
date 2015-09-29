@@ -23,6 +23,7 @@ namespace MetaSharp {
                     var classSyntaxes = tree.GetRoot().DescendantNodes(x => !(x is ClassDeclarationSyntax)).OfType<ClassDeclarationSyntax>();
                     var text = classSyntaxes
                         .Select(x => model.GetDeclaredSymbol(x))
+                        .Where(x => x.HasAttribute<MetaCompleteClassAttribute>(compilationWithPrototypes))
                         .Select(type => {
                             var properties = type.GetMembers().OfType<IPropertySymbol>();
                             var context = type.Location().CreateContext(type.ContainingNamespace.ToString());

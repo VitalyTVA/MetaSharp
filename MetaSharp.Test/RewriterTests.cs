@@ -205,16 +205,23 @@ namespace MetaSharp.HelloWorld {
 }
 ";
             string incomplete =
-@"namespace MetaSharp.Incomplete {
+@"
+using MetaSharp;
+namespace MetaSharp.Incomplete {
     using FooBoo;
     using System;
+    [MetaCompleteClass]
     public partial class Foo {
         public Boo BooProperty { get; }
         public Moo MooProperty { get; }
         public int IntProperty { get; }
     }
+    [MetaCompleteClass]
     public partial class Foo2 {
         public Boo BooProperty { get; }
+    }
+    public partial class NoCompletion {
+        public int IntProperty { get; }
     }
 }";
 
