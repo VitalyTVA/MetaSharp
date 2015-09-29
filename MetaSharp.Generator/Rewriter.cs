@@ -20,7 +20,8 @@ namespace MetaSharp {
                 var model = compilationWithPrototypes.GetSemanticModel(tree);
                 var classSyntaxes = tree.GetRoot().DescendantNodes(x => !(x is ClassDeclarationSyntax)).OfType<ClassDeclarationSyntax>();
                 var type = classSyntaxes.Select(x => model.GetDeclaredSymbol(x)).ToArray().Single();
-                var members = type.GetMembers();
+                var properties = type.GetMembers().OfType<IPropertySymbol>();
+                //properties.ElementAt(0).Is
             }
 
             var names = compilation.Assembly.TypeNames;

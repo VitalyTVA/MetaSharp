@@ -162,11 +162,8 @@ namespace MetaSharp {
                         })
                         .OrderBy(info => info.Symbol.Location().GetLineSpan().StartLinePosition)
                         .Select(info => {
-                            var location = info.Symbol.Location();
-                            var nodes = location.SourceTree.GetCompilationUnitRoot().DescendantNodes(location.SourceSpan);
-                            var namespaces = nodes.OfType<NamespaceDeclarationSyntax>().Single(); //TODO nested namespaces
-                            var usings = namespaces.Usings.Select(x => x.ToString()).ToArray();
-                            return new MethodContext(info.Method, new MetaContext(info.Method.DeclaringType.Namespace, usings));
+                            var context = CreateContext(info.Method.DeclaringType.Namespace, info.Symbol);
+                            return new MethodContext(info.Method, context);
                         })
                         .ToImmutableArray();
                     var outputs = GenerateOutputs(methods, trees[grouping.Key], environment);
@@ -178,7 +175,12 @@ namespace MetaSharp {
                 .ToImmutableArray();
             return new GeneratorResult(outputFiles, ImmutableArray<GeneratorError>.Empty);
         }
-
+        static MetaContext CreateContext(string @namespace, IMethodSymbol method) {
+            var location = method.Location();
+            var nodes = location.SourceTree.GetCompilationUnitRoot().DescendantNodes(location.SourceSpan);
+            var namespaces = nodes.OfType<NamespaceDeclarationSyntax>().Single(); //TODO nested namespaces
+            return new MetaContext(@namespace, namespaces.Usings.Select(x => x.ToString()).ToArray());
+        }
         internal static ImmutableDictionary<SyntaxTree, string> GetFiles<T>(this CSharpCompilation compilation, Environment environment) where T : Attribute {
             return compilation
                 .GetAttributeValues<T>()
