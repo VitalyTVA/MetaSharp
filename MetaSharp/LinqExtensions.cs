@@ -62,5 +62,9 @@ namespace MetaSharp.Native {
                 .Select(str => string.IsNullOrEmpty(str) ? string.Empty : indent + str)
                 .ConcatStringsWithNewLines();
         }
+
+        public static string RemoveEmptyLines(this string s)
+            => s.Split(Environment.NewLine.YieldToArray(), StringSplitOptions.RemoveEmptyEntries)
+                .ConcatStringsWithNewLines();
     }
 }

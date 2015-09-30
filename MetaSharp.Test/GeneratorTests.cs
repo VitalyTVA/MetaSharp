@@ -479,10 +479,10 @@ namespace MetaSharp.HelloWorld {
             var testEnvironment = CreateEnvironment(buildConstants);
             input.ForEach(file => testEnvironment.Environment.WriteText(file.Name, file.Text));
             var result = Generator.Generate(input.Where(file => file.IsInFlow).Select(file => file.Name).ToImmutableArray(), testEnvironment.Environment);
-            AssertFiles(input, testEnvironment);
+            AssertFiles(input, testEnvironment, ignoreEmptyLines: false);
             assertion(result, testEnvironment);
         }
-        protected static void AssertMultipleFilesOutput(ImmutableArray<TestFile> input, ImmutableArray<TestFile> output, BuildConstants buildConstants = null) {
+        protected static void AssertMultipleFilesOutput(ImmutableArray<TestFile> input, ImmutableArray<TestFile> output, BuildConstants buildConstants = null, bool ignoreEmptyLines = false) {
             AssertMultipleFilesResult(input, (result, testEnvironment) => {
                 Assert.Empty(result.Errors);
                 Assert.Equal<string>(
@@ -492,7 +492,7 @@ namespace MetaSharp.HelloWorld {
                         .OrderBy(x => x), 
                     result.Files.OrderBy(x => x));
                 Assert.Equal(input.Length + output.Length, testEnvironment.FileCount);
-                AssertFiles(output, testEnvironment);
+                AssertFiles(output, testEnvironment, ignoreEmptyLines);
             }, buildConstants);
         }
         protected static void AssertMultipleFilesErrors(ImmutableArray<TestFile> input, Action<IEnumerable<GeneratorError>> assertErrors, BuildConstants buildConstants = null) {
@@ -503,8 +503,13 @@ namespace MetaSharp.HelloWorld {
                 assertErrors(result.Errors.OrderBy(x => x.File));
             }, buildConstants);
         }
-        static void AssertFiles(ImmutableArray<TestFile> files, TestEnvironment environment) {
-            files.ForEach(file => Assert.Equal(file.Text, environment.ReadText(file.Name)));
+        static void AssertFiles(ImmutableArray<TestFile> files, TestEnvironment environment, bool ignoreEmptyLines) {
+            files.ForEach(file => {
+                var actualText = environment.ReadText(file.Name);
+                if(ignoreEmptyLines)
+                    actualText = actualText.RemoveEmptyLines();
+                Assert.Equal(file.Text, actualText);
+            });
         }
 
         protected static void AssertSingleFileSimpleOutput(string input, string output) {
@@ -512,11 +517,12 @@ namespace MetaSharp.HelloWorld {
         }
         protected static string GetFullSimpleOutput(string output)
             => output;
-        protected static void AssertSingleFileOutput(string input, string output, BuildConstants buildConstants = null) {
+        protected static void AssertSingleFileOutput(string input, string output, BuildConstants buildConstants = null, bool ignoreEmptyLines = false) {
             AssertMultipleFilesOutput(
                 new TestFile(SingleInputFileName, input).YieldToImmutable(),
                 new TestFile(GetOutputFileName(SingleInputFileName), output).YieldToImmutable(),
-                buildConstants
+                buildConstants,
+                ignoreEmptyLines
             );
         }
         protected static void AssertSingleFileErrors(string input, Action<IEnumerable<GeneratorError>> assertErrors) {
