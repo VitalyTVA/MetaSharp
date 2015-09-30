@@ -12,7 +12,7 @@ namespace MetaSharp.Test {
         public void CompletePrototypeFiles() {
             var input = @"
 using MetaSharp;
-[assembly: MetaProtoAttribute(""IncompleteClasses.cs"")]
+[assembly: MetaProto(""IncompleteClasses.cs"")]
 
 namespace MetaSharp.HelloWorld {
     public partial class NoCompletion {
