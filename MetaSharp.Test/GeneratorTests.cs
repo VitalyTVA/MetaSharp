@@ -550,7 +550,7 @@ namespace MetaSharp.HelloWorld {
         protected static string GetOutputFileNameNoIntellisense(string input, string intermediateOutputPath = DefaultIntermediateOutputPath)
             => GetOutputFileNameCore(input, intermediateOutputPath, "g.cs");
 
-        protected static string GetOutputFileNameDesigner(string input, string intermediateOutputPath = DefaultIntermediateOutputPath)
+        protected static string GetOutputFileNameDesigner(string input)
             => GetOutputFileNameCore(input, string.Empty, "designer.cs");
 
         protected static BuildConstants CreateBuildConstants(string intermediateOutputPath = DefaultIntermediateOutputPath, string targetPath = DefaultTargetPath)
