@@ -544,6 +544,9 @@ namespace MetaSharp.HelloWorld {
         protected static string GetProtoOutputFileName(string input, string intermediateOutputPath = DefaultIntermediateOutputPath)
             => Path.Combine(intermediateOutputPath, input.ReplaceEnd(".cs", ".g.i.cs"));
 
+        protected static string GetProtoOutputFileNameDesigner(string input, string intermediateOutputPath = DefaultIntermediateOutputPath)
+            => input.ReplaceEnd(".cs", ".designer.cs");
+
         protected static string GetOutputFileName(string input, string intermediateOutputPath = DefaultIntermediateOutputPath)
             => GetOutputFileNameCore(input, intermediateOutputPath, "g.i.cs");
 

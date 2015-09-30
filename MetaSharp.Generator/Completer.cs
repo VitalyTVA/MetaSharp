@@ -14,7 +14,7 @@ namespace MetaSharp {
         internal static ImmutableArray<Output> GetCompletions(CSharpCompilation compilation, Environment environment) {
             var prototypes = compilation
                 .GetAttributeValues<MetaProtoAttribute, Tuple<string, MetaLocationKind>>(values => values.ToValues<string, MetaLocationKind>())
-                .Select(x => new { Input = x.Item1, Output = OutputFileName.Create(x.Item1, environment, MetaLocationKind.IntermediateOutput) })
+                .Select(x => new { Input = x.Item1, Output = OutputFileName.Create(x.Item1, environment, x.Item2) })
                 .ToImmutableDictionary(x => Generator.ParseFile(environment, x.Input), x => x.Output);
             var compilationWithPrototypes = compilation.AddSyntaxTrees(prototypes.Keys);
             //TODO check syntax errors first

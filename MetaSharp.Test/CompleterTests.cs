@@ -12,7 +12,8 @@ namespace MetaSharp.Test {
         public void CompletePrototypeFiles() {
             var input = @"
 using MetaSharp;
-[assembly: MetaProto(""IncompleteClasses.cs"")]
+[assembly: MetaProto(""IncompleteClasses1.cs"")]
+[assembly: MetaProto(""IncompleteClasses2.cs"", MetaLocationKind.Designer)]
 
 namespace MetaSharp.HelloWorld {
     public partial class NoCompletion {
@@ -20,7 +21,7 @@ namespace MetaSharp.HelloWorld {
     }
 }
 ";
-            string incomplete =
+            string incomplete1 =
 @"
 using MetaSharp;
 namespace MetaSharp.Incomplete {
@@ -40,8 +41,19 @@ namespace MetaSharp.Incomplete {
         public int IntProperty { get; }
     }
 }";
+            string incomplete2 =
+@"
+using MetaSharp;
+namespace MetaSharp.Incomplete {
+    using FooBoo;
+    using System;
+    [MetaCompleteClass]
+    public partial class Foo3 {
+        public Boo BooProperty { get; }
+    }
+}";
 
-            string output =
+            string output1 =
 @"namespace MetaSharp.Incomplete {
 using FooBoo;
 using System;
@@ -62,6 +74,16 @@ using System;
         }
     }
 }";
+            string output2 =
+@"namespace MetaSharp.Incomplete {
+using FooBoo;
+using System;
+    partial class Foo3 {
+        public Foo3(Boo booProperty) {
+            BooProperty = booProperty;
+        }
+    }
+}";
             string additionalClasses = @"
 namespace FooBoo {
     public class Boo {
@@ -71,15 +93,21 @@ namespace FooBoo {
         public int MooProp { get; set; }
     }
 }";
-            var name = "IncompleteClasses.cs";
+            var name1 = "IncompleteClasses1.cs";
+            var name2 = "IncompleteClasses2.cs";
             AssertMultipleFilesOutput(
-                ImmutableArray.Create(new TestFile(SingleInputFileName, input), new TestFile(name, incomplete, isInFlow: false)),
                 ImmutableArray.Create(
-                    new TestFile(GetProtoOutputFileName(name), output)
+                    new TestFile(SingleInputFileName, input), 
+                    new TestFile(name1, incomplete1, isInFlow: false),
+                    new TestFile(name2, incomplete2, isInFlow: false)
+                ),
+                ImmutableArray.Create(
+                    new TestFile(GetProtoOutputFileName(name1), output1),
+                    new TestFile(GetProtoOutputFileNameDesigner(name2), output2, isInFlow: false)
                 ),
                 ignoreEmptyLines: true
             );
-            AssertCompiles(input, incomplete, output, additionalClasses);
+            AssertCompiles(input, incomplete1, incomplete2, output1, output2, additionalClasses);
         }
     }
 }

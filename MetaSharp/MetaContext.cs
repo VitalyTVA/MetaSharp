@@ -51,8 +51,10 @@ $@"namespace {metaContext.Namespace} {{
     public sealed class MetaProtoAttribute : Attribute {
         public MetaProtoAttribute(string fileName, MetaLocationKind location = default(MetaLocationKind)) {
             FileName = fileName;
+            Location = location;
         }
         public string FileName { get; private set; }
+        public MetaLocationKind Location { get; private set; }
     }
 
     [AttributeUsage(AttributeTargets.Class)]
