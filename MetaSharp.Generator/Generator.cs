@@ -100,7 +100,10 @@ namespace MetaSharp {
                 syntaxTrees: trees.Keys
             );
             compilation = compilation
-                .AddSyntaxTrees(compilation.GetFiles<MetaIncludeAttribute>(environment).Keys)
+                .AddSyntaxTrees(compilation
+                    .GetAttributeValues<MetaIncludeAttribute, string>(values => values.ToValue<string>())
+                    .Select(x => ParseFile(environment, x))
+                 )
                 .AddMetaReferences(environment.BuildConstants);
 
             var replacements = Rewriter.GetReplacements(compilation, trees.Keys);
@@ -180,27 +183,19 @@ namespace MetaSharp {
                 .ToImmutableArray();
             return new GeneratorResult(outputFiles, ImmutableArray<GeneratorError>.Empty);
         }
-        internal static ImmutableDictionary<SyntaxTree, string> GetFiles<T>(this CSharpCompilation compilation, Environment environment) where T : Attribute {
-            return compilation
-                .GetAttributeValues<T>()
-                .Select(x => (string)x.Single())
-                .ToImmutableDictionary(x => ParseFile(environment, x), x => x);
-        }
         static CSharpCompilation AddMetaReferences(this CSharpCompilation compilation, BuildConstants buildConsants) {
             var references = compilation
-                .GetAttributeValues<MetaReferenceAttribute>()
+                .GetAttributeValues<MetaReferenceAttribute, Tuple<string, RelativeLocation>>(values => values.ToValues<string, RelativeLocation>())
                 .Select(values => {
-                    if(values.Length != 2)
-                        throw new InvalidOperationException();
-                    var path = (string)values[0];
-                    var location = (RelativeLocation)values[1];
+                    var path = values.Item1;
+                    var location = values.Item2;
                     var relativePath = location == RelativeLocation.Project ? string.Empty : buildConsants.TargetPath;
                     return MetadataReference.CreateFromFile(Path.Combine(relativePath, path));
                 });
             return compilation.AddReferences(references);
         }
 
-        private static SyntaxTree ParseFile(Environment environment, string x) {
+        internal static SyntaxTree ParseFile(Environment environment, string x) {
             return SyntaxFactory.ParseSyntaxTree(environment.ReadText(x), ParseOptions);
         }
 
@@ -349,11 +344,11 @@ namespace MetaSharp {
         public static Location Location(this ISymbol method) {
             return method.Locations.Single();
         }
-        public static IEnumerable<ImmutableArray<object>> GetAttributeValues<T>(this CSharpCompilation compilation) where T : Attribute {
-            var attributeSymbol = compilation.GetType<T>();
+        public static IEnumerable<TOutput> GetAttributeValues<TAttribute, TOutput>(this CSharpCompilation compilation, Func<object[], TOutput> getValue) where TAttribute : Attribute {
+            var attributeSymbol = compilation.GetType<TAttribute>();
             return compilation.Assembly.GetAttributes()
                 .Where(attribute => attribute.AttributeClass == attributeSymbol)
-                .Select(attribute => attribute.ConstructorArguments.Select(x => x.Value).ToImmutableArray());
+                .Select(attribute => getValue(attribute.ConstructorArguments.Select(x => x.Value).ToArray()));
         }
         public static bool HasAttribute<T>(this ISymbol symbol, Compilation compilation) where T : Attribute {
             var attributeSymbol = compilation.GetType<T>();

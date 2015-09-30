@@ -12,7 +12,10 @@ using System.Threading.Tasks;
 namespace MetaSharp {
     public static class Completer {
         internal static ImmutableArray<Output> GetCompletions(CSharpCompilation compilation, Environment environment) {
-            var prototypes = compilation.GetFiles<MetaProtoAttribute>(environment);
+            var prototypes = compilation
+                .GetAttributeValues<MetaProtoAttribute, Tuple<string, MetaLocationKind>>(values => values.ToValues<string, MetaLocationKind>())
+                .Select(x => new { Input = x.Item1, Output = OutputFileName.Create(x.Item1, environment, MetaLocationKind.IntermediateOutput) })
+                .ToImmutableDictionary(x => Generator.ParseFile(environment, x.Input), x => x.Output);
             var compilationWithPrototypes = compilation.AddSyntaxTrees(prototypes.Keys);
             //TODO check syntax errors first
 
@@ -33,7 +36,7 @@ namespace MetaSharp {
                             );
                             return context.WrapMembers(generator.Generate());
                         }).ConcatStringsWithNewLines();
-                    return new Output(text, OutputFileName.Create(pair.Value, environment, MetaLocationKind.IntermediateOutput)); //TODO specify output destination (g.i.cs, etc.)
+                    return new Output(text, pair.Value); //TODO specify output destination (g.i.cs, etc.)
                 })
                 .ToImmutableArray();
         }

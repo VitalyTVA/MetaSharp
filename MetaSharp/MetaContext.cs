@@ -49,7 +49,7 @@ $@"namespace {metaContext.Namespace} {{
 
     [AttributeUsage(AttributeTargets.Assembly, AllowMultiple = true)]
     public sealed class MetaProtoAttribute : Attribute {
-        public MetaProtoAttribute(string fileName) {
+        public MetaProtoAttribute(string fileName, MetaLocationKind location = default(MetaLocationKind)) {
             FileName = fileName;
         }
         public string FileName { get; private set; }

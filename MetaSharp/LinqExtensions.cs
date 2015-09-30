@@ -30,6 +30,14 @@ namespace MetaSharp.Native {
                 yield return en.Current;
             }
         }
+
+        public static T ToValue<T>(this object[] values)
+            => (T)values.Single();
+        public static Tuple<T1, T2> ToValues<T1, T2>(this object[] values) {
+            if(values.Length != 2)
+                throw new InvalidOperationException();
+            return Tuple.Create((T1)values[0], (T2)values[1]);
+        }
     }
     public static class StringExtensions {
         public static string ToCamelCase(this string s) {
