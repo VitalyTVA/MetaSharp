@@ -18,6 +18,7 @@ namespace MetaSharp {
                 .ToImmutableDictionary(x => Generator.ParseFile(environment, x.Input), x => x.Output);
             var compilationWithPrototypes = compilation.AddSyntaxTrees(prototypes.Keys);
             //TODO check syntax errors first
+            //TODO use rewriters from already compiled meta assembly
 
             return prototypes
                 .Select(pair => {
