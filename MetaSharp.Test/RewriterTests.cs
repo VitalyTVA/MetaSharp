@@ -35,33 +35,21 @@ namespace MetaSharp.HelloWorld {
 ";
             string output1 =
 @"namespace MetaSharp.HelloWorld {
-
-
     public class Foo {
-
         public Foo() {
-
         }
     }
 }
 namespace MetaSharp.HelloWorld {
-
-
     public class Moo {
-
         public Moo() {
-
         }
     }
 }";
             string output2 =
 @"namespace MetaSharp.HelloWorld {
-
-
     public class Boo {
-
         public Boo() {
-
         }
     }
 }";
@@ -72,7 +60,8 @@ namespace MetaSharp.HelloWorld {
                 ImmutableArray.Create(
                     new TestFile(GetOutputFileName(name1), output1),
                     new TestFile(GetOutputFileName(name2), output2)
-                )
+                ),
+                ignoreEmptyLines: true
             );
             AssertCompiles(input1, input2, output1, output2);
         }
