@@ -55,6 +55,9 @@
     <Compile Include="Class2.cs" />
     <Compile Include="Helper.cs" />
     <Compile Include="Incomplete.cs" />
+    <Compile Include="Incomplete.designer.cs">
+      <DependentUpon>Incomplete.cs</DependentUpon>
+    </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

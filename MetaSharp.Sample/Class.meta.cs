@@ -1,7 +1,7 @@
 ﻿using MetaSharp;
 using System.Collections.Immutable;
 
-[assembly: MetaProto("Incomplete.cs")]
+[assembly: MetaProto("Incomplete.cs", MetaLocationKind.Designer)]
 [assembly: MetaInclude("helper.cs")]
 [assembly: MetaReference(@"System.Collections.Immutable.dll", RelativeLocation.TargetPath)]
 
