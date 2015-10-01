@@ -10,11 +10,8 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace MetaSharp {
-    public interface ICompleter {
-        string Generate(SemanticModel model, INamedTypeSymbol type);
-    }
-    public class ClassCompleter : ICompleter {
-        string ICompleter.Generate(SemanticModel model, INamedTypeSymbol type) {
+    static class ClassCompleter {
+        public static string Generate(SemanticModel model, INamedTypeSymbol type) {
             var properties = type.GetMembers().OfType<IPropertySymbol>();
             var generator = properties.Aggregate(
                 new ClassGenerator_(type.Name, ClassModifiers.Partial, skipProperties: true),
@@ -26,19 +23,20 @@ namespace MetaSharp {
             return generator.Generate();
         }
     }
-    public class ViewModelCompleter : ICompleter {
-        string ICompleter.Generate(SemanticModel model, INamedTypeSymbol type) {
+    static class ViewModelCompleter {
+        public static string Generate(SemanticModel model, INamedTypeSymbol type) {
             return
 $@"partial class {type.Name} {{
 }}";
         }
     }
+    delegate string TypeCompleter(SemanticModel model, INamedTypeSymbol type);
     public static class Completer {
-        static ImmutableDictionary<Type, ICompleter> Completers;
+        static ImmutableDictionary<Type, TypeCompleter> Completers;
         static Completer() {
-            Completers = ImmutableDictionary<Type, ICompleter>.Empty
-                .Add(typeof(MetaCompleteClassAttribute), new ClassCompleter())
-                .Add(typeof(MetaCompleteViewModelAttribute), new ViewModelCompleter())
+            Completers = ImmutableDictionary<Type, TypeCompleter>.Empty
+                .Add(typeof(MetaCompleteClassAttribute), ClassCompleter.Generate)
+                .Add(typeof(MetaCompleteViewModelAttribute), ViewModelCompleter.Generate)
             ;
         }
         internal static ImmutableArray<Output> GetCompletions(CSharpCompilation compilation, Environment environment) {
@@ -74,7 +72,7 @@ $@"partial class {type.Name} {{
                         .Where(x => x.completer != null)
                         .Select(x => {
                             var context = x.type.CreateContext();
-                            var completion = x.completer.Generate(model, x.type);
+                            var completion = x.completer(model, x.type);
                             return context.WrapMembers(completion);
                         }).ConcatStringsWithNewLines();
                     return new Output(text, pair.Value);
