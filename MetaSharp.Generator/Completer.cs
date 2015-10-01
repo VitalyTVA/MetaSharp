@@ -10,54 +10,6 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace MetaSharp {
-    static class ClassCompleter {
-        public static string Generate(SemanticModel model, INamedTypeSymbol type) {
-            var properties = type.Properties();
-            var generator = properties.Aggregate(
-                new ClassGenerator_(type.Name, ClassModifiers.Partial, skipProperties: true),
-                (acc, property) => {
-                    var typeName = property.TypeDisplayString(model);
-                    return acc.Property(typeName, property.Name);
-                }
-            );
-            return generator.Generate();
-        }
-    }
-    static class ViewModelCompleter {
-//TODO auto calc dependent properties
-//TODO auto generate default private ctor if none
-//TODO error if existing ctor not private
-        public static string Generate(SemanticModel model, INamedTypeSymbol type) {
-            var properties = type.Properties()
-                .Select(p => {
-                    return 
-$@"public override {p.TypeDisplayString(model)} {p.Name} {{
-    get {{ return base.{p.Name}; }}
-    set {{
-        if(base.{p.Name} == value)
-            return;
-        base.{p.Name} = value;
-        RaisePropertyChanged(""{p.Name}"");
-    }}
-}}";
-                })
-                .ConcatStringsWithNewLines();
-            return
-//TODO what if System.ComponentModel is already in context?
-$@"using System.ComponentModel;
-partial class {type.Name} {{
-    class {type.Name}Implementation : {type.Name}, INotifyPropertyChanged {{
-{properties.AddTabs(2)}
-        public event PropertyChangedEventHandler PropertyChanged;
-        void RaisePropertyChanged(string property) {{
-            var handler = PropertyChanged;
-            if(handler != null)
-                handler(this, new PropertyChangedEventArgs(property));
-        }}
-    }}
-}}";
-        }
-    }
     delegate string TypeCompleter(SemanticModel model, INamedTypeSymbol type);
     public static class Completer {
         static ImmutableDictionary<Type, TypeCompleter> Completers;

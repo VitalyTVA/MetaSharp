@@ -37,6 +37,8 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="Completer.cs" />
+    <Compile Include="Completers\ClassCompleter.cs" />
+    <Compile Include="Completers\ViewModelCompleter.cs" />
     <Compile Include="Generator.cs" />
     <Compile Include="LinqExtensions.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -78,6 +80,7 @@
       <Name>MetaSharp</Name>
     </ProjectReference>
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
