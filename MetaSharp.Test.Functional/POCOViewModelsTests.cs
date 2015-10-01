@@ -7,6 +7,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows;
 using Xunit;
 
 namespace MetaSharp.Test.Functional {
@@ -15,14 +16,14 @@ namespace MetaSharp.Test.Functional {
         [Fact]
         public void OverridingPropertyTest() {
             var viewModel = POCOViewModel.Create();
-            //Assert.AreEqual(viewModel.GetType(), viewModel.GetType().GetProperty("Property1").DeclaringType);
+            Assert.Equal(viewModel.GetType(), viewModel.GetType().GetProperty("Property1").DeclaringType);
 
-            //CheckBindableProperty(viewModel, x => x.Property1, (vm, x) => vm.Property1 = x, "x", "y");
-            //CheckBindableProperty(viewModel, x => x.Property2, (vm, x) => vm.Property2 = x, "m", "n");
-            //CheckBindableProperty(viewModel, x => x.Property3, (vm, x) => vm.Property3 = x, "a", "b");
-            //CheckBindableProperty(viewModel, x => x.Property4, (vm, x) => vm.Property4 = x, 1, 2);
-            //CheckBindableProperty(viewModel, x => x.Property5, (vm, x) => vm.Property5 = x, new Point(1, 1), new Point(2, 2));
-            //CheckBindableProperty(viewModel, x => x.Property6, (vm, x) => vm.Property6 = x, 5, null);
+            CheckBindableProperty(viewModel, x => x.Property1, (vm, x) => vm.Property1 = x, "x", "y");
+            CheckBindableProperty(viewModel, x => x.Property2, (vm, x) => vm.Property2 = x, "m", "n");
+            CheckBindableProperty(viewModel, x => x.Property3, (vm, x) => vm.Property3 = x, "a", "b");
+            CheckBindableProperty(viewModel, x => x.Property4, (vm, x) => vm.Property4 = x, 1, 2);
+            CheckBindableProperty(viewModel, x => x.Property5, (vm, x) => vm.Property5 = x, new Point(1, 1), new Point(2, 2));
+            CheckBindableProperty(viewModel, x => x.Property6, (vm, x) => vm.Property6 = x, 5, null);
             //CheckBindableProperty(viewModel, x => x.ProtectedSetterProperty, (vm, x) => vm.ProtectedSetterProperty = x, "x", "y");
             //Assert.IsNull(viewModel.GetType().GetProperty("ProtectedSetterProperty").GetSetMethod());
 

@@ -14,6 +14,8 @@ using System.Reflection;
 using System.Text;
 
 namespace MetaSharp {
+    //TODO COLLECT USINGS FROM TOP - VS adds usings there!!!
+
     //TODO Conditional("METASHARP") attribute for all meta attributes so they do not go to final assembly
     //TODO push active configuration/compile constants (DEBUG, etc.) to meta code to make same evnironment in meta code as in main
     //TODO exceptions in generator methods
