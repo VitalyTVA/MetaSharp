@@ -181,6 +181,7 @@ namespace MetaSharp.Incomplete {
     [MetaCompleteViewModel]
     public partial class ViewModel {
         public virtual Boo BooProperty { get; set; }
+        public virtual int IntProperty { get; set; }
     }
 }";
 
@@ -188,12 +189,32 @@ namespace MetaSharp.Incomplete {
 @"namespace MetaSharp.Incomplete {
 using System;
     using System.ComponentModel;
-    partial class ViewModel : INotifyPropertyChanged {
-        public event PropertyChangedEventHandler PropertyChanged;
-        void RaisePropertyChanged(string property) {
-            var handler = PropertyChanged;
-            if(handler != null)
-                handler(this, new PropertyChangedEventArgs(property));
+    partial class ViewModel {
+        class ViewModelImplementation : ViewModel, INotifyPropertyChanged {
+            public override Boo BooProperty {
+                get { return base.BooProperty; }
+                set {
+                    if(base.BooProperty == value)
+                        return;
+                    base.BooProperty = value;
+                    RaisePropertyChanged(""BooProperty"");
+                }
+            }
+            public override int IntProperty {
+                get { return base.IntProperty; }
+                set {
+                    if(base.IntProperty == value)
+                        return;
+                    base.IntProperty = value;
+                    RaisePropertyChanged(""IntProperty"");
+                }
+            }
+            public event PropertyChangedEventHandler PropertyChanged;
+            void RaisePropertyChanged(string property) {
+                var handler = PropertyChanged;
+                if(handler != null)
+                    handler(this, new PropertyChangedEventArgs(property));
+            }
         }
     }
 }";

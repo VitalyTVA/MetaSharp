@@ -378,6 +378,12 @@ namespace MetaSharp {
         public static MetaContext CreateContext(this INamedTypeSymbol type) {
             return type.Location().CreateContext(type.ContainingNamespace.ToString());
         }
+        public static string TypeDisplayString(this IPropertySymbol property, SemanticModel model) {
+            return property.Type.ToMinimalDisplayString(model, property.Location().SourceSpan.Start, SymbolDisplayFormat.FullyQualifiedFormat);
+        }
+        public static IEnumerable<IPropertySymbol> Properties(this INamedTypeSymbol type) {
+            return type.GetMembers().OfType<IPropertySymbol>();
+        }
     }
 
     public class GeneratorResult {

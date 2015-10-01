@@ -22,7 +22,7 @@ namespace MetaSharp {
 $@"namespace {metaContext.Namespace} {{
 {usings}
 
-{members.AddIndent(4)}
+{members.AddTabs(1)}
 }}";
         }
     }
@@ -159,9 +159,9 @@ $@"namespace {metaContext.Namespace} {{
 
             return
 $@"{modifiers.ToString().ToLower()} class {name} {{
-{propertiesList.AddIndent(4)}
+{propertiesList.AddTabs(1)}
     public {name}({arguments}) {{
-{assignments.AddIndent(8)}
+{assignments.AddTabs(2)}
     }}
 }}";
         }

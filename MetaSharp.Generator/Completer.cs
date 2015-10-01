@@ -12,12 +12,12 @@ using System.Threading.Tasks;
 namespace MetaSharp {
     static class ClassCompleter {
         public static string Generate(SemanticModel model, INamedTypeSymbol type) {
-            var properties = type.GetMembers().OfType<IPropertySymbol>();
+            var properties = type.Properties();
             var generator = properties.Aggregate(
                 new ClassGenerator_(type.Name, ClassModifiers.Partial, skipProperties: true),
-                (acc, p) => {
-                    var typeName = p.Type.ToMinimalDisplayString(model, p.Location().SourceSpan.Start, SymbolDisplayFormat.FullyQualifiedFormat);
-                    return acc.Property(typeName, p.Name);
+                (acc, property) => {
+                    var typeName = property.TypeDisplayString(model);
+                    return acc.Property(typeName, property.Name);
                 }
             );
             return generator.Generate();
@@ -25,15 +25,32 @@ namespace MetaSharp {
     }
     static class ViewModelCompleter {
         public static string Generate(SemanticModel model, INamedTypeSymbol type) {
+            var properties = type.Properties()
+                .Select(p => {
+                    return 
+$@"public override {p.TypeDisplayString(model)} {p.Name} {{
+    get {{ return base.{p.Name}; }}
+    set {{
+        if(base.{p.Name} == value)
+            return;
+        base.{p.Name} = value;
+        RaisePropertyChanged(""{p.Name}"");
+    }}
+}}";
+                })
+                .ConcatStringsWithNewLines();
             return
 //TODO what if System.ComponentModel is already in context?
 $@"using System.ComponentModel;
-partial class {type.Name} : INotifyPropertyChanged {{
-    public event PropertyChangedEventHandler PropertyChanged;
-    void RaisePropertyChanged(string property) {{
-        var handler = PropertyChanged;
-        if(handler != null)
-            handler(this, new PropertyChangedEventArgs(property));
+partial class {type.Name} {{
+    class {type.Name}Implementation : {type.Name}, INotifyPropertyChanged {{
+{properties.AddTabs(2)}
+        public event PropertyChangedEventHandler PropertyChanged;
+        void RaisePropertyChanged(string property) {{
+            var handler = PropertyChanged;
+            if(handler != null)
+                handler(this, new PropertyChangedEventArgs(property));
+        }}
     }}
 }}";
         }
