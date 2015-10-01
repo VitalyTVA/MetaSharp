@@ -185,6 +185,9 @@ namespace MetaSharp.Incomplete {
 using System;
     using System.ComponentModel;
     partial class ViewModel {
+        public static ViewModel Create() {
+            return new ViewModelImplementation();
+        }
         class ViewModelImplementation : ViewModel, INotifyPropertyChanged {
             public override Boo BooProperty {
                 get { return base.BooProperty; }

@@ -33,6 +33,9 @@ $@"public override {p.TypeDisplayString(model)} {p.Name} {{
 //TODO what if System.ComponentModel is already in context?
 $@"using System.ComponentModel;
 partial class {type.Name} {{
+    public static {type.Name} Create() {{
+        return new {type.Name}Implementation();
+    }}
     class {type.Name}Implementation : {type.Name}, INotifyPropertyChanged {{
 {properties.AddTabs(2)}
         public event PropertyChangedEventHandler PropertyChanged;
