@@ -61,6 +61,10 @@ $@"namespace {metaContext.Namespace} {{
     public sealed class MetaCompleteClassAttribute : Attribute {
     }
 
+    [AttributeUsage(AttributeTargets.Class)]
+    public sealed class MetaCompleteViewModelAttribute : Attribute {
+    }
+
     public enum RelativeLocation {
         Project,
         TargetPath,

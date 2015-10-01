@@ -8,6 +8,7 @@ using Xunit;
 
 namespace MetaSharp.Test {
     public class CompleterTests : GeneratorTestsBase {
+        #region class
         [Fact]
         public void CompletePrototypeFiles() {
             var input = @"
@@ -97,7 +98,7 @@ namespace FooBoo {
             var name2 = "IncompleteClasses2.cs";
             AssertMultipleFilesOutput(
                 ImmutableArray.Create(
-                    new TestFile(SingleInputFileName, input), 
+                    new TestFile(SingleInputFileName, input),
                     new TestFile(name1, incomplete1, isInFlow: false),
                     new TestFile(name2, incomplete2, isInFlow: false)
                 ),
@@ -109,7 +110,6 @@ namespace FooBoo {
             );
             AssertCompiles(input, incomplete1, incomplete2, output1, output2, additionalClasses);
         }
-
         [Fact]
         public void CompletePrototypeFiles_TypeNameWithNameSpace_ShortName_Alias() {
             var input = @"
@@ -151,19 +151,63 @@ namespace FooBoo {
     public class Moo {
     }
 }";
-            var name1 = "IncompleteClasses.cs";
+            var name = "IncompleteClasses.cs";
             AssertMultipleFilesOutput(
                 ImmutableArray.Create(
                     new TestFile(SingleInputFileName, input),
-                    new TestFile(name1, incomplete, isInFlow: false)
+                    new TestFile(name, incomplete, isInFlow: false)
                 ),
                 ImmutableArray.Create(
-                    new TestFile(GetProtoOutputFileName(name1), output)
+                    new TestFile(GetProtoOutputFileName(name), output)
                 ),
                 ignoreEmptyLines: true
             );
             AssertCompiles(input, incomplete, output, additionalClasses);
         }
+        #endregion
 
+        #region view model
+        [Fact]
+        public void CompleteViewModel() {
+            var input = @"
+using MetaSharp;
+[assembly: MetaProto(""IncompleteViewModels.cs"")]
+";
+            string incomplete =
+@"
+using MetaSharp;
+namespace MetaSharp.Incomplete {
+    using System;
+    [MetaCompleteViewModel]
+    public partial class ViewModel {
+        public virtual Boo BooProperty { get; set; }
     }
+}";
+
+            string output =
+@"namespace MetaSharp.Incomplete {
+using System;
+    partial class ViewModel {
+    }
+}";
+            string additionalClasses = @"
+namespace MetaSharp.Incomplete {
+    public class Boo {
+    }
+}";
+            var name = "IncompleteViewModels.cs";
+            AssertMultipleFilesOutput(
+                ImmutableArray.Create(
+                    new TestFile(SingleInputFileName, input),
+                    new TestFile(name, incomplete, isInFlow: false)
+                ),
+                ImmutableArray.Create(
+                    new TestFile(GetProtoOutputFileName(name), output)
+                ),
+                ignoreEmptyLines: true
+            );
+            AssertCompiles(input, incomplete, output, additionalClasses);
+        }
+    }
+    #endregion
 }
