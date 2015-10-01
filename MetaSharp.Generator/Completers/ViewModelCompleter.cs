@@ -16,6 +16,7 @@ namespace MetaSharp {
         //TODO error if existing ctor not private
         public static string Generate(SemanticModel model, INamedTypeSymbol type) {
             var properties = type.Properties()
+                .Where(p => p.IsVirtual)
                 .Select(p => {
                     return
 $@"public override {p.TypeDisplayString(model)} {p.Name} {{

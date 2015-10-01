@@ -4,7 +4,7 @@ namespace MetaSharp.Test.Meta.POCO {
     [MetaCompleteViewModel]
     public partial class POCOViewModel {
         //internal string NotPublicProperty { get; set; }
-        //public string NotVirtualProperty { get; set; }
+        public string NotVirtualProperty { get; set; }
         //public virtual string ProtectedGetterProperty { protected internal get; set; }
         //public virtual string InternalSetterProperty { get; internal set; }
         string notAutoImplementedProperty;
