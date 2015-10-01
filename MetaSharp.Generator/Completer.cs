@@ -24,6 +24,9 @@ namespace MetaSharp {
         }
     }
     static class ViewModelCompleter {
+//TODO auto calc dependent properties
+//TODO auto generate default private ctor if none
+//TODO error if existing ctor not private
         public static string Generate(SemanticModel model, INamedTypeSymbol type) {
             var properties = type.Properties()
                 .Select(p => {
