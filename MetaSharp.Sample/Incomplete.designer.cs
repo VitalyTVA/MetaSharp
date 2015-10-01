@@ -14,6 +14,9 @@ namespace MetaSharp.Sample {
 
     using System.ComponentModel;
     partial class ViewModel {
+        public static ViewModel Create() {
+            return new ViewModelImplementation();
+        }
         class ViewModelImplementation : ViewModel, INotifyPropertyChanged {
             public override string BooProperty {
                 get { return base.BooProperty; }
