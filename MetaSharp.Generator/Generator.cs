@@ -375,6 +375,9 @@ namespace MetaSharp {
             var namespaces = nodes.OfType<NamespaceDeclarationSyntax>().Single(); //TODO nested namespaces
             return new MetaContext(@namespace, namespaces.Usings.Select(x => x.ToString()).ToArray());
         }
+        public static MetaContext CreateContext(this INamedTypeSymbol type) {
+            return type.Location().CreateContext(type.ContainingNamespace.ToString());
+        }
     }
 
     public class GeneratorResult {

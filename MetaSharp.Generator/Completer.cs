@@ -28,7 +28,9 @@ namespace MetaSharp {
     }
     public class ViewModelCompleter : ICompleter {
         string ICompleter.Generate(SemanticModel model, INamedTypeSymbol type) {
-            throw new NotImplementedException();
+            return
+$@"partial class {type.Name} {{
+}}";
         }
     }
     public static class Completer {
@@ -45,6 +47,10 @@ namespace MetaSharp {
                 .Select(x => new { Input = x.Item1, Output = OutputFileName.Create(x.Item1, environment, x.Item2) })
                 .ToImmutableDictionary(x => Generator.ParseFile(environment, x.Input), x => x.Output);
             var compilationWithPrototypes = compilation.AddSyntaxTrees(prototypes.Keys);
+            var symbolToTypeMap = Completers.Keys.ToImmutableDictionary(
+                type => compilationWithPrototypes.GetTypeByMetadataName(type.FullName),
+                type => type
+            );
             //TODO check syntax errors first
             //TODO use rewriters/rewriting rules from already compiled meta assembly
             //TODO generate errors if class is not partial
@@ -56,12 +62,19 @@ namespace MetaSharp {
                     var classSyntaxes = tree.GetRoot().DescendantNodes(x => !(x is ClassDeclarationSyntax)).OfType<ClassDeclarationSyntax>();
                     var text = classSyntaxes
                         .Select(x => model.GetDeclaredSymbol(x))
-                        .Where(x => x.HasAttribute<MetaCompleteClassAttribute>(compilationWithPrototypes))
                         .Select(type => {
-                            var context = type.Location().CreateContext(type.ContainingNamespace.ToString());
-
-                            var completion = Completers[typeof(MetaCompleteClassAttribute)].Generate(model, type);
-
+                            //TODO support multiple completers for single file
+                            var completer = type.GetAttributes()
+                                .Select(attributeData => symbolToTypeMap.GetValueOrDefault(attributeData.AttributeClass))
+                                .Where(attributeType => attributeType != null)
+                                .Select(attributeType => Completers[attributeType])
+                                .SingleOrDefault();
+                            return new { type, completer };
+                        })
+                        .Where(x => x.completer != null)
+                        .Select(x => {
+                            var context = x.type.CreateContext();
+                            var completion = x.completer.Generate(model, x.type);
                             return context.WrapMembers(completion);
                         }).ConcatStringsWithNewLines();
                     return new Output(text, pair.Value);
