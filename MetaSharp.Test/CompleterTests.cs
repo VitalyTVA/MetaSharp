@@ -27,7 +27,6 @@ namespace MetaSharp.HelloWorld {
 using MetaSharp;
 namespace MetaSharp.Incomplete {
     using FooBoo;
-    using System;
     [MetaCompleteClass]
     public partial class Foo {
         public Boo BooProperty { get; }
@@ -47,7 +46,6 @@ namespace MetaSharp.Incomplete {
 using MetaSharp;
 namespace MetaSharp.Incomplete {
     using FooBoo;
-    using System;
     [MetaCompleteClass]
     public partial class Foo3 {
         public Boo BooProperty { get; }
@@ -57,7 +55,6 @@ namespace MetaSharp.Incomplete {
             string output1 =
 @"namespace MetaSharp.Incomplete {
 using FooBoo;
-using System;
     partial class Foo {
         public Foo(Boo booProperty, FooBoo.Moo mooProperty, int intProperty) {
             BooProperty = booProperty;
@@ -68,7 +65,6 @@ using System;
 }
 namespace MetaSharp.Incomplete {
 using FooBoo;
-using System;
     partial class Foo2 {
         public Foo2(Boo booProperty) {
             BooProperty = booProperty;
@@ -78,7 +74,6 @@ using System;
             string output2 =
 @"namespace MetaSharp.Incomplete {
 using FooBoo;
-using System;
     partial class Foo3 {
         public Foo3(Boo booProperty) {
             BooProperty = booProperty;
