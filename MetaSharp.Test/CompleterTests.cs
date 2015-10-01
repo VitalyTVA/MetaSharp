@@ -30,7 +30,7 @@ namespace MetaSharp.Incomplete {
     [MetaCompleteClass]
     public partial class Foo {
         public Boo BooProperty { get; }
-        public Moo MooProperty { get; }
+        public FooBoo.Moo MooProperty { get; }
         public int IntProperty { get; }
     }
     [MetaCompleteClass]
@@ -58,7 +58,7 @@ namespace MetaSharp.Incomplete {
 using FooBoo;
 using System;
     partial class Foo {
-        public Foo(Boo booProperty, Moo mooProperty, Int32 intProperty) {
+        public Foo(Boo booProperty, FooBoo.Moo mooProperty, int intProperty) {
             BooProperty = booProperty;
             MooProperty = mooProperty;
             IntProperty = intProperty;
@@ -109,5 +109,54 @@ namespace FooBoo {
             );
             AssertCompiles(input, incomplete1, incomplete2, output1, output2, additionalClasses);
         }
+
+        [Fact]
+        public void CompletePrototypeFiles_TypeNameWithNameSpaceAndShortName() {
+            var input = @"
+using MetaSharp;
+[assembly: MetaProto(""IncompleteClasses.cs"")]
+";
+            string incomplete =
+@"
+using MetaSharp;
+namespace MetaSharp.Incomplete {
+    using System;
+    [MetaCompleteClass]
+    public partial class Foo {
+        public FooBoo.Boo BooProperty { get; }
+        public Int32 IntProperty { get; }
+    }
+}";
+
+            string output =
+@"namespace MetaSharp.Incomplete {
+using System;
+    partial class Foo {
+        public Foo(FooBoo.Boo booProperty, int intProperty) {
+            BooProperty = booProperty;
+            IntProperty = intProperty;
+        }
+    }
+}";
+            string additionalClasses = @"
+namespace FooBoo {
+    public class Boo {
+        public string BooProp { get; set; }
+    }
+}";
+            var name1 = "IncompleteClasses.cs";
+            AssertMultipleFilesOutput(
+                ImmutableArray.Create(
+                    new TestFile(SingleInputFileName, input),
+                    new TestFile(name1, incomplete, isInFlow: false)
+                ),
+                ImmutableArray.Create(
+                    new TestFile(GetProtoOutputFileName(name1), output)
+                ),
+                ignoreEmptyLines: true
+            );
+            AssertCompiles(input, incomplete, output, additionalClasses);
+        }
+
     }
 }

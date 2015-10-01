@@ -33,7 +33,10 @@ namespace MetaSharp {
                             var context = type.Location().CreateContext(type.ContainingNamespace.ToString());
                             var generator = properties.Aggregate(
                                 new ClassGenerator_(type.Name, ClassModifiers.Partial, skipProperties: true),
-                                (acc, p) => acc.Property(p.Type.Name, p.Name) //TODO use simple type name
+                                (acc, p) => {
+                                    var typeName = p.Type.ToMinimalDisplayString(model, p.Location().SourceSpan.Start, SymbolDisplayFormat.FullyQualifiedFormat);
+                                    return acc.Property(typeName, p.Name);
+                                }
                             );
                             return context.WrapMembers(generator.Generate());
                         }).ConcatStringsWithNewLines();
