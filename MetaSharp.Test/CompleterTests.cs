@@ -187,7 +187,9 @@ namespace MetaSharp.Incomplete {
             string output =
 @"namespace MetaSharp.Incomplete {
 using System;
-    partial class ViewModel {
+    using System.ComponentModel;
+    partial class ViewModel : INotifyPropertyChanged {
+        public event PropertyChangedEventHandler PropertyChanged;
     }
 }";
             string additionalClasses = @"

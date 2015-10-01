@@ -26,7 +26,10 @@ namespace MetaSharp {
     static class ViewModelCompleter {
         public static string Generate(SemanticModel model, INamedTypeSymbol type) {
             return
-$@"partial class {type.Name} {{
+//TODO what if System.ComponentModel is already in context?
+$@"using System.ComponentModel;
+partial class {type.Name} : INotifyPropertyChanged {{
+    public event PropertyChangedEventHandler PropertyChanged;
 }}";
         }
     }
