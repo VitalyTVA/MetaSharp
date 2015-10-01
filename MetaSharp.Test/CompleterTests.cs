@@ -111,7 +111,7 @@ namespace FooBoo {
         }
 
         [Fact]
-        public void CompletePrototypeFiles_TypeNameWithNameSpaceAndShortName() {
+        public void CompletePrototypeFiles_TypeNameWithNameSpace_ShortName_Alias() {
             var input = @"
 using MetaSharp;
 [assembly: MetaProto(""IncompleteClasses.cs"")]
@@ -121,9 +121,12 @@ using MetaSharp;
 using MetaSharp;
 namespace MetaSharp.Incomplete {
     using System;
+    using Qoo = FooBoo.Moo;
     [MetaCompleteClass]
     public partial class Foo {
         public FooBoo.Boo BooProperty { get; }
+        public Qoo QooProperty { get; }
+        public FooBoo.Moo MooProperty { get; }
         public Int32 IntProperty { get; }
     }
 }";
@@ -131,9 +134,12 @@ namespace MetaSharp.Incomplete {
             string output =
 @"namespace MetaSharp.Incomplete {
 using System;
+using Qoo = FooBoo.Moo;
     partial class Foo {
-        public Foo(FooBoo.Boo booProperty, int intProperty) {
+        public Foo(FooBoo.Boo booProperty, Qoo qooProperty, Qoo mooProperty, int intProperty) {
             BooProperty = booProperty;
+            QooProperty = qooProperty;
+            MooProperty = mooProperty;
             IntProperty = intProperty;
         }
     }
@@ -141,7 +147,8 @@ using System;
             string additionalClasses = @"
 namespace FooBoo {
     public class Boo {
-        public string BooProp { get; set; }
+    }
+    public class Moo {
     }
 }";
             var name1 = "IncompleteClasses.cs";
