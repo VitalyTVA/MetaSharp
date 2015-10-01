@@ -65,6 +65,7 @@
     <Compile Include="Meta\ImmutableObjects.meta.designer.cs">
       <DependentUpon>ImmutableObjects.meta.cs</DependentUpon>
     </Compile>
+    <Compile Include="POCOViewModelsTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

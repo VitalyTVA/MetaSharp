@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Text;
 
 namespace MetaSharp.Native {
@@ -74,5 +75,18 @@ namespace MetaSharp.Native {
         public static string RemoveEmptyLines(this string s)
             => s.Split(Environment.NewLine.YieldToArray(), StringSplitOptions.RemoveEmptyEntries)
                 .ConcatStringsWithNewLines();
+    }
+    public static class ExpressionExtensions {
+        public static string GetPropertyName<T>(Expression<Func<T>> expression) {
+            return GetPropertyNameFast(expression);
+        }
+        public static string GetPropertyNameFast(LambdaExpression expression) {
+            MemberExpression memberExpression = expression.Body as MemberExpression;
+            if(memberExpression == null) {
+                throw new ArgumentException("MemberExpression is expected in expression.Body", "expression");
+            }
+            var member = memberExpression.Member;
+            return member.Name;
+        }
     }
 }

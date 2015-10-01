@@ -6,7 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Xunit;
 
-namespace MetaSharp.Test {
+namespace MetaSharp.Test.Functional {
     public class GeneratedClassesTests {
         [Fact]
         public void SimpleImmutableObject() {
