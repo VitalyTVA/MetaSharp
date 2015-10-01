@@ -190,6 +190,11 @@ using System;
     using System.ComponentModel;
     partial class ViewModel : INotifyPropertyChanged {
         public event PropertyChangedEventHandler PropertyChanged;
+        void RaisePropertyChanged(string property) {
+            var handler = PropertyChanged;
+            if(handler != null)
+                handler(this, new PropertyChangedEventArgs(property));
+        }
     }
 }";
             string additionalClasses = @"

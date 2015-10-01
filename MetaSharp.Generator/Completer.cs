@@ -30,6 +30,11 @@ namespace MetaSharp {
 $@"using System.ComponentModel;
 partial class {type.Name} : INotifyPropertyChanged {{
     public event PropertyChangedEventHandler PropertyChanged;
+    void RaisePropertyChanged(string property) {{
+        var handler = PropertyChanged;
+        if(handler != null)
+            handler(this, new PropertyChangedEventArgs(property));
+    }}
 }}";
         }
     }
