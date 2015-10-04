@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 namespace MetaSharp.Test.Meta {
     [MetaLocation(MetaLocationKind.Designer)]
     static class ImmutableObjects {
-        public static string Do(MetaContext context) {
+        public static string Create(MetaContext context) {
             var name = ImmutableArray.Create("B").Single();
             return context.WrapMembers(
 $@"public static class {name} {{

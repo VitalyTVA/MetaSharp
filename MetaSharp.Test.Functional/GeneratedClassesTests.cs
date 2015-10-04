@@ -12,5 +12,9 @@ namespace MetaSharp.Test.Functional {
         public void SimpleImmutableObject() {
             B.Bla2();
         }
+        [Fact]
+        public void RemotelyGeneratedObject() {
+            new RemotelyGeneratedClass();
+        }
     }
 }

@@ -40,6 +40,7 @@ namespace MetaSharp {
 
     //TODO ADT, immutable objects, DProps, ViewModels, MonadTransfomers, Templates, Localization, Aspects, Pattern Matching (+for enums), 
     //TODO Wrap object in viewmodels, expose entity properties from view model as bindable
+    //TODO parsers
     //TODO binary output - drawing images??
 
     //TODO single usage extension + diagnostic, Unit<T> + only Unit diagnostic
@@ -161,7 +162,7 @@ namespace MetaSharp {
                 var fileName = metaReferences.GetValueOrDefault(name.Name);
                 return fileName != null ? Assembly.LoadFrom(fileName) : null;
             };
-            //AppDomain.CurrentDomain.AssemblyResolve += resolveHandler;
+            AppDomain.CurrentDomain.AssemblyResolve += resolveHandler;
             try {
                 var outputs = compiledAssembly.GetTypes()
                     .SelectMany(type => type.GetMethods(BindingFlags.Static | BindingFlags.Public).Where(method => !method.IsSpecialName))

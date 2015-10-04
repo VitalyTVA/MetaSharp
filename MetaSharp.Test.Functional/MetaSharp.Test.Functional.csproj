@@ -70,6 +70,10 @@
     <Compile Include="Meta\POCOViewModels.designer.cs">
       <DependentUpon>POCOViewModels.cs</DependentUpon>
     </Compile>
+    <Compile Include="Meta\RemoteGeneration.Meta.cs" />
+    <Compile Include="Meta\RemoteGeneration.Meta.designer.cs">
+      <DependentUpon>RemoteGeneration.Meta.cs</DependentUpon>
+    </Compile>
     <Compile Include="POCOViewModelsTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
@@ -77,6 +81,10 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\MetaSharp.Test\MetaSharp.Test.csproj">
+      <Project>{35326999-eec9-4a53-8f14-eea954f87f6b}</Project>
+      <Name>MetaSharp.Test</Name>
+    </ProjectReference>
     <ProjectReference Include="..\MetaSharp\MetaSharp.csproj">
       <Project>{78269216-177b-4b14-a61f-b249cb2947f0}</Project>
       <Name>MetaSharp</Name>
