@@ -103,12 +103,14 @@ namespace MetaSharp {
                 ),
                 syntaxTrees: trees.Keys
             );
+            var metaReferences = compilation.GetMetaReferences(environment.BuildConstants);
             compilation = compilation
-                .AddSyntaxTrees(compilation
-                    .GetAttributeValues<MetaIncludeAttribute, string>(values => values.ToValue<string>())
-                    .Select(x => ParseFile(environment, x))
-                 )
-                .AddMetaReferences(environment.BuildConstants);
+                .AddSyntaxTrees(
+                    compilation
+                        .GetAttributeValues<MetaIncludeAttribute, string>(values => values.ToValue<string>())
+                        .Select(x => ParseFile(environment, x))
+                )
+                .AddReferences(metaReferences.Values.Select(x => MetadataReference.CreateFromFile(x)));
 
             var replacements = Rewriter.GetReplacements(compilation, trees.Keys);
             replacements
@@ -154,49 +156,57 @@ namespace MetaSharp {
                     method => new MethodId(method.Name, method.ContainingType.FullName()),
                     method => method
                 );
+            ResolveEventHandler resolveHandler = (o, e) => {
+                var name = new AssemblyName(e.Name);
+                var fileName = metaReferences.GetValueOrDefault(name.Name);
+                return fileName != null ? Assembly.LoadFrom(fileName) : null;
+            };
+            //AppDomain.CurrentDomain.AssemblyResolve += resolveHandler;
+            try {
+                var outputs = compiledAssembly.GetTypes()
+                    .SelectMany(type => type.GetMethods(BindingFlags.Static | BindingFlags.Public).Where(method => !method.IsSpecialName))
+                    .Where(method => methodsMap.ContainsKey(GetMethodId(method)))
+                    .GroupBy(method => methodsMap[GetMethodId(method)].Location().SourceTree)
+                    .SelectMany(grouping => {
+                        var methods = grouping
+                            .Select(method => new {
+                                Method = method,
+                                Symbol = methodsMap[GetMethodId(method)]
+                            })
+                            .OrderBy(info => info.Symbol.Location().GetLineSpan().StartLinePosition)
+                            .Select(info => {
+                                var context = info.Symbol.Location().CreateContext(info.Method.DeclaringType.Namespace);
+                                return new MethodContext(info.Method, context);
+                            })
+                            .ToImmutableArray();
+                        return GenerateOutputs(methods, trees[grouping.Key], environment);
+                    })
+                    .ToImmutableArray();
 
-            var outputs = compiledAssembly.GetTypes()
-                .SelectMany(type => type.GetMethods(BindingFlags.Static | BindingFlags.Public).Where(method => !method.IsSpecialName))
-                .Where(method => methodsMap.ContainsKey(GetMethodId(method)))
-                .GroupBy(method => methodsMap[GetMethodId(method)].Location().SourceTree)
-                .SelectMany(grouping => {
-                    var methods = grouping
-                        .Select(method => new {
-                            Method = method,
-                            Symbol = methodsMap[GetMethodId(method)]
-                        })
-                        .OrderBy(info => info.Symbol.Location().GetLineSpan().StartLinePosition)
-                        .Select(info => {
-                            var context = info.Symbol.Location().CreateContext(info.Method.DeclaringType.Namespace);
-                            return new MethodContext(info.Method, context);
-                        })
-                        .ToImmutableArray();
-                    return GenerateOutputs(methods, trees[grouping.Key], environment);
-                })
-                .ToImmutableArray();
-
-            var completions = Completer.GetCompletions(compilation, environment);
-
-            var outputFiles = outputs.Concat(completions)
-                .Select(output => { 
-                    environment.WriteText(output.FileName.FileName, output.Text);
-                    return output;
-                })
-                .Where(output => output.FileName.IncludeInOutput)
-                .Select(output => output.FileName.FileName)
-                .ToImmutableArray();
-            return new GeneratorResult(outputFiles, ImmutableArray<GeneratorError>.Empty);
+                var completions = Completer.GetCompletions(compilation, environment);
+                var outputFiles = outputs.Concat(completions)
+                    .Select(output => { 
+                        environment.WriteText(output.FileName.FileName, output.Text);
+                        return output;
+                    })
+                    .Where(output => output.FileName.IncludeInOutput)
+                    .Select(output => output.FileName.FileName)
+                    .ToImmutableArray();
+                return new GeneratorResult(outputFiles, ImmutableArray<GeneratorError>.Empty);
+            } finally {
+                AppDomain.CurrentDomain.AssemblyResolve -= resolveHandler;
+            }
         }
-        static CSharpCompilation AddMetaReferences(this CSharpCompilation compilation, BuildConstants buildConsants) {
-            var references = compilation
+        static ImmutableDictionary<string, string> GetMetaReferences(this CSharpCompilation compilation, BuildConstants buildConsants) {
+            return compilation
                 .GetAttributeValues<MetaReferenceAttribute, Tuple<string, RelativeLocation>>(values => values.ToValues<string, RelativeLocation>())
                 .Select(values => {
                     var path = values.Item1;
                     var location = values.Item2;
                     var relativePath = location == RelativeLocation.Project ? string.Empty : buildConsants.TargetPath;
-                    return MetadataReference.CreateFromFile(Path.Combine(relativePath, path));
-                });
-            return compilation.AddReferences(references);
+                    return Path.Combine(relativePath, path);
+                })
+                .ToImmutableDictionary(x => Path.GetFileNameWithoutExtension(x), x => x);
         }
 
         internal static SyntaxTree ParseFile(Environment environment, string x) {
