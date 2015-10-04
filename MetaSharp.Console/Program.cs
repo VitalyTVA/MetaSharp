@@ -12,6 +12,14 @@ using System.Threading.Tasks;
 namespace MetaSharp.Console {
     public static class Program {
         public static int Main(string[] args) {
+            try {
+                return Process(args);
+            } catch(Exception e) {
+                System.Console.Error.WriteLine(e.ToString());
+                return 1; 
+            }
+        }
+        static int Process(string[] args) {
             var parser = GetParser();
             var result = parser.Parse(args);
 
