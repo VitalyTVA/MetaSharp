@@ -24,7 +24,7 @@ namespace MetaSharp.Test.Functional {
             CheckBindableProperty(viewModel, x => x.Property4, (vm, x) => vm.Property4 = x, 1, 2);
             CheckBindableProperty(viewModel, x => x.Property5, (vm, x) => vm.Property5 = x, new Point(1, 1), new Point(2, 2));
             CheckBindableProperty(viewModel, x => x.Property6, (vm, x) => vm.Property6 = x, 5, null);
-            //CheckBindableProperty(viewModel, x => x.ProtectedSetterProperty, (vm, x) => vm.ProtectedSetterProperty = x, "x", "y");
+            CheckBindableProperty(viewModel, x => x.ProtectedSetterProperty, (vm, x) => vm.SetProtectedSetterProperty(x), "x", "y");
             //Assert.IsNull(viewModel.GetType().GetProperty("ProtectedSetterProperty").GetSetMethod());
 
             CheckNotBindableProperty(viewModel, x => x.NotVirtualProperty, (vm, x) => vm.NotVirtualProperty = x, "x", "y");

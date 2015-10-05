@@ -6,7 +6,6 @@ namespace MetaSharp.Test.Meta.POCO {
         internal string NotPublicProperty { get; set; }
         public string NotVirtualProperty { get; set; }
         public virtual string ProtectedGetterProperty { protected internal get; set; }
-        //public virtual string InternalSetterProperty { get; internal set; }
         string notAutoImplementedProperty;
         public virtual string NotAutoImplementedProperty { get { return notAutoImplementedProperty; } set { notAutoImplementedProperty = value; } }
 
@@ -16,6 +15,12 @@ namespace MetaSharp.Test.Meta.POCO {
         public virtual int Property4 { get; set; }
         public virtual Point Property5 { get; set; }
         public virtual int? Property6 { get; set; }
+        public virtual string ProtectedSetterProperty { get; protected set; }
         //public virtual string ProtectedSetterProperty { get; protected internal set; }
+        //public virtual string InternalSetterProperty { get; internal set; }
+
+        internal void SetProtectedSetterProperty(string value) {
+            ProtectedSetterProperty = value;
+        }
     }
 }

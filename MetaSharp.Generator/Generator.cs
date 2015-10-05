@@ -408,6 +408,24 @@ namespace MetaSharp {
         public static IEnumerable<IPropertySymbol> Properties(this INamedTypeSymbol type) {
             return type.GetMembers().OfType<IPropertySymbol>();
         }
+        public static string ToAccessibilityModifier(this Accessibility accessibility, Accessibility? containingAccessibility) {
+            if(containingAccessibility != null && containingAccessibility.Value == accessibility)
+                return string.Empty;
+            switch(accessibility) {
+            case Accessibility.Private:
+                return string.Empty;
+            case Accessibility.Protected:
+                return "protected ";
+            case Accessibility.Internal:
+                return "internal ";
+            case Accessibility.ProtectedOrInternal:
+                return "protected internal ";
+            case Accessibility.Public:
+                return "public ";
+            default:
+                throw new InvalidOperationException();
+            }
+        }
     }
 
     public class GeneratorResult {

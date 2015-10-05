@@ -16,12 +16,16 @@ namespace MetaSharp {
         //TODO error if existing ctor not private
         public static string Generate(SemanticModel model, INamedTypeSymbol type) {
             var properties = type.Properties()
-                .Where(p => p.IsVirtual && p.DeclaredAccessibility == Accessibility.Public && p.GetMethod.DeclaredAccessibility == Accessibility.Public)
+                .Where(p => p.IsVirtual 
+                    && p.DeclaredAccessibility == Accessibility.Public 
+                    && p.GetMethod.DeclaredAccessibility == Accessibility.Public
+                )
                 .Select(p => {
+                    var setterModifier = p.SetMethod.DeclaredAccessibility.ToAccessibilityModifier(p.DeclaredAccessibility);
                     return
 $@"public override {p.TypeDisplayString(model)} {p.Name} {{
     get {{ return base.{p.Name}; }}
-    set {{
+    {setterModifier}set {{
         if(base.{p.Name} == value)
             return;
         base.{p.Name} = value;
