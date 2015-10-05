@@ -14,6 +14,7 @@ namespace MetaSharp {
         //TODO auto calc dependent properties
         //TODO auto generate default private ctor if none
         //TODO error if existing ctor not private
+        //TODO implement INPC in class, not in inherited class, so you can call RaisePropertyChanged without extension methods
         public static string Generate(SemanticModel model, INamedTypeSymbol type) {
             var properties = type.Properties()
                 .Where(p => p.IsVirtual 
