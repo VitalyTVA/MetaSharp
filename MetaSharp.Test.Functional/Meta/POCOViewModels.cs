@@ -16,7 +16,7 @@ namespace MetaSharp.Test.Meta.POCO {
         public virtual Point Property5 { get; set; }
         public virtual int? Property6 { get; set; }
         public virtual string ProtectedSetterProperty { get; protected set; }
-        //public virtual string ProtectedSetterProperty { get; protected internal set; }
+        public virtual string ProtectedInternalSetterProperty { get; protected internal set; }
         //public virtual string InternalSetterProperty { get; internal set; }
 
         internal void SetProtectedSetterProperty(string value) {
