@@ -16,13 +16,15 @@ namespace MetaSharp {
     }
     public static class MetaContextExtensions {
         //TODO replace all string types with tree string builder
-        public static string WrapMembers(this MetaContext metaContext, string members) {
+        public static string WrapMembers(this MetaContext metaContext, string members)
+            => metaContext.WrapMembers(members.Yield());
+        public static string WrapMembers(this MetaContext metaContext, IEnumerable<string> members) {
             var usings = metaContext.Usings.ConcatStringsWithNewLines();
             return 
 $@"namespace {metaContext.Namespace} {{
 {usings}
 
-{members.AddTabs(1)}
+{members.ConcatStringsWithNewLines().AddTabs(1)}
 }}";
         }
     }

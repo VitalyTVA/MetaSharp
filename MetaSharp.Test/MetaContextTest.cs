@@ -14,6 +14,10 @@ namespace MetaSharp.Test {
 @"public class B {
 
 }";
+            var input2 =
+@"public class C {
+
+}";
             var result =
 @"namespace Some.Namepace {
 using System;
@@ -23,7 +27,20 @@ using System.Linq;
 
     }
 }";
-            Assert.Equal(result, context.WrapMembers(input)); 
+            var result2 =
+@"namespace Some.Namepace {
+using System;
+using System.Linq;
+
+    public class B {
+
+    }
+    public class C {
+
+    }
+}";
+            Assert.Equal(result, context.WrapMembers(input));
+            Assert.Equal(result2, context.WrapMembers(new[] { input, input2 }));
         }
     }
 }
