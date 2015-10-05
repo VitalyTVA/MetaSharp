@@ -408,6 +408,9 @@ namespace MetaSharp {
         public static IEnumerable<IPropertySymbol> Properties(this INamedTypeSymbol type) {
             return type.GetMembers().OfType<IPropertySymbol>();
         }
+        public static IEnumerable<IMethodSymbol> Methods(this INamedTypeSymbol type) {
+            return type.GetMembers().OfType<IMethodSymbol>();
+        }
         public static string ToAccessibilityModifier(this Accessibility accessibility, Accessibility? containingAccessibility) {
             if(containingAccessibility != null && containingAccessibility.Value == accessibility)
                 return string.Empty;

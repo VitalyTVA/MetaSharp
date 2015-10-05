@@ -18,6 +18,8 @@ namespace MetaSharp {
         //TODO implement INPC in class, not in inherited class, so you can call RaisePropertyChanged without extension methods
         //TODO INotifyPropertyChanging support
         public static string Generate(SemanticModel model, INamedTypeSymbol type) {
+            var methods = type.Methods()
+                .ToImmutableDictionary(x => x.Name, x => x);
             var properties = type.Properties()
                 .Where(p => p.IsVirtual
                     && p.DeclaredAccessibility == Accessibility.Public
@@ -26,14 +28,22 @@ namespace MetaSharp {
                 )
                 .Select(p => {
                     var setterModifier = p.SetMethod.DeclaredAccessibility.ToAccessibilityModifier(p.DeclaredAccessibility);
+                    var onChangedMethod = methods
+                        .GetValueOrDefault($"On{p.Name}Changed");
+                    var needOldValue = onChangedMethod.Return(x => x.Parameters.Length == 1, () => false);
+                    var oldValueStorage = needOldValue ? $"var oldValue = base.{p.Name};".AddTabs(2) : null;
+                    var oldValueName = needOldValue ? "oldValue".AddTabs(2) : null;
+                    var onChangedMethodCall = onChangedMethod.With(x => $"{x.Name}({oldValueName});");
                     return
 $@"public override {p.TypeDisplayString(model)} {p.Name} {{
     get {{ return base.{p.Name}; }}
     {setterModifier}set {{
         if(base.{p.Name} == value)
             return;
+{oldValueStorage}
         base.{p.Name} = value;
         RaisePropertyChanged(""{p.Name}"");
+{onChangedMethodCall}
     }}
 }}";
                 })

@@ -42,13 +42,13 @@ namespace MetaSharp.Test.Functional {
             POCOViewModel_PropertyChanged viewModel = POCOViewModel_PropertyChanged.Create();
             ((INotifyPropertyChanged)viewModel).PropertyChanged += (o, e) => Assert.False(viewModel.OnProtectedChangedMethodWithParamChangedCalled);
             CheckBindableProperty(viewModel, x => x.ProtectedChangedMethodWithParam, (vm, x) => vm.ProtectedChangedMethodWithParam = x, "x", "y", (x, val) => {
-                //Assert.True(x.OnProtectedChangedMethodWithParamChangedCalled);
-                //x.OnProtectedChangedMethodWithParamChangedCalled = false;
-                //Assert.Equal(val, x.ProtectedChangedMethodWithParamOldValue);
+                Assert.True(x.OnProtectedChangedMethodWithParamChangedCalled);
+                x.OnProtectedChangedMethodWithParamChangedCalled = false;
+                Assert.Equal(val, x.ProtectedChangedMethodWithParamOldValue);
             });
 
-            //CheckBindableProperty(viewModel, x => x.PublicChangedMethodWithoutParam, (vm, x) => vm.PublicChangedMethodWithoutParam = x, 1, 2, (x, val) => Assert.Equal(val + 1, x.PublicChangedMethodWithoutParamOldValue));
-            //CheckBindableProperty(viewModel, x => x.ProtectedInternalChangedMethodWithoutParam, (vm, x) => vm.ProtectedInternalChangedMethodWithoutParam = x, 1, 2, (x, val) => Assert.Equal(val + 1, x.ProtectedInternalChangedMethodWithoutParamOldValue));
+            CheckBindableProperty(viewModel, x => x.PublicChangedMethodWithoutParam, (vm, x) => vm.PublicChangedMethodWithoutParam = x, 1, 2, (x, val) => Assert.Equal(val + 1, x.PublicChangedMethodWithoutParamOldValue));
+            CheckBindableProperty(viewModel, x => x.ProtectedInternalChangedMethodWithoutParam, (vm, x) => vm.ProtectedInternalChangedMethodWithoutParam = x, 1, 2, (x, val) => Assert.Equal(val + 1, x.ProtectedInternalChangedMethodWithoutParamOldValue));
         }
         #endregion
 
