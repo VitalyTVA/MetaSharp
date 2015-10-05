@@ -12,7 +12,7 @@ using Xunit;
 
 namespace MetaSharp.Test.Functional {
     public class POCOViewModelsTests {
-
+        #region property changed
         [Fact]
         public void OverridingPropertyTest() {
             var viewModel = POCOViewModel.Create();
@@ -36,6 +36,21 @@ namespace MetaSharp.Test.Functional {
             CheckNotBindableProperty(viewModel, x => x.ProtectedGetterProperty, (vm, x) => vm.ProtectedGetterProperty = x, "x", "y");
             CheckNotBindableProperty(viewModel, x => x.NotAutoImplementedProperty, (vm, x) => vm.NotAutoImplementedProperty = x, "x", "y");
         }
+
+        [Fact]
+        public void PropertyChangedTest() {
+            POCOViewModel_PropertyChanged viewModel = POCOViewModel_PropertyChanged.Create();
+            ((INotifyPropertyChanged)viewModel).PropertyChanged += (o, e) => Assert.False(viewModel.OnProtectedChangedMethodWithParamChangedCalled);
+            CheckBindableProperty(viewModel, x => x.ProtectedChangedMethodWithParam, (vm, x) => vm.ProtectedChangedMethodWithParam = x, "x", "y", (x, val) => {
+                //Assert.True(x.OnProtectedChangedMethodWithParamChangedCalled);
+                //x.OnProtectedChangedMethodWithParamChangedCalled = false;
+                //Assert.Equal(val, x.ProtectedChangedMethodWithParamOldValue);
+            });
+
+            //CheckBindableProperty(viewModel, x => x.PublicChangedMethodWithoutParam, (vm, x) => vm.PublicChangedMethodWithoutParam = x, 1, 2, (x, val) => Assert.Equal(val + 1, x.PublicChangedMethodWithoutParamOldValue));
+            //CheckBindableProperty(viewModel, x => x.ProtectedInternalChangedMethodWithoutParam, (vm, x) => vm.ProtectedInternalChangedMethodWithoutParam = x, 1, 2, (x, val) => Assert.Equal(val + 1, x.ProtectedInternalChangedMethodWithoutParamOldValue));
+        }
+        #endregion
 
         void CheckBindableProperty<T, TProperty>(T viewModel, Expression<Func<T, TProperty>> propertyExpression, Action<T, TProperty> setValueAction, TProperty value1, TProperty value2, Action<T, TProperty> checkOnPropertyChangedResult = null) {
             CheckBindablePropertyCore(viewModel, propertyExpression, setValueAction, value1, value2, true, checkOnPropertyChangedResult);
