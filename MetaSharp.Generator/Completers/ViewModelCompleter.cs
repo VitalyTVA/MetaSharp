@@ -12,7 +12,8 @@ using System.Threading.Tasks;
 namespace MetaSharp {
     static class ViewModelCompleter {
         //TODO auto calc dependent properties
-        //TODO auto generate default private ctor if none
+        //TODO auto generate default private ctor if none, use explicit factory methods directly
+        //TODO error if base class ctor is used
         //TODO error if existing ctor not private
         //TODO implement INPC in class, not in inherited class, so you can call RaisePropertyChanged without extension methods
         //TODO INotifyPropertyChanging support
