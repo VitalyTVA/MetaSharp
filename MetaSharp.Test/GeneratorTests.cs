@@ -290,13 +290,13 @@ namespace MetaSharp.HelloWorld {
         [Fact]
         public void UseMetaContext() {
             var input = @"
-using MetaSharp;
+using System;
+using System.Linq;
+using Alias = System.Action;
+
 namespace MetaSharp.HelloWorld {
-
-    using System;
-    using System.Linq;
-    using Alias = System.Action;
-
+    using MetaSharp;
+    using System.Collections;
     public static class HelloWorldGenerator {
         public static string SayHello(MetaContext context) {
              return context.Usings.Count() + string.Concat(context.Usings) + ""Hello World from "" + context.Namespace;

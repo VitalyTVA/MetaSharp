@@ -24,9 +24,9 @@ namespace MetaSharp.HelloWorld {
 ";
             string incomplete1 =
 @"
+using FooBoo;
 using MetaSharp;
 namespace MetaSharp.Incomplete {
-    using FooBoo;
     [MetaCompleteClass]
     public partial class Foo {
         public Boo BooProperty { get; }
@@ -43,9 +43,9 @@ namespace MetaSharp.Incomplete {
 }";
             string incomplete2 =
 @"
+using FooBoo;
 using MetaSharp;
 namespace MetaSharp.Incomplete {
-    using FooBoo;
     [MetaCompleteClass]
     public partial class Foo3 {
         public Boo BooProperty { get; }
@@ -113,10 +113,10 @@ using MetaSharp;
 ";
             string incomplete =
 @"
+using System;
+using Qoo = FooBoo.Moo;
 using MetaSharp;
 namespace MetaSharp.Incomplete {
-    using System;
-    using Qoo = FooBoo.Moo;
     [MetaCompleteClass]
     public partial class Foo {
         public FooBoo.Boo BooProperty { get; }
@@ -170,9 +170,9 @@ using MetaSharp;
 ";
             string incomplete =
 @"
+using System;
 using MetaSharp;
 namespace MetaSharp.Incomplete {
-    using System;
     [MetaCompleteViewModel]
     public partial class ViewModel {
         public virtual Boo BooProperty { get; set; }

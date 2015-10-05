@@ -11,7 +11,7 @@ namespace MetaSharp.Test {
         [Fact]
         public void RewriteClassName() {
             var input1 = @"
-using MetaSharp;
+using   MetaSharp;
 namespace MetaSharp.HelloWorld {
     public static class HelloWorldGenerator {
         public static string MakeFoo(MetaContext context) {
@@ -24,8 +24,8 @@ namespace MetaSharp.HelloWorld {
 }
 ";
             var input2 = @"
-using MetaSharp;
 namespace MetaSharp.HelloWorld {
+    using MetaSharp;
     public static class HelloWorldGenerator2 {
         public static string MakeBoo(MetaContext context) {
              return context.WrapMembers(ClassGenerator.Class<Boo>().Generate());
@@ -68,9 +68,9 @@ namespace MetaSharp.HelloWorld {
         [Fact]
         public void RewriteProperties() {
             var input = @"
+using System;
 using MetaSharp;
 namespace MetaSharp.HelloWorld {
-    using System;
     public static class HelloWorldGenerator {
         public static string MakeFoo(MetaContext context) {
              var classText = ClassGenerator.Class<Foo>()

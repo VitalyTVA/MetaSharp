@@ -1,6 +1,6 @@
 ﻿using MetaSharp;
+using System.Windows;
 namespace MetaSharp.Test.Meta.POCO {
-    using System.Windows;
     [MetaCompleteViewModel]
     public partial class POCOViewModel {
         internal string NotPublicProperty { get; set; }

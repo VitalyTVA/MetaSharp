@@ -384,9 +384,13 @@ namespace MetaSharp {
             }
         }
         public static MetaContext CreateContext(this Location location, string @namespace) {
-            var nodes = location.SourceTree.GetCompilationUnitRoot().DescendantNodes(location.SourceSpan);
-            var namespaces = nodes.OfType<NamespaceDeclarationSyntax>().Single(); //TODO nested namespaces
-            return new MetaContext(@namespace, namespaces.Usings.Select(x => x.ToString()).ToArray());
+            var root = location.SourceTree.GetCompilationUnitRoot();
+            var nodes = root.DescendantNodes(location.SourceSpan);
+            var usings = root.Usings
+                .Where(x => x.Name.ToString() != typeof(MetaContext).Namespace) //TODO Check MetaSharp namespace more carefully??
+                .Select(x => x.ToString())
+                .ToArray();
+            return new MetaContext(@namespace, usings);
         }
         public static MetaContext CreateContext(this INamedTypeSymbol type) {
             return type.Location().CreateContext(type.ContainingNamespace.ToString());
