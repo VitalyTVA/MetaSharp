@@ -426,6 +426,11 @@ namespace MetaSharp {
                 throw new InvalidOperationException();
             }
         }
+        public static bool IsAutoImplemented(this IPropertySymbol property) {
+            var location = property.Location();
+            var propertySyntax = (PropertyDeclarationSyntax)location.SourceTree.GetCompilationUnitRoot().FindNode(location.SourceSpan);
+            return propertySyntax.AccessorList.Accessors.First().Body == null;
+        }
     }
 
     public class GeneratorResult {

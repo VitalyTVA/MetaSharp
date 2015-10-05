@@ -17,9 +17,10 @@ namespace MetaSharp {
         //TODO implement INPC in class, not in inherited class, so you can call RaisePropertyChanged without extension methods
         public static string Generate(SemanticModel model, INamedTypeSymbol type) {
             var properties = type.Properties()
-                .Where(p => p.IsVirtual 
-                    && p.DeclaredAccessibility == Accessibility.Public 
+                .Where(p => p.IsVirtual
+                    && p.DeclaredAccessibility == Accessibility.Public
                     && p.GetMethod.DeclaredAccessibility == Accessibility.Public
+                    && p.IsAutoImplemented()
                 )
                 .Select(p => {
                     var setterModifier = p.SetMethod.DeclaredAccessibility.ToAccessibilityModifier(p.DeclaredAccessibility);
