@@ -165,7 +165,10 @@ namespace MetaSharp {
             AppDomain.CurrentDomain.AssemblyResolve += resolveHandler;
             try {
                 var outputs = compiledAssembly.GetTypes()
-                    .SelectMany(type => type.GetMethods(BindingFlags.Static | BindingFlags.Public).Where(method => !method.IsSpecialName))
+                    .SelectMany(type => type
+                        .GetMethods(BindingFlags.Static | BindingFlags.Public)
+                        .Where(method => !method.IsSpecialName) //TODO filter out methods which do not return something useful (or even fail if there are such)
+                    )
                     .Where(method => methodsMap.ContainsKey(GetMethodId(method)))
                     .GroupBy(method => methodsMap[GetMethodId(method)].Location().SourceTree)
                     .SelectMany(grouping => {
@@ -231,7 +234,11 @@ namespace MetaSharp {
                                     var parameters = methodContext.Method.GetParameters().Length == 1
                                         ? methodContext.Context.YieldToArray()
                                         : null;
-                                    return (string)methodContext.Method.Invoke(null, parameters);
+                                    var methodResult = methodContext.Method.Invoke(null, parameters);
+                                    if(methodContext.Method.ReturnType == typeof(string)) {
+                                        return (string)methodResult;
+                                    } else
+                                        return ((IEnumerable<string>)methodContext.Method.Invoke(null, parameters)).ConcatStringsWithNewLines();
                                 })
                                 .InsertDelimeter(NewLine);
                         })

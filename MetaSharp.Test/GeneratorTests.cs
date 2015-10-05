@@ -118,6 +118,28 @@ namespace MetaSharp.HelloWorld {
             AssertSingleFileSimpleOutput(input, "Hello World!\r\nHello World Again!");
         }
         [Fact]
+        public void SeveralOutputsFromSingleMethod() {
+            var input = @"
+using System;
+using System.Collections.Generic;
+namespace MetaSharp.HelloWorld {
+    public static class HelloWorldGenerator {
+        public static IEnumerable<string> SayHelloManyTimes() {
+            yield return ""Hello World!"";
+            yield return ""Hello World Again!"";
+        }
+        public static string[] SayHelloManyTimesFromArray() {
+            return new[] { 
+                ""Hello World from array!"",
+                ""Hello World from array again!"",
+            };
+        }
+    }
+}
+";
+            AssertSingleFileSimpleOutput(input, "Hello World!\r\nHello World Again!\r\nHello World from array!\r\nHello World from array again!");
+        }
+        [Fact]
         public void CompilationError() {
             var input = @"
 namespace MetaSharp.HelloWorld {
