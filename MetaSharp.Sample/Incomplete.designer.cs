@@ -24,6 +24,7 @@ namespace MetaSharp.Sample {
                     if(base.BooProperty == value)
                         return;
 
+
                     base.BooProperty = value;
                     RaisePropertyChanged("BooProperty");
 
@@ -34,6 +35,7 @@ namespace MetaSharp.Sample {
                 set {
                     if(base.IntProperty == value)
                         return;
+
 
                     base.IntProperty = value;
                     RaisePropertyChanged("IntProperty");

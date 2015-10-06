@@ -3,7 +3,7 @@ using System.Collections.Immutable;
 
 [assembly: MetaProto("Incomplete.cs", MetaLocationKind.Designer)]
 [assembly: MetaInclude("helper.cs")]
-[assembly: MetaReference(@"System.Collections.Immutable.dll", RelativeLocation.TargetPath)]
+[assembly: MetaReference(@"System.Collections.Immutable.dll", ReferenceRelativeLocation.TargetPath)]
 
 namespace MetaSharp.Sample {
     using System;

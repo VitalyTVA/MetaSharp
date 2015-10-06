@@ -15,7 +15,7 @@ using System.Text;
 
 namespace MetaSharp {
     //TODO wrap output classes into regions
-    //TODO show verbose error in correct position when reference or include file or etc. is not found
+    //TODO show verbose error in correct location when reference or include file or etc. is not found + (incorrect enum type name in MetaReference)
     //TODO Conditional("METASHARP") attribute for all meta attributes so they do not go to final assembly
     //TODO push active configuration/compile constants (DEBUG, etc.) to meta code to make same evnironment in meta code as in main
     //TODO exceptions in generator methods (+show line where exception occured)
@@ -403,13 +403,9 @@ namespace MetaSharp {
             }
         }
         public static MetaContext CreateContext(this Location location, string @namespace) {
-            var root = location.SourceTree.GetCompilationUnitRoot();
-            var nodes = root.DescendantNodes(location.SourceSpan);
-            var usings = root.Usings
-                .Where(x => x.Name.ToString() != typeof(MetaContext).Namespace) //TODO Check MetaSharp namespace more carefully??
-                .Select(x => x.ToString())
-                .ToArray();
-            return new MetaContext(@namespace, usings);
+            var nodes = location.SourceTree.GetCompilationUnitRoot().DescendantNodes(location.SourceSpan);
+            var namespaces = nodes.OfType<NamespaceDeclarationSyntax>().Single(); //TODO nested namespaces
+            return new MetaContext(@namespace, namespaces.Usings.Select(x => x.ToString()).ToArray());
         }
         public static MetaContext CreateContext(this INamedTypeSymbol type) {
             return type.Location().CreateContext(type.ContainingNamespace.ToString());

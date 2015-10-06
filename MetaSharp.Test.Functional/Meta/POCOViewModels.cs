@@ -1,11 +1,11 @@
-﻿using MetaSharp;
-using System.Windows;
-using Xunit;
-using DevExpress.Mvvm.DataAnnotations;
-using System;
+﻿using System.ComponentModel;
 
 namespace MetaSharp.Test.Meta.POCO {
-    using System.ComponentModel;
+    using MetaSharp;
+    using System.Windows;
+    using Xunit;
+    using DevExpress.Mvvm.DataAnnotations;
+    using System;
 
     [MetaCompleteViewModel]
     public partial class POCOViewModel {
