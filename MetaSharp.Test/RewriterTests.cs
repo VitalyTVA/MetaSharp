@@ -15,6 +15,9 @@ using   MetaSharp;
 namespace MetaSharp.HelloWorld {
     public static class HelloWorldGenerator {
         public static string MakeFoo(MetaContext context) {
+             return MakeFooCore(context);
+        }
+        static string MakeFooCore(MetaContext context) {
              return context.WrapMembers(ClassGenerator.Class<Foo>().Generate());
         }
         public static string MakeMoo(MetaContext context) {

@@ -37,8 +37,10 @@ namespace MetaSharp {
         }
 
         public override SyntaxNode VisitInvocationExpression(InvocationExpressionSyntax invocationSyntax) {
-
-            var methodNameSyntax = (invocationSyntax.Expression as MemberAccessExpressionSyntax).Name as GenericNameSyntax;
+            var memberAccessExpressionSyntax = invocationSyntax.Expression as MemberAccessExpressionSyntax;
+            if(memberAccessExpressionSyntax == null)
+                return base.VisitInvocationExpression(invocationSyntax);
+            var methodNameSyntax = memberAccessExpressionSyntax.Name as GenericNameSyntax;
             if(methodNameSyntax == null)
                 return base.VisitInvocationExpression(invocationSyntax);
 
@@ -73,7 +75,10 @@ namespace MetaSharp {
             var invocationSyntax = node.Parent.Parent as InvocationExpressionSyntax;
             if(invocationSyntax == null)
                 return base.VisitArgument(node);
-            var methodNameSyntax = (invocationSyntax.Expression as MemberAccessExpressionSyntax).Name as SimpleNameSyntax;
+            var memberAccessExpressionSyntax = invocationSyntax.Expression as MemberAccessExpressionSyntax;
+            if(memberAccessExpressionSyntax == null)
+                return base.VisitArgument(node);
+            var methodNameSyntax = memberAccessExpressionSyntax.Name as SimpleNameSyntax;
 
             var method = model.GetSymbolInfo(methodNameSyntax).Symbol as IMethodSymbol;
             var argList = (ArgumentListSyntax)node.Parent;
