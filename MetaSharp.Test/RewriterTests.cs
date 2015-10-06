@@ -189,33 +189,24 @@ namespace MetaSharp.HelloWorld {
                     error => AssertError(error, SingleInputFileName, "CS0305"));
             });
         }
-        //        [Fact]
-        //        public void SandBox_______________________() {
-        //            var input = @"
-        //using MetaSharp;
-        //namespace MetaSharp.HelloWorld {
-        //    public static class HelloWorldGenerator {
-        //        public static string MakeFoo(MetaContext context) {
-        //             var classText = ClassGenerator.Class<Foo>()
-        //                .Property<Boo>(x => x.IntProperty, default(Boo))
-        //                .Generate();
-        //            return context.WrapMembers(classText);
-        //        }
-        //    }
-        //}
-        //";
-        //            string output =
-        //@"namespace MetaSharp.HelloWorld {
-
-
-        //    public class Foo {
-        //        public Boo IntProperty { get; }
-        //        public Foo(Boo intProperty = default(Boo)) {
-        //        }
-        //    }
-        //}";
-
-        //            AssertSingleFileOutput(input, output);
-        //        }
+        [Fact]
+        public void UnexistingMethodWithArgument() {
+            var input = @"
+namespace MetaSharp.HelloWorld {
+    using System;
+    public static class HelloWorldGenerator {
+        public class ClassGenerator {
+        }
+        public static string MakeFoo(MetaContext context) {
+             return ClassGenerator.Unexisting(1);
+        }
+    }
+}
+";
+            AssertSingleFileErrors(input, errors => {
+                Assert.Collection(errors,
+                    error => AssertError(error, SingleInputFileName, "CS0117"));
+            });
+        }
     }
 }

@@ -82,6 +82,8 @@ namespace MetaSharp {
             var methodNameSyntax = memberAccessExpressionSyntax.Name as SimpleNameSyntax;
 
             var method = model.GetSymbolInfo(methodNameSyntax).Symbol as IMethodSymbol;
+            if(method == null)
+                return base.VisitArgument(node);
             var argList = (ArgumentListSyntax)node.Parent;
             //TODO check that parameter name preserved if specified, otherwise order can be broken
             var argIndex = argList.Arguments.IndexOf(node);
