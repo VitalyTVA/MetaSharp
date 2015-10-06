@@ -457,6 +457,10 @@ using System.Drawing;
 
 [assembly: MetaReference(""System.Collections.Immutable.dll"")]
 [assembly: MetaReference(""bin\\Xunit.Assert.dll"", ReferenceRelativeLocation.TargetPath)]
+[assembly: MetaReference(""WPF\\WindowsBase.dll"", ReferenceRelativeLocation.Framework)]
+[assembly: MetaReference(""WPF\\PresentationCore.dll"", ReferenceRelativeLocation.Framework)]
+[assembly: MetaReference(""System.Drawing.dll"", ReferenceRelativeLocation.Framework)]
+[assembly: MetaReference(""System.Windows.Forms.dll"", ReferenceRelativeLocation.Framework)]
 namespace MetaSharp.HelloWorld {
     public static class HelloWorldGenerator {
         public static string SayHello(MetaContext context) {

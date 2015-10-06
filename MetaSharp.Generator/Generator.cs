@@ -60,17 +60,13 @@ namespace MetaSharp {
         }
 
         public static readonly ImmutableArray<PortableExecutableReference> DefaultReferences;
+        static readonly string FrameworkPath = Path.GetDirectoryName(typeof(object).Assembly.Location);
         static Generator() {
-            var assemblyPath = Path.GetDirectoryName(typeof(object).Assembly.Location);
             DefaultReferences = new[] {
-                Path.Combine(assemblyPath, "mscorlib.dll"),
-                Path.Combine(assemblyPath, "System.dll"),
-                Path.Combine(assemblyPath, "System.Core.dll"),
-                Path.Combine(assemblyPath, "System.Runtime.dll"),
-                Path.Combine(assemblyPath, @"WPF\WindowsBase.dll"), //TODO framework reference instead of pre-added wpf dlls or remove unknown usings
-                Path.Combine(assemblyPath, @"WPF\PresentationCore.dll"),
-                Path.Combine(assemblyPath, "System.Drawing.dll"),
-                Path.Combine(assemblyPath, "System.Windows.Forms.dll"),
+                Path.Combine(FrameworkPath, "mscorlib.dll"),
+                Path.Combine(FrameworkPath, "System.dll"),
+                Path.Combine(FrameworkPath, "System.Core.dll"),
+                Path.Combine(FrameworkPath, "System.Runtime.dll"),
                 typeof(MetaContext).Assembly.Location,
             }
             .Select(x => MetadataReference.CreateFromFile(x))
@@ -209,10 +205,22 @@ namespace MetaSharp {
                 .Select(values => {
                     var path = values.Item1;
                     var location = values.Item2;
-                    var relativePath = location == ReferenceRelativeLocation.Project ? string.Empty : buildConsants.TargetPath;
+                    var relativePath = GetReferenceRelativePath(buildConsants, location);
                     return Path.Combine(relativePath, path);
                 })
                 .ToImmutableDictionary(x => Path.GetFileNameWithoutExtension(x), x => x);
+        }
+        static string GetReferenceRelativePath(BuildConstants buildConsants, ReferenceRelativeLocation location) {
+            switch(location) {
+            case ReferenceRelativeLocation.Project:
+                return string.Empty;
+            case ReferenceRelativeLocation.TargetPath:
+                return buildConsants.TargetPath;
+            case ReferenceRelativeLocation.Framework:
+                return FrameworkPath;
+            default:
+                throw new InvalidOperationException();
+            }
         }
 
         internal static SyntaxTree ParseFile(Environment environment, string x) {
