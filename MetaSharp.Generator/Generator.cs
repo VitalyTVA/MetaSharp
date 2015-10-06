@@ -14,7 +14,6 @@ using System.Reflection;
 using System.Text;
 
 namespace MetaSharp {
-    //TODO line with error from console is wrong
     //TODO UGLY ERRORS IN REWRITER on non-compilable code
 
     //TODO Conditional("METASHARP") attribute for all meta attributes so they do not go to final assembly
@@ -265,10 +264,10 @@ namespace MetaSharp {
                                     id: error.Id,
                                     file: file,
                                     message: error.GetMessage(),
-                                    lineNumber: span.StartLinePosition.Line,
-                                    columnNumber: span.StartLinePosition.Character,
-                                    endLineNumber: span.EndLinePosition.Line,
-                                    endColumnNumber: span.EndLinePosition.Character
+                                    lineNumber: span.StartLinePosition.Line + 1,
+                                    columnNumber: span.StartLinePosition.Character + 1,
+                                    endLineNumber: span.EndLinePosition.Line + 1,
+                                    endColumnNumber: span.EndLinePosition.Character + 1
                                     );
         }
     }

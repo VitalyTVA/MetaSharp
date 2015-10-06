@@ -153,10 +153,10 @@ namespace MetaSharp.HelloWorld {
             AssertSingleFileErrors(input, errors => {
                 Assert.Collection(errors, 
                     error => {
-                        AssertError(error, SingleInputFileName, "CS1002", "; expected", 4, 34);
-                        Assert.Equal("file.meta.cs(4,34,4,34): error CS1002: ; expected", error.ToString());
+                        AssertError(error, SingleInputFileName, "CS1002", "; expected", 5, 35);
+                        Assert.Equal("file.meta.cs(5,35,5,35): error CS1002: ; expected", error.ToString());
                     },
-                    error => AssertError(error, SingleInputFileName, "CS1513", "} expected", 7, 1));
+                    error => AssertError(error, SingleInputFileName, "CS1513", "} expected", 8, 2));
             });
         }
         [Fact]
@@ -557,6 +557,8 @@ namespace MetaSharp.HelloWorld {
         }
         protected static void AssertError(GeneratorError error, string file, string id, string message, int lineNumber, int columnNumber) {
             AssertError(error, file, id);
+            Assert.Equal(lineNumber, error.LineNumber);
+            Assert.Equal(columnNumber, error.ColumnNumber);
         }
         protected static void AssertError(GeneratorError error, string file, string id) {
             Assert.Equal(file, error.File);
