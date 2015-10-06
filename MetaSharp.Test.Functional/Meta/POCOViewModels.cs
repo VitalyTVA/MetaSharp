@@ -1,9 +1,12 @@
 ﻿using MetaSharp;
 using System.Windows;
 using Xunit;
+using DevExpress.Mvvm.DataAnnotations;
+using System;
 
 namespace MetaSharp.Test.Meta.POCO {
     using System.ComponentModel;
+
     [MetaCompleteViewModel]
     public partial class POCOViewModel {
         internal string NotPublicProperty { get; set; }
@@ -31,6 +34,7 @@ namespace MetaSharp.Test.Meta.POCO {
         protected virtual void OnProtectedChangedMethodWithParamChanged(string oldValue) { }
         public virtual bool SealedProperty { get; set; }
     }
+
     [MetaCompleteViewModel]
     public partial class POCOViewModel_PropertyChanged : POCOViewModel_PropertyChangedBase {
         public string ProtectedChangedMethodWithParamOldValue;
@@ -67,6 +71,7 @@ namespace MetaSharp.Test.Meta.POCO {
             PrivateChangedMethodWithoutParamOldValue++;
         }
     }
+
     [MetaCompleteViewModel]
     public partial class POCOViewModel_SubscribeInCtor {
         public POCOViewModel_SubscribeInCtor() {
@@ -78,5 +83,29 @@ namespace MetaSharp.Test.Meta.POCO {
             propertyChangedCallCount++;
         }
         public virtual string Property { get; set; }
+    }
+
+    [MetaCompleteViewModel]
+    public partial class POCOViewModel_PropertyChanging {
+        public virtual string Property1 { get; set; }
+        public string Property1NewValue;
+        protected void OnProperty1Changing(string newValue) {
+            Assert.NotEqual(newValue, Property1);
+            Property1NewValue = newValue;
+        }
+
+        public virtual string Property2 { get; set; }
+        public int Property2ChangingCallCount;
+        protected void OnProperty2Changing() {
+            Assert.Equal(null, Property2);
+            Property2ChangingCallCount++;
+        }
+
+        string property3;
+        [BindableProperty]
+        public virtual string Property3 { get { return property3; } set { property3 = value; } }
+        protected void OnProperty3Changing() {
+            throw new NotImplementedException();
+        }
     }
 }

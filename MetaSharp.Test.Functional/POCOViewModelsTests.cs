@@ -62,6 +62,22 @@ namespace MetaSharp.Test.Functional {
         }
         #endregion
 
+        #region property changing
+        [Fact]
+        public void PropertyChangingTest() {
+            var viewModel = POCOViewModel_PropertyChanging.Create();
+            viewModel.Property1 = null;
+            viewModel.Property1 = "x";
+            Assert.Equal("x", viewModel.Property1NewValue);
+
+            viewModel.Property2 = null;
+            viewModel.Property2 = "x";
+            Assert.Equal(1, viewModel.Property2ChangingCallCount);
+
+            viewModel.Property3 = "x";
+        }
+        #endregion
+
         void CheckBindableProperty<T, TProperty>(T viewModel, Expression<Func<T, TProperty>> propertyExpression, Action<T, TProperty> setValueAction, TProperty value1, TProperty value2, Action<T, TProperty> checkOnPropertyChangedResult = null) {
             CheckBindablePropertyCore(viewModel, propertyExpression, setValueAction, value1, value2, true, checkOnPropertyChangedResult);
         }

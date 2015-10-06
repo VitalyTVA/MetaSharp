@@ -14,6 +14,7 @@ using System.Reflection;
 using System.Text;
 
 namespace MetaSharp {
+    //TODO wrap output classes into regions
     //TODO show verbose error in correct position when reference or include file or etc. is not found
     //TODO Conditional("METASHARP") attribute for all meta attributes so they do not go to final assembly
     //TODO push active configuration/compile constants (DEBUG, etc.) to meta code to make same evnironment in meta code as in main

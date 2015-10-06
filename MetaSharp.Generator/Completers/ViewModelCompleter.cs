@@ -17,7 +17,16 @@ namespace MetaSharp {
         //TODO error if existing ctor not private
         //TODO implement INPC in class, not in inherited class, so you can call RaisePropertyChanged without extension methods
         //TODO INotifyPropertyChanging support
+        //struct BindableAttribute {
+        //    readonly bool IsBindable;
+        //    readonly string OnPropertyChangedPropertyName;
+        //}
+
         public static string Generate(SemanticModel model, INamedTypeSymbol type) {
+            return GenerateCore(model, type);
+        }
+
+        static string GenerateCore(SemanticModel model, INamedTypeSymbol type) {
             var methods = type.Methods()
                 .ToImmutableDictionary(x => x.Name, x => x);
             var properties = type.Properties()
@@ -28,18 +37,25 @@ namespace MetaSharp {
                 )
                 .Select(p => {
                     var setterModifier = p.SetMethod.DeclaredAccessibility.ToAccessibilityModifier(p.DeclaredAccessibility);
-                    var onChangedMethod = methods
-                        .GetValueOrDefault($"On{p.Name}Changed");
+
+                    var onChangedMethod = methods.GetValueOrDefault($"On{p.Name}Changed");
                     var needOldValue = onChangedMethod.Return(x => x.Parameters.Length == 1, () => false);
                     var oldValueStorage = needOldValue ? $"var oldValue = base.{p.Name};".AddTabs(2) : null;
-                    var oldValueName = needOldValue ? "oldValue".AddTabs(2) : null;
-                    var onChangedMethodCall = onChangedMethod.With(x => $"{x.Name}({oldValueName});");
+                    var oldValueName = needOldValue ? "oldValue" : null;
+                    var onChangedMethodCall = onChangedMethod.With(x => $"{x.Name}({oldValueName});".AddTabs(2));
+
+                    var onChangingMethod = methods.GetValueOrDefault($"On{p.Name}Changing");
+                    var needNewValue = onChangingMethod.Return(x => x.Parameters.Length == 1, () => false);
+                    var newValueName = needNewValue ? "value" : null;
+                    var onChangingMethodCall = onChangingMethod.With(x => $"{x.Name}({newValueName});".AddTabs(2));
+
                     return
 $@"public override {p.TypeDisplayString(model)} {p.Name} {{
     get {{ return base.{p.Name}; }}
     {setterModifier}set {{
         if(base.{p.Name} == value)
             return;
+{onChangingMethodCall}
 {oldValueStorage}
         base.{p.Name} = value;
         RaisePropertyChanged(""{p.Name}"");
