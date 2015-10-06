@@ -23,8 +23,10 @@ namespace MetaSharp.Sample {
                 set {
                     if(base.BooProperty == value)
                         return;
+
                     base.BooProperty = value;
                     RaisePropertyChanged("BooProperty");
+
                 }
             }
             public override int IntProperty {
@@ -32,8 +34,10 @@ namespace MetaSharp.Sample {
                 set {
                     if(base.IntProperty == value)
                         return;
+
                     base.IntProperty = value;
                     RaisePropertyChanged("IntProperty");
+
                 }
             }
             public event PropertyChangedEventHandler PropertyChanged;

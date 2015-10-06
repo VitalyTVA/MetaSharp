@@ -25,6 +25,7 @@ namespace MetaSharp {
         }
     }
     public class MetaRewriter : CSharpSyntaxRewriter {
+        //TODO rewrite unknown method (non-complilable code)
         //TODO improve performance by skipping non-rewritable nodes
         readonly SemanticModel model;
         public MetaRewriter(SemanticModel model) {
