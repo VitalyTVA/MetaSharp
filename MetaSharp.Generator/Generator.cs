@@ -14,8 +14,6 @@ using System.Reflection;
 using System.Text;
 
 namespace MetaSharp {
-    //TODO UGLY ERRORS IN REWRITER on non-compilable code
-
     //TODO Conditional("METASHARP") attribute for all meta attributes so they do not go to final assembly
     //TODO push active configuration/compile constants (DEBUG, etc.) to meta code to make same evnironment in meta code as in main
     //TODO exceptions in generator methods (+show line where exception occured)
