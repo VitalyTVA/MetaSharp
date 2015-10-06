@@ -452,6 +452,8 @@ using Xunit;
 using System.Linq;
 using System.Collections.Immutable;
 using System.Windows.Media;
+using System.Windows.Forms;
+using System.Drawing;
 
 [assembly: MetaReference(""System.Collections.Immutable.dll"")]
 [assembly: MetaReference(""bin\\Xunit.Assert.dll"", RelativeLocation.TargetPath)]
@@ -459,6 +461,7 @@ namespace MetaSharp.HelloWorld {
     public static class HelloWorldGenerator {
         public static string SayHello(MetaContext context) {
             new SolidColorBrush();
+            new PointF();
             Assert.Equal(""MetaSharp.HelloWorld"", context.Namespace);
             return ImmutableArray.Create(""Hello World!"").Single();
         }
