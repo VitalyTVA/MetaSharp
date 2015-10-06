@@ -53,5 +53,17 @@ namespace MetaSharp.Test.Meta.POCO {
         protected internal void OnProtectedInternalChangedMethodWithoutParamChanged() {
             ProtectedInternalChangedMethodWithoutParamOldValue++;
         }
+
+        public int InternalChangedMethodWithoutParamOldValue;
+        public virtual int InternalChangedMethodWithoutParam { get; set; }
+        internal void OnInternalChangedMethodWithoutParamChanged() {
+            InternalChangedMethodWithoutParamOldValue++;
+        }
+
+        public int PrivateChangedMethodWithoutParamOldValue;
+        public virtual int PrivateChangedMethodWithoutParam { get; set; }
+        void OnPrivateChangedMethodWithoutParamChanged() {
+            PrivateChangedMethodWithoutParamOldValue++;
+        }
     }
 }
