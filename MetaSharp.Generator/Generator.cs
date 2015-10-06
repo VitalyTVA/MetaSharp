@@ -69,6 +69,8 @@ namespace MetaSharp {
                 Path.Combine(assemblyPath, "System.dll"),
                 Path.Combine(assemblyPath, "System.Core.dll"),
                 Path.Combine(assemblyPath, "System.Runtime.dll"),
+                Path.Combine(assemblyPath, @"WPF\WindowsBase.dll"), //TODO framework reference instead of pre-added wpf dlls or remove unknown usings
+                Path.Combine(assemblyPath, @"WPF\PresentationCore.dll"),
                 typeof(MetaContext).Assembly.Location,
             }
             .Select(x => MetadataReference.CreateFromFile(x))
