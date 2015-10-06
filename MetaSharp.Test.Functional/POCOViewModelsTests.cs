@@ -54,6 +54,14 @@ namespace MetaSharp.Test.Functional {
         }
         #endregion
 
+        #region subscribe in constructor
+        [Fact]
+        public void POCOViewModel_SubscribeInCtorTest() {
+            var viewModel = POCOViewModel_SubscribeInCtor.Create();
+            Assert.Equal(1, viewModel.propertyChangedCallCount);
+        }
+        #endregion
+
         void CheckBindableProperty<T, TProperty>(T viewModel, Expression<Func<T, TProperty>> propertyExpression, Action<T, TProperty> setValueAction, TProperty value1, TProperty value2, Action<T, TProperty> checkOnPropertyChangedResult = null) {
             CheckBindablePropertyCore(viewModel, propertyExpression, setValueAction, value1, value2, true, checkOnPropertyChangedResult);
         }

@@ -3,6 +3,7 @@ using System.Windows;
 using Xunit;
 
 namespace MetaSharp.Test.Meta.POCO {
+    using System.ComponentModel;
     [MetaCompleteViewModel]
     public partial class POCOViewModel {
         internal string NotPublicProperty { get; set; }
@@ -65,5 +66,17 @@ namespace MetaSharp.Test.Meta.POCO {
         void OnPrivateChangedMethodWithoutParamChanged() {
             PrivateChangedMethodWithoutParamOldValue++;
         }
+    }
+    [MetaCompleteViewModel]
+    public partial class POCOViewModel_SubscribeInCtor {
+        public POCOViewModel_SubscribeInCtor() {
+            ((INotifyPropertyChanged)this).PropertyChanged += POCOViewModel_SubscribeInCtor_PropertyChanged;
+            Property = "x";
+        }
+        public int propertyChangedCallCount;
+        void POCOViewModel_SubscribeInCtor_PropertyChanged(object sender, PropertyChangedEventArgs e) {
+            propertyChangedCallCount++;
+        }
+        public virtual string Property { get; set; }
     }
 }
