@@ -15,7 +15,7 @@ namespace MetaSharp.Console {
             try {
                 return Process(args);
             } catch(Exception e) {
-                System.Console.Error.WriteLine(e.ToString());
+                System.Console.WriteLine(e.ToString());
                 return 1; 
             }
         }
