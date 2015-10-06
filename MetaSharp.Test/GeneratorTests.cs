@@ -456,7 +456,7 @@ using System.Windows.Forms;
 using System.Drawing;
 
 [assembly: MetaReference(""System.Collections.Immutable.dll"")]
-[assembly: MetaReference(""bin\\Xunit.Assert.dll"", RelativeLocation.TargetPath)]
+[assembly: MetaReference(""bin\\Xunit.Assert.dll"", ReferenceRelativeLocation.TargetPath)]
 namespace MetaSharp.HelloWorld {
     public static class HelloWorldGenerator {
         public static string SayHello(MetaContext context) {

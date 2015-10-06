@@ -205,11 +205,11 @@ namespace MetaSharp {
         }
         static ImmutableDictionary<string, string> GetMetaReferences(this CSharpCompilation compilation, BuildConstants buildConsants) {
             return compilation
-                .GetAttributeValues<MetaReferenceAttribute, Tuple<string, RelativeLocation>>(values => values.ToValues<string, RelativeLocation>())
+                .GetAttributeValues<MetaReferenceAttribute, Tuple<string, ReferenceRelativeLocation>>(values => values.ToValues<string, ReferenceRelativeLocation>())
                 .Select(values => {
                     var path = values.Item1;
                     var location = values.Item2;
-                    var relativePath = location == RelativeLocation.Project ? string.Empty : buildConsants.TargetPath;
+                    var relativePath = location == ReferenceRelativeLocation.Project ? string.Empty : buildConsants.TargetPath;
                     return Path.Combine(relativePath, path);
                 })
                 .ToImmutableDictionary(x => Path.GetFileNameWithoutExtension(x), x => x);

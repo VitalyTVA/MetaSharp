@@ -67,19 +67,20 @@ $@"namespace {metaContext.Namespace} {{
     public sealed class MetaCompleteViewModelAttribute : Attribute {
     }
 
-    public enum RelativeLocation {
+    public enum ReferenceRelativeLocation {
         Project,
         TargetPath,
+        Framework,
     }
 
     [AttributeUsage(AttributeTargets.Assembly, AllowMultiple = true)]
     public sealed class MetaReferenceAttribute : Attribute {
-        public MetaReferenceAttribute(string dllName, RelativeLocation relativeLocation = RelativeLocation.Project) {
+        public MetaReferenceAttribute(string dllName, ReferenceRelativeLocation relativeLocation = ReferenceRelativeLocation.Project) {
             DllName = dllName;
             RelativeLocation = relativeLocation;
         }
         public string DllName { get; private set; }
-        public RelativeLocation RelativeLocation { get; private set; }
+        public ReferenceRelativeLocation RelativeLocation { get; private set; }
     }
     [AttributeUsage(AttributeTargets.Method)]
     public sealed class MetaRewriteTypeArgsAttribute : Attribute {
