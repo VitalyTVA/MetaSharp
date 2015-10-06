@@ -14,6 +14,7 @@ using System.Reflection;
 using System.Text;
 
 namespace MetaSharp {
+    //TODO line with error from console is wrong
     //TODO UGLY ERRORS IN REWRITER on non-compilable code
 
     //TODO Conditional("METASHARP") attribute for all meta attributes so they do not go to final assembly
