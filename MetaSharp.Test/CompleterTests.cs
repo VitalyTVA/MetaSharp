@@ -251,17 +251,17 @@ using System;
     [MetaCompleteDependencyProperties]
     public partial class DObject {
         static DObject() {
-            DoBefore();
+            /*DoBefore();
             if(true) {
                 DependencyPropertiesRegistrator<DObject>.New()
                     .Register(x => x.No, out NProperty)
                 ;
-            }
+            }*/
             DependencyPropertiesRegistrator<DObject>.New()
-                .Register(x => x.Prop1, out Prop1Property)
-                .Register(x => x.Prop2, out Prop2Property)
+                .Register<string>(x => x.Prop1, out Prop1Property)
+                .Register<int>(x => x.Prop2, out Prop2Property)
             ;
-            DoAfter();
+            //DoAfter();
         }
         public DObject() {
             DependencyPropertiesRegistrator<DObject>.New()
@@ -275,6 +275,18 @@ using System;
             string output =
 @"namespace MetaSharp.Incomplete {
 using System;
+    partial class DObject {
+        public static readonly DependencyProperty Prop1Property;
+        public string Prop1 {
+            get { return (string)GetValue(Prop1Property); }
+            set { SetValue(Prop1Property, value); }
+        }
+        public static readonly DependencyProperty Prop2Property;
+        public int Prop2 {
+            get { return (int)GetValue(Prop2Property); }
+            set { SetValue(Prop2Property, value); }
+        }
+    }
 }";
             var name = "IncompleteDObjects.cs";
             AssertMultipleFilesOutput(

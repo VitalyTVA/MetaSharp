@@ -33,7 +33,8 @@ namespace MetaSharp.Native {
             }
         }
 
-        public static IEnumerable<T> Unfold<T>(T start, Func<T, T> next, Func<T, bool> stop) {
+        public static IEnumerable<T> Unfold<T>(T start, Func<T, T> next, Func<T, bool> stop = null) {
+            stop = stop ?? (x => x == null);
             for(var current = start; !stop(current); current = next(current)) {
                 yield return current;
             }

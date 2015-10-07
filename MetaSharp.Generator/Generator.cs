@@ -397,7 +397,7 @@ namespace MetaSharp {
             return compilation.GetDiagnostics().Where(x => x.Severity == DiagnosticSeverity.Error);
         }
         public static IEnumerable<SyntaxNode> GetParents(this SyntaxNode node) {
-            return LinqExtensions.Unfold(node.Parent, x => x.Parent, x => x != null);
+            return LinqExtensions.Unfold(node.Parent, x => x.Parent);
         }
         public static MetaContext CreateContext(this Location location, string @namespace) {
             var nodes = location.SourceTree.GetCompilationUnitRoot().DescendantNodes(location.SourceSpan);
