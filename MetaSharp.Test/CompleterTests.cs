@@ -234,6 +234,62 @@ namespace MetaSharp.Incomplete {
             );
             AssertCompiles(input, incomplete, output, additionalClasses);
         }
+        #endregion
+
+        #region view model
+        [Fact]
+        public void DependencyProperties() {
+            var input = @"
+using MetaSharp;
+[assembly: MetaProto(""IncompleteDObjects.cs"")]
+";
+            string incomplete =
+@"
+using MetaSharp;
+namespace MetaSharp.Incomplete {
+using System;
+    [MetaCompleteDependencyProperties]
+    public partial class DObject {
+        static DObject() {
+            DoBefore();
+            if(true) {
+                DependencyPropertiesRegistrator<DObject>.New()
+                    .Register(x => x.No, out NProperty)
+                ;
+            }
+            DependencyPropertiesRegistrator<DObject>.New()
+                .Register(x => x.Prop1, out Prop1Property)
+                .Register(x => x.Prop2, out Prop2Property)
+            ;
+            DoAfter();
+        }
+        public DObject() {
+            DependencyPropertiesRegistrator<DObject>.New()
+                .Register(x => x.Prop1, out Prop1Property)
+                .Register(x => x.Prop2, out Prop2Property)
+            ;
+        }
     }
-    #endregion
+}";
+
+            string output =
+@"namespace MetaSharp.Incomplete {
+using System;
+}";
+            var name = "IncompleteDObjects.cs";
+            AssertMultipleFilesOutput(
+                ImmutableArray.Create(
+                    new TestFile(SingleInputFileName, input),
+                    new TestFile(name, incomplete, isInFlow: false)
+                ),
+                ImmutableArray.Create(
+                    new TestFile(GetProtoOutputFileName(name), output)
+                ),
+                ignoreEmptyLines: true
+            );
+            //AssertCompiles(input, incomplete, output, additionalClasses);
+        }
+        #endregion
+
+    }
 }

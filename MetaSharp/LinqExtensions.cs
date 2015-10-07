@@ -33,6 +33,12 @@ namespace MetaSharp.Native {
             }
         }
 
+        public static IEnumerable<T> Unfold<T>(T start, Func<T, T> next, Func<T, bool> stop) {
+            for(var current = start; !stop(current); current = next(current)) {
+                yield return current;
+            }
+        }
+
         public static T ToValue<T>(this object[] values)
             => (T)values.Single();
         public static Tuple<T1, T2> ToValues<T1, T2>(this object[] values) {

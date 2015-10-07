@@ -38,6 +38,7 @@
   <ItemGroup>
     <Compile Include="Completer.cs" />
     <Compile Include="Completers\ClassCompleter.cs" />
+    <Compile Include="Completers\DependencyPropertiesCompleter.cs" />
     <Compile Include="Completers\ViewModelCompleter.cs" />
     <Compile Include="Generator.cs" />
     <Compile Include="LinqExtensions.cs" />

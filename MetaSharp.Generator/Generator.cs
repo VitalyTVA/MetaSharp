@@ -397,10 +397,7 @@ namespace MetaSharp {
             return compilation.GetDiagnostics().Where(x => x.Severity == DiagnosticSeverity.Error);
         }
         public static IEnumerable<SyntaxNode> GetParents(this SyntaxNode node) {
-            while(node.Parent != null) {
-                yield return node.Parent;
-                node = node.Parent;
-            }
+            return LinqExtensions.Unfold(node.Parent, x => x.Parent, x => x != null);
         }
         public static MetaContext CreateContext(this Location location, string @namespace) {
             var nodes = location.SourceTree.GetCompilationUnitRoot().DescendantNodes(location.SourceSpan);
@@ -418,6 +415,9 @@ namespace MetaSharp {
         }
         public static IEnumerable<IMethodSymbol> Methods(this INamedTypeSymbol type) {
             return type.GetMembers().OfType<IMethodSymbol>();
+        }
+        public static IMethodSymbol StaticConstructor(this INamedTypeSymbol type) {
+            return type.Methods().FirstOrDefault(x => x.Name == WellKnownMemberNames.StaticConstructorName);
         }
         public static string ToAccessibilityModifier(this Accessibility accessibility, Accessibility? containingAccessibility) {
             if(containingAccessibility != null && containingAccessibility.Value == accessibility)
@@ -438,9 +438,12 @@ namespace MetaSharp {
             }
         }
         public static bool IsAutoImplemented(this IPropertySymbol property) {
-            var location = property.Location();
-            var propertySyntax = (PropertyDeclarationSyntax)location.SourceTree.GetCompilationUnitRoot().FindNode(location.SourceSpan);
+            var propertySyntax = (PropertyDeclarationSyntax)property.Node();
             return propertySyntax.AccessorList.Accessors.First().Body == null;
+        }
+        public static SyntaxNode Node(this ISymbol symbol) {
+            var location = symbol.Location();
+            return location.SourceTree.GetCompilationUnitRoot().FindNode(location.SourceSpan);
         }
     }
 

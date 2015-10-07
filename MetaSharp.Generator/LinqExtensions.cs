@@ -6,7 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace MetaSharp.Utils {
-    public static class LinqExtensions {
+    public static class LinqExtensionsEx {
         public static ImmutableArray<T> YieldToImmutable<T>(this T item) {
             return ImmutableArray.Create(item);
         }

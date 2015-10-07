@@ -17,6 +17,7 @@ namespace MetaSharp {
             Completers = ImmutableDictionary<Type, TypeCompleter>.Empty
                 .Add(typeof(MetaCompleteClassAttribute), ClassCompleter.Generate)
                 .Add(typeof(MetaCompleteViewModelAttribute), ViewModelCompleter.Generate)
+                .Add(typeof(MetaCompleteDependencyPropertiesAttribute), DependencyPropertiesCompleter.Generate)
             ;
         }
         internal static ImmutableArray<Output> GetCompletions(CSharpCompilation compilation, Environment environment) {
