@@ -33,6 +33,7 @@ namespace MetaSharp {
             //TODO check syntax errors first
             //TODO use rewriters/rewriting rules from already compiled meta assembly
             //TODO generate errors if class is not partial
+            //TODO allow to specify default complete attributes in MetaProto attribute??
 
             return prototypes
                 .Select(pair => {
