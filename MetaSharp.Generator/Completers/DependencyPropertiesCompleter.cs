@@ -53,29 +53,29 @@ $@"partial class {type.Name} {{
                     var propertyType = nameSyntax.TypeArgumentList.Arguments.Single().ToFullString();
                     var propertyName = ((IdentifierNameSyntax)x.ArgumentList.Arguments[1].Expression).ToFullString().ReplaceEnd("Property", string.Empty);
                     var readOnly = nameSyntax.Identifier.ValueText == "RegisterReadOnly";
-                    return new { propertyType, propertyName, readOnly };
+                    return GenerateProperty(propertyType, propertyName, readOnly);
                 })
                 .Reverse()
                 .ToArray();
-            return properties
-                .Select(x => {
-                    return x.readOnly 
-                        ?
-$@"public static readonly DependencyProperty {x.propertyName}Property;
-static readonly DependencyPropertyKey {x.propertyName}PropertyKey;
-public {x.propertyType} {x.propertyName} {{
-    get {{ return ({x.propertyType})GetValue({x.propertyName}Property); }}
-    private set {{ SetValue({x.propertyName}PropertyKey, value); }}
+            return properties.ConcatStringsWithNewLines();
+        }
+        static string GenerateProperty(string propertyType, string propertyName, bool readOnly) {
+            return readOnly
+?
+$@"public static readonly DependencyProperty {propertyName}Property;
+static readonly DependencyPropertyKey {propertyName}PropertyKey;
+public {propertyType} {propertyName} {{
+    get {{ return ({propertyType})GetValue({propertyName}Property); }}
+    private set {{ SetValue({propertyName}PropertyKey, value); }}
 }}
-"                       :
-$@"public static readonly DependencyProperty {x.propertyName}Property;
-public {x.propertyType} {x.propertyName} {{
-    get {{ return ({x.propertyType})GetValue({x.propertyName}Property); }}
-    set {{ SetValue({x.propertyName}Property, value); }}
+"
+:
+$@"public static readonly DependencyProperty {propertyName}Property;
+public {propertyType} {propertyName} {{
+    get {{ return ({propertyType})GetValue({propertyName}Property); }}
+    set {{ SetValue({propertyName}Property, value); }}
 }}
 ";
-                })
-                .ConcatStringsWithNewLines();
         }
     }
 }
