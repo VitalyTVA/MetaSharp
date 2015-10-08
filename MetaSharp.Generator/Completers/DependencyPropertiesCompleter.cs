@@ -17,7 +17,7 @@ namespace MetaSharp {
             //TODO error or skip if null
             var cctor = type.StaticConstructor();
             var syntax = (ConstructorDeclarationSyntax)cctor.Node();
-            var chain = syntax.Body.Statements
+            var properties = syntax.Body.Statements
                 .Select(statement => {
                     return (statement as ExpressionStatementSyntax)?.Expression as InvocationExpressionSyntax;
                 })
@@ -28,12 +28,21 @@ namespace MetaSharp {
                     )
                     .ToArray()
                 )
-                .Where(x => {
-                    var lastMemberAccess = x.Last().Expression as MemberAccessExpressionSyntax;
+                .Where(chain => {
+                    var lastMemberAccess = chain.Last().Expression as MemberAccessExpressionSyntax;
                     return (lastMemberAccess?.Expression as GenericNameSyntax)?.Identifier.ValueText == "DependencyPropertiesRegistrator"
                         && lastMemberAccess?.Name.Identifier.ValueText == "New";
                 })
-                .First();
+                .Select(chain => GenerateProperties(type, chain))
+                .ConcatStringsWithNewLines();
+            var result =
+$@"partial class {type.Name} {{
+{properties.AddTabs(1)}
+}}";
+            return result;
+        }
+
+        private static string GenerateProperties(INamedTypeSymbol type, InvocationExpressionSyntax[] chain) {
             var last = (MemberAccessExpressionSyntax)chain.Last().Expression;
             var ownerType = ((GenericNameSyntax)last.Expression).TypeArgumentList.Arguments.Single().ToFullString(); //TODO check last name == "New"
             var properties = chain
@@ -46,9 +55,9 @@ namespace MetaSharp {
                 })
                 .Reverse()
                 .ToArray();
-            var propertiesString = properties
+            return properties
                 .Select(x => {
-                    return 
+                    return
 $@"public static readonly DependencyProperty {x.propertyName}Property;
 public {x.propertyType} {x.propertyName} {{
     get {{ return ({x.propertyType})GetValue({x.propertyName}Property); }}
@@ -57,11 +66,6 @@ public {x.propertyType} {x.propertyName} {{
 ";
                 })
                 .ConcatStringsWithNewLines();
-            var result = 
-$@"partial class {type.Name} {{
-{propertiesString.AddTabs(1)}
-}}";
-            return result;
         }
     }
 }

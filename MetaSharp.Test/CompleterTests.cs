@@ -263,6 +263,9 @@ using System;
                 .Register<string>(x => x.Prop1, out Prop1Property)
                 .Register<int>(x => x.Prop2, out Prop2Property)
             ;
+            DependencyPropertiesRegistrator<DObject>.New()
+                .Register<string>(x => x.Prop3, out Prop3Property)
+            ;
             DoAfter();
         }
         public DObject() {
@@ -287,6 +290,11 @@ using System;
         public int Prop2 {
             get { return (int)GetValue(Prop2Property); }
             set { SetValue(Prop2Property, value); }
+        }
+        public static readonly DependencyProperty Prop3Property;
+        public string Prop3 {
+            get { return (string)GetValue(Prop3Property); }
+            set { SetValue(Prop3Property, value); }
         }
     }
 }";
