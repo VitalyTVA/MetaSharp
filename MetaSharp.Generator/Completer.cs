@@ -11,7 +11,7 @@ using System.Threading.Tasks;
 
 namespace MetaSharp {
     delegate string TypeCompleter(SemanticModel model, INamedTypeSymbol type);
-    //TODO USE MONADS, NOT EXCEPTIONS!!!
+    //TODO USE MONADS, NOT EXCEPTIONS!!! (this way you can have more than 1 error!!!)
     class CompleterErrorException {
         public readonly GeneratorError Error;
         public CompleterErrorException(GeneratorError error) {
@@ -27,7 +27,7 @@ namespace MetaSharp {
                 .Add(typeof(MetaCompleteDependencyPropertiesAttribute), DependencyPropertiesCompleter.Generate)
             ;
         }
-        internal static ImmutableArray<Output> GetCompletions(CSharpCompilation compilation, Environment environment) {
+        internal static Either<ImmutableArray<GeneratorError>, ImmutableArray<Output>> GetCompletions(CSharpCompilation compilation, Environment environment) {
             var prototypes = compilation
                 .GetAttributeValues<MetaProtoAttribute, Tuple<string, MetaLocationKind>>(values => values.ToValues<string, MetaLocationKind>())
                 .Select(x => new { Input = x.Item1, Output = OutputFileName.Create(x.Item1, environment, x.Item2) })
@@ -42,7 +42,7 @@ namespace MetaSharp {
             //TODO generate errors if class is not partial
             //TODO allow to specify default complete attributes in MetaProto attribute??
 
-            return prototypes
+            var result = prototypes
                 .Select(pair => {
                     var tree = pair.Key;
                     var model = compilationWithPrototypes.GetSemanticModel(tree);
@@ -67,6 +67,7 @@ namespace MetaSharp {
                     return new Output(text, pair.Value);
                 })
                 .ToImmutableArray();
+            return Either.Right<ImmutableArray<GeneratorError>, ImmutableArray<Output>>(result);
         }
     }
 }

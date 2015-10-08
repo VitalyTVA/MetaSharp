@@ -187,7 +187,7 @@ namespace MetaSharp {
                     })
                     .ToImmutableArray();
 
-                var completions = Completer.GetCompletions(compilation, environment);
+                var completions = Completer.GetCompletions(compilation, environment).ToRight();
                 var outputFiles = outputs.Concat(completions)
                     .Select(output => { 
                         environment.WriteText(output.FileName.FileName, output.Text);
@@ -446,7 +446,7 @@ namespace MetaSharp {
             return location.SourceTree.GetCompilationUnitRoot().FindNode(location.SourceSpan);
         }
     }
-
+    //TODO replace with Either
     public class GeneratorResult {
         public readonly ImmutableArray<string> Files;
         public readonly ImmutableArray<GeneratorError> Errors;
