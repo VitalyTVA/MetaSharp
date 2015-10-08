@@ -49,16 +49,21 @@ $@"partial class {type.Name} {{
                 .Take(chain.Length - 1)
                 .Select(x => {
                     var memberAccess = (MemberAccessExpressionSyntax)x.Expression;
-                    var nameSyntax = (GenericNameSyntax)memberAccess.Name;
+                    var nameSyntax = memberAccess.Name as GenericNameSyntax;
+                    if(nameSyntax == null)
+                        return null;
+                    var methodName = nameSyntax.Identifier.ValueText;
+                    if(!methodName.StartsWith("Register"))
+                        return null;
                     var propertyType = nameSyntax.TypeArgumentList.Arguments.Single().ToFullString();
                     var propertyName = ((IdentifierNameSyntax)x.ArgumentList.Arguments[1].Expression).ToFullString().ReplaceEnd("Property", string.Empty);
-                    var methodName = nameSyntax.Identifier.ValueText;
                     var readOnly = methodName == "RegisterReadOnly" || methodName == "RegisterAttachedReadOnly";
                     var attached = methodName == "RegisterAttached" || methodName == "RegisterAttachedReadOnly";
                     return GenerateFields(propertyName, readOnly) + System.Environment.NewLine + (attached 
                         ? GenerateAttachedProperty(propertyType, propertyName, readOnly)
                         : GenerateProperty(propertyType, propertyName, readOnly));
                 })
+                .Where(x => x != null)
                 .Reverse()
                 .ToArray();
             return properties.ConcatStringsWithNewLines();

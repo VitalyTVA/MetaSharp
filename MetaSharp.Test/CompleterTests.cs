@@ -261,8 +261,8 @@ using System;
             DependencyPropertiesRegistrator<X>.Bla().Register<string>(x => x.No, out NoProperty);
             DependencyPropertiesRegistrator<DObject>. New ()
                 .Register<string>(x => x.Prop1, out Prop1Property, x => 5)
-                //.SomethingUnknownGeneric<T>()
-                //.SomethingUnknown()
+                .SomethingUnknownGeneric<T>()
+                .SomethingUnknown()
                 .RegisterReadOnly<int>(x => x.Prop2, out Prop2Property, out Prop2PropertyKey, 3)
             ;
             DependencyPropertiesRegistrator<DObject>.New()
