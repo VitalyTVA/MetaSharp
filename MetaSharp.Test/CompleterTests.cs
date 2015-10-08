@@ -260,8 +260,10 @@ using System;
             Some<X>.New().Register<string>(x => x.No, out NoProperty);
             DependencyPropertiesRegistrator<X>.Bla().Register<string>(x => x.No, out NoProperty);
             DependencyPropertiesRegistrator<DObject>. New ()
-                .Register<string>(x => x.Prop1, out Prop1Property)
-                .Register<int>(x => x.Prop2, out Prop2Property)
+                .Register<string>(x => x.Prop1, out Prop1Property, x => 5)
+                //.SomethingUnknownGeneric<T>()
+                //.SomethingUnknown()
+                .RegisterReadOnly<int>(x => x.Prop2, out Prop2Property, out Prop2PropertyKey, 3)
             ;
             DependencyPropertiesRegistrator<DObject>.New()
                 .Register<string>(x => x.Prop3, out Prop3Property)
@@ -287,9 +289,10 @@ using System;
             set { SetValue(Prop1Property, value); }
         }
         public static readonly DependencyProperty Prop2Property;
+        static readonly DependencyPropertyKey Prop2PropertyKey;
         public int Prop2 {
             get { return (int)GetValue(Prop2Property); }
-            set { SetValue(Prop2Property, value); }
+            private set { SetValue(Prop2PropertyKey, value); }
         }
         public static readonly DependencyProperty Prop3Property;
         public string Prop3 {

@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace MetaSharp {
     //TODO report invalid owner type error
-    //TODO report invalid dependency property field name error
+    //TODO report invalid dependency property [key] field name error
     //TODO report property type specified error
     //TODO multiple statements in cctor
     static class DependencyPropertiesCompleter {
@@ -49,15 +49,25 @@ $@"partial class {type.Name} {{
                 .Take(chain.Length - 1)
                 .Select(x => {
                     var memberAccess = (MemberAccessExpressionSyntax)x.Expression;
-                    var propertyType = ((GenericNameSyntax)memberAccess.Name).TypeArgumentList.Arguments.Single().ToFullString();
+                    var nameSyntax = (GenericNameSyntax)memberAccess.Name;
+                    var propertyType = nameSyntax.TypeArgumentList.Arguments.Single().ToFullString();
                     var propertyName = ((IdentifierNameSyntax)x.ArgumentList.Arguments[1].Expression).ToFullString().ReplaceEnd("Property", string.Empty);
-                    return new { propertyType, propertyName };
+                    var readOnly = nameSyntax.Identifier.ValueText == "RegisterReadOnly";
+                    return new { propertyType, propertyName, readOnly };
                 })
                 .Reverse()
                 .ToArray();
             return properties
                 .Select(x => {
-                    return
+                    return x.readOnly 
+                        ?
+$@"public static readonly DependencyProperty {x.propertyName}Property;
+static readonly DependencyPropertyKey {x.propertyName}PropertyKey;
+public {x.propertyType} {x.propertyName} {{
+    get {{ return ({x.propertyType})GetValue({x.propertyName}Property); }}
+    private set {{ SetValue({x.propertyName}PropertyKey, value); }}
+}}
+"                       :
 $@"public static readonly DependencyProperty {x.propertyName}Property;
 public {x.propertyType} {x.propertyName} {{
     get {{ return ({x.propertyType})GetValue({x.propertyName}Property); }}
