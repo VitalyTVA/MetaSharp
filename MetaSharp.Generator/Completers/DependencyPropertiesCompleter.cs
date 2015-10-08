@@ -52,8 +52,12 @@ $@"partial class {type.Name} {{
                     var nameSyntax = (GenericNameSyntax)memberAccess.Name;
                     var propertyType = nameSyntax.TypeArgumentList.Arguments.Single().ToFullString();
                     var propertyName = ((IdentifierNameSyntax)x.ArgumentList.Arguments[1].Expression).ToFullString().ReplaceEnd("Property", string.Empty);
-                    var readOnly = nameSyntax.Identifier.ValueText == "RegisterReadOnly";
-                    return GenerateProperty(propertyType, propertyName, readOnly);
+                    var methodName = nameSyntax.Identifier.ValueText;
+                    var readOnly = methodName == "RegisterReadOnly" || methodName == "RegisterAttachedReadOnly";
+                    var attached = methodName == "RegisterAttached";
+                    return attached 
+                        ? GenerateAttachedProperty(propertyType, propertyName, readOnly)
+                        : GenerateProperty(propertyType, propertyName, readOnly);
                 })
                 .Reverse()
                 .ToArray();
@@ -74,6 +78,26 @@ $@"public static readonly DependencyProperty {propertyName}Property;
 public {propertyType} {propertyName} {{
     get {{ return ({propertyType})GetValue({propertyName}Property); }}
     set {{ SetValue({propertyName}Property, value); }}
+}}
+";
+        }
+        static string GenerateAttachedProperty(string propertyType, string propertyName, bool readOnly) {
+            return readOnly
+?
+$@"public static readonly DependencyProperty {propertyName}Property;
+static readonly DependencyPropertyKey {propertyName}PropertyKey;
+public {propertyType} {propertyName} {{
+    get {{ return ({propertyType})GetValue({propertyName}Property); }}
+    private set {{ SetValue({propertyName}PropertyKey, value); }}
+}}
+"
+:
+$@"public static readonly DependencyProperty {propertyName}Property;
+public {propertyType} Get{propertyName}(DependencyObject d) {{
+    return ({propertyType})d.GetValue({propertyName}Property);
+}}
+public void Set{propertyName}(DependencyObject d, {propertyType} value) {{
+    d.SetValue({propertyName}Property, value);
 }}
 ";
         }

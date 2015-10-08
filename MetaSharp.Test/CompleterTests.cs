@@ -266,7 +266,7 @@ using System;
                 .RegisterReadOnly<int>(x => x.Prop2, out Prop2Property, out Prop2PropertyKey, 3)
             ;
             DependencyPropertiesRegistrator<DObject>.New()
-                .Register<string>(x => x.Prop3, out Prop3Property)
+                .RegisterAttached<string>(x => x.Prop3, out Prop3Property)
             ;
             DoAfter();
         }
@@ -295,9 +295,11 @@ using System;
             private set { SetValue(Prop2PropertyKey, value); }
         }
         public static readonly DependencyProperty Prop3Property;
-        public string Prop3 {
-            get { return (string)GetValue(Prop3Property); }
-            set { SetValue(Prop3Property, value); }
+        public string GetProp3(DependencyObject d) {
+            return (string)d.GetValue(Prop3Property);
+        }
+        public void SetProp3(DependencyObject d, string value) {
+            d.SetValue(Prop3Property, value);
         }
     }
 }";
