@@ -17,12 +17,22 @@ namespace MetaSharp {
             //TODO error or skip if null
             var cctor = type.StaticConstructor();
             var syntax = (ConstructorDeclarationSyntax)cctor.Node();
-            var regStatement = (InvocationExpressionSyntax)((ExpressionStatementSyntax)syntax.Body.Statements.Single()).Expression;
-            var chain = LinqExtensions.Unfold(
-                    regStatement,
-                    x => (x.Expression as MemberAccessExpressionSyntax)?.Expression as InvocationExpressionSyntax
+            var chain = syntax.Body.Statements
+                .Select(statement => {
+                    return (statement as ExpressionStatementSyntax)?.Expression as InvocationExpressionSyntax;
+                })
+                .Where(invocation => invocation != null)
+                .Select(invocation => LinqExtensions.Unfold(
+                        invocation,
+                        x => (x.Expression as MemberAccessExpressionSyntax)?.Expression as InvocationExpressionSyntax
+                    )
+                    .ToArray()
                 )
-                .ToArray();
+                .Where(x => {
+                    var lastMemberAccess = x.Last().Expression as MemberAccessExpressionSyntax;
+                    return lastMemberAccess != null;
+                })
+                .First();
             var last = (MemberAccessExpressionSyntax)chain.Last().Expression;
             var ownerType = ((GenericNameSyntax)last.Expression).TypeArgumentList.Arguments.Single().ToFullString(); //TODO check last name == "New"
             var properties = chain

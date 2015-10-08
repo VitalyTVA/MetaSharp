@@ -251,17 +251,17 @@ using System;
     [MetaCompleteDependencyProperties]
     public partial class DObject {
         static DObject() {
-            /*DoBefore();
+            DoBefore();
             if(true) {
                 DependencyPropertiesRegistrator<DObject>.New()
                     .Register(x => x.No, out NProperty)
                 ;
-            }*/
+            }
             DependencyPropertiesRegistrator<DObject>.New()
                 .Register<string>(x => x.Prop1, out Prop1Property)
                 .Register<int>(x => x.Prop2, out Prop2Property)
             ;
-            //DoAfter();
+            DoAfter();
         }
         public DObject() {
             DependencyPropertiesRegistrator<DObject>.New()
