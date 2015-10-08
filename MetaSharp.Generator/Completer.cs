@@ -17,7 +17,8 @@ namespace MetaSharp {
         public readonly SyntaxTree Tree;
         public readonly string Id;
         public readonly FileLinePositionSpan Span;
-        public CompleterErrorException(SyntaxTree tree, string id, FileLinePositionSpan span) {
+        public CompleterErrorException(SyntaxTree tree, string id, string message, FileLinePositionSpan span) 
+            : base(message) {
             Tree = tree;
             Span = span;
             Id = id;

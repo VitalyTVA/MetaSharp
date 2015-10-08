@@ -14,7 +14,8 @@ namespace MetaSharp {
     //TODO multiple statements in cctor
     public static class DependencyPropertiesCompleter {
         const string ErrorPrefix = "MetaDP";
-        public const string PropertyTypeMissedId = ErrorPrefix + "0001";
+        public const string PropertyTypeMissed_Id = ErrorPrefix + "0001";
+        public const string PropertyTypeMissed_Message = "Property type should be explicitly specified to generate dependency property";
 
         public static string Generate(SemanticModel model, INamedTypeSymbol type) {
             //TODO error or skip if null
@@ -57,7 +58,7 @@ $@"partial class {type.Name} {{
                     if(nameSyntaxGeneric == null) {
                         if(methodName.StartsWith("Register")) {
                             var span = memberAccess.Name.GetLocation().GetLineSpan();
-                            throw new CompleterErrorException(memberAccess.Name.SyntaxTree, PropertyTypeMissedId, new FileLinePositionSpan(string.Empty, span.EndLinePosition, span.EndLinePosition));
+                            throw new CompleterErrorException(memberAccess.Name.SyntaxTree, PropertyTypeMissed_Id, PropertyTypeMissed_Message, new FileLinePositionSpan(string.Empty, span.EndLinePosition, span.EndLinePosition));
                         }
                         return null;
                     }
