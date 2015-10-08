@@ -267,6 +267,7 @@ using System;
             ;
             DependencyPropertiesRegistrator<DObject>.New()
                 .RegisterAttached<string>(x => x.Prop3, out Prop3Property)
+                .RegisterAttachedReadOnly<string>(x => x.Prop4, out Prop4Property, out Prop4PropertyKey)
             ;
             DoAfter();
         }
@@ -300,6 +301,14 @@ using System;
         }
         public void SetProp3(DependencyObject d, string value) {
             d.SetValue(Prop3Property, value);
+        }
+        public static readonly DependencyProperty Prop4Property;
+        static readonly DependencyPropertyKey Prop4PropertyKey;
+        public string GetProp4(DependencyObject d) {
+            return (string)d.GetValue(Prop4Property);
+        }
+        void SetProp4(DependencyObject d, string value) {
+            d.SetValue(Prop4PropertyKey, value);
         }
     }
 }";

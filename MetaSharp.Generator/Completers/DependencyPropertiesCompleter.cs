@@ -30,7 +30,7 @@ namespace MetaSharp {
                 )
                 .Where(chain => {
                     var lastMemberAccess = chain.Last().Expression as MemberAccessExpressionSyntax;
-                    return (lastMemberAccess?.Expression as GenericNameSyntax)?.Identifier.ValueText == "DependencyPropertiesRegistrator"
+                    return (lastMemberAccess?.Expression as GenericNameSyntax)?.Identifier.ValueText == "DependencyPropertiesRegistrator" //TODO check real type from model
                         && lastMemberAccess?.Name.Identifier.ValueText == "New";
                 })
                 .Select(chain => GenerateProperties(type, chain))
@@ -54,7 +54,7 @@ $@"partial class {type.Name} {{
                     var propertyName = ((IdentifierNameSyntax)x.ArgumentList.Arguments[1].Expression).ToFullString().ReplaceEnd("Property", string.Empty);
                     var methodName = nameSyntax.Identifier.ValueText;
                     var readOnly = methodName == "RegisterReadOnly" || methodName == "RegisterAttachedReadOnly";
-                    var attached = methodName == "RegisterAttached";
+                    var attached = methodName == "RegisterAttached" || methodName == "RegisterAttachedReadOnly";
                     return attached 
                         ? GenerateAttachedProperty(propertyType, propertyName, readOnly)
                         : GenerateProperty(propertyType, propertyName, readOnly);
@@ -86,9 +86,11 @@ public {propertyType} {propertyName} {{
 ?
 $@"public static readonly DependencyProperty {propertyName}Property;
 static readonly DependencyPropertyKey {propertyName}PropertyKey;
-public {propertyType} {propertyName} {{
-    get {{ return ({propertyType})GetValue({propertyName}Property); }}
-    private set {{ SetValue({propertyName}PropertyKey, value); }}
+public {propertyType} Get{propertyName}(DependencyObject d) {{
+    return ({propertyType})d.GetValue({propertyName}Property);
+}}
+void Set{propertyName}(DependencyObject d, {propertyType} value) {{
+    d.SetValue({propertyName}PropertyKey, value);
 }}
 "
 :
