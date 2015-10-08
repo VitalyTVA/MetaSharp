@@ -57,7 +57,7 @@ $@"partial class {type.Name} {{
                     if(nameSyntaxGeneric == null) {
                         if(methodName.StartsWith("Register")) {
                             var span = memberAccess.Name.GetLocation().GetLineSpan();
-                            throw new CompleterErrorException(PropertyTypeMissedId, new FileLinePositionSpan(string.Empty, span.EndLinePosition, span.EndLinePosition));
+                            throw new CompleterErrorException(memberAccess.Name.SyntaxTree, PropertyTypeMissedId, new FileLinePositionSpan(string.Empty, span.EndLinePosition, span.EndLinePosition));
                         }
                         return null;
                     }

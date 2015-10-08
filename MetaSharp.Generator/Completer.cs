@@ -14,9 +14,11 @@ namespace MetaSharp {
     delegate string TypeCompleter(SemanticModel model, INamedTypeSymbol type);
     //TODO USE MONADS, NOT EXCEPTIONS!!! (this way you can have more than 1 error!!!)
     class CompleterErrorException : Exception {
+        public readonly SyntaxTree Tree;
         public readonly string Id;
         public readonly FileLinePositionSpan Span;
-        public CompleterErrorException(string id, FileLinePositionSpan span) {
+        public CompleterErrorException(SyntaxTree tree, string id, FileLinePositionSpan span) {
+            Tree = tree;
             Span = span;
             Id = id;
         }
@@ -74,7 +76,7 @@ namespace MetaSharp {
                 return Either.Right<ImmutableArray<GeneratorError>, ImmutableArray<Output>>(result);
             } catch(CompleterErrorException e) {
                 var error = GeneratorError.Create(id: e.Id,
-                                    file: e.Span.Path,
+                                    file: prototypes[e.Tree].FileName,
                                     message: "",
                                     span: e.Span
                                     );

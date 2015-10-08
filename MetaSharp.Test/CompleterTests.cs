@@ -351,7 +351,7 @@ using System;
                     new TestFile(SingleInputFileName, input),
                     new TestFile(name, incomplete, isInFlow: false)
                 ),
-                errors => AssertError(errors.Single(), "", DependencyPropertiesCompleter.PropertyTypeMissedId, "", 9, 26)
+                errors => AssertError(errors.Single(), GetProtoOutputFileName("IncompleteDObjects.cs"), DependencyPropertiesCompleter.PropertyTypeMissedId, "", 9, 26)
             );
         }
         #endregion
