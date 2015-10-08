@@ -150,4 +150,47 @@ namespace MetaSharp.Native {
             return input;
         }
     }
+
+    public abstract class Either<TLeft, TRight> {
+        Either() { }
+        internal class Left : Either<TLeft, TRight> {
+            internal readonly TLeft Value;
+            internal Left(TLeft value) {
+                Value = value;
+            }
+        }
+        internal class Right : Either<TLeft, TRight> {
+            internal readonly TRight Value;
+            internal Right(TRight value) {
+                Value = value;
+            }
+        }
+    }
+    public static class Either {
+        //TODO use friend access diagnostics - only this class can access Either's internals
+        public static Either<TLeft, TRight> Left<TLeft, TRight>(TLeft value) {
+            return new Either<TLeft, TRight>.Left(value);
+        }
+        public static Either<TLeft, TRight> Right<TLeft, TRight>(TRight value) {
+            return new Either<TLeft, TRight>.Right(value);
+        }
+        public static bool IsRight<TLeft, TRight>(this Either<TLeft, TRight> value) {
+            return value.Match(left => false, right => true);
+        }
+        public static bool IsLeft<TLeft, TRight>(this Either<TLeft, TRight> value) {
+            return value.Match(left => true, right => false);
+        }
+        public static TLeft ToLeft<TLeft, TRight>(this Either<TLeft, TRight> value) {
+            return value.Match(left => left, right => { throw new InvalidOperationException(); });
+        }
+        public static TRight ToRight<TLeft, TRight>(this Either<TLeft, TRight> value) {
+            return value.Match(left => { throw new InvalidOperationException(); }, right => right);
+        }
+        public static T Match<TLeft, TRight, T>(this Either<TLeft, TRight> value, Func<TLeft, T> left, Func<TRight, T> right) {
+            var leftValue = value as Either<TLeft, TRight>.Left;
+            if(leftValue != null)
+                return left(leftValue.Value);
+            return right((value as Either<TLeft, TRight>.Right).Value);
+        }
+    }
 }

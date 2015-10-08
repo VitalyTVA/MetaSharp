@@ -11,6 +11,13 @@ using System.Threading.Tasks;
 
 namespace MetaSharp {
     delegate string TypeCompleter(SemanticModel model, INamedTypeSymbol type);
+    //TODO USE MONADS, NOT EXCEPTIONS!!!
+    class CompleterErrorException {
+        public readonly GeneratorError Error;
+        public CompleterErrorException(GeneratorError error) {
+            Error = error;
+        }
+    }
     public static class Completer {
         static ImmutableDictionary<Type, TypeCompleter> Completers;
         static Completer() {
