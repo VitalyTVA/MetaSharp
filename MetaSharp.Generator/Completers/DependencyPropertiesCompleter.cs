@@ -55,27 +55,32 @@ $@"partial class {type.Name} {{
                     var methodName = nameSyntax.Identifier.ValueText;
                     var readOnly = methodName == "RegisterReadOnly" || methodName == "RegisterAttachedReadOnly";
                     var attached = methodName == "RegisterAttached" || methodName == "RegisterAttachedReadOnly";
-                    return attached 
+                    return GenerateFields(propertyName, readOnly) + System.Environment.NewLine + (attached 
                         ? GenerateAttachedProperty(propertyType, propertyName, readOnly)
-                        : GenerateProperty(propertyType, propertyName, readOnly);
+                        : GenerateProperty(propertyType, propertyName, readOnly));
                 })
                 .Reverse()
                 .ToArray();
             return properties.ConcatStringsWithNewLines();
         }
-        static string GenerateProperty(string propertyType, string propertyName, bool readOnly) {
+        static string GenerateFields(string propertyName, bool readOnly) {
             return readOnly
 ?
 $@"public static readonly DependencyProperty {propertyName}Property;
-static readonly DependencyPropertyKey {propertyName}PropertyKey;
-public {propertyType} {propertyName} {{
+static readonly DependencyPropertyKey {propertyName}PropertyKey;"
+:
+$@"public static readonly DependencyProperty {propertyName}Property;";
+        }
+        static string GenerateProperty(string propertyType, string propertyName, bool readOnly) {
+            return readOnly
+?
+$@"public {propertyType} {propertyName} {{
     get {{ return ({propertyType})GetValue({propertyName}Property); }}
     private set {{ SetValue({propertyName}PropertyKey, value); }}
 }}
 "
 :
-$@"public static readonly DependencyProperty {propertyName}Property;
-public {propertyType} {propertyName} {{
+$@"public {propertyType} {propertyName} {{
     get {{ return ({propertyType})GetValue({propertyName}Property); }}
     set {{ SetValue({propertyName}Property, value); }}
 }}
@@ -84,9 +89,7 @@ public {propertyType} {propertyName} {{
         static string GenerateAttachedProperty(string propertyType, string propertyName, bool readOnly) {
             return readOnly
 ?
-$@"public static readonly DependencyProperty {propertyName}Property;
-static readonly DependencyPropertyKey {propertyName}PropertyKey;
-public {propertyType} Get{propertyName}(DependencyObject d) {{
+$@"public {propertyType} Get{propertyName}(DependencyObject d) {{
     return ({propertyType})d.GetValue({propertyName}Property);
 }}
 void Set{propertyName}(DependencyObject d, {propertyType} value) {{
@@ -94,8 +97,7 @@ void Set{propertyName}(DependencyObject d, {propertyType} value) {{
 }}
 "
 :
-$@"public static readonly DependencyProperty {propertyName}Property;
-public {propertyType} Get{propertyName}(DependencyObject d) {{
+$@"public {propertyType} Get{propertyName}(DependencyObject d) {{
     return ({propertyType})d.GetValue({propertyName}Property);
 }}
 public void Set{propertyName}(DependencyObject d, {propertyType} value) {{
