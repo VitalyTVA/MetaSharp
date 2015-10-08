@@ -12,7 +12,10 @@ namespace MetaSharp {
     //TODO report invalid dependency property [key] field name error
     //TODO report property type specified error
     //TODO multiple statements in cctor
-    static class DependencyPropertiesCompleter {
+    public static class DependencyPropertiesCompleter {
+        const string ErrorPrefix = "MetaDP";
+        public const string PropertyTypeMissedId = ErrorPrefix + "0001";
+
         public static string Generate(SemanticModel model, INamedTypeSymbol type) {
             //TODO error or skip if null
             var cctor = type.StaticConstructor();
@@ -49,17 +52,22 @@ $@"partial class {type.Name} {{
                 .Take(chain.Length - 1)
                 .Select(x => {
                     var memberAccess = (MemberAccessExpressionSyntax)x.Expression;
-                    var nameSyntax = memberAccess.Name as GenericNameSyntax;
-                    if(nameSyntax == null)
+                    var methodName = memberAccess.Name.Identifier.ValueText;
+                    var nameSyntaxGeneric = memberAccess.Name as GenericNameSyntax;
+                    if(nameSyntaxGeneric == null) {
+                        if(methodName.StartsWith("Register")) {
+                            var span = memberAccess.Name.GetLocation().GetLineSpan();
+                            throw new CompleterErrorException(PropertyTypeMissedId, new FileLinePositionSpan(string.Empty, span.EndLinePosition, span.EndLinePosition));
+                        }
                         return null;
-                    var methodName = nameSyntax.Identifier.ValueText;
+                    }
                     if(!methodName.StartsWith("Register"))
                         return null;
-                    var propertyType = nameSyntax.TypeArgumentList.Arguments.Single().ToFullString();
+                    var propertyType = nameSyntaxGeneric.TypeArgumentList.Arguments.Single().ToFullString();
                     var propertyName = ((IdentifierNameSyntax)x.ArgumentList.Arguments[1].Expression).ToFullString().ReplaceEnd("Property", string.Empty);
                     var readOnly = methodName == "RegisterReadOnly" || methodName == "RegisterAttachedReadOnly";
                     var attached = methodName == "RegisterAttached" || methodName == "RegisterAttachedReadOnly";
-                    return GenerateFields(propertyName, readOnly) + System.Environment.NewLine + (attached 
+                    return GenerateFields(propertyName, readOnly) + System.Environment.NewLine + (attached
                         ? GenerateAttachedProperty(propertyType, propertyName, readOnly)
                         : GenerateProperty(propertyType, propertyName, readOnly));
                 })

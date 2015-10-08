@@ -325,6 +325,35 @@ using System;
             );
             //AssertCompiles(input, incomplete, output, additionalClasses);
         }
+        [Fact]
+        public void DependencyProperties_MissingPropertyType() {
+            var input = @"
+using MetaSharp;
+[assembly: MetaProto(""IncompleteDObjects.cs"")]
+";
+            string incomplete =
+@"
+using MetaSharp;
+namespace MetaSharp.Incomplete {
+using System;
+    [MetaCompleteDependencyProperties]
+    public partial class DObject {
+        static DObject() {
+            DependencyPropertiesRegistrator<DObject>.New()
+                .Register(x => x.Prop1, out Prop1Property, x => 5)
+            ;
+        }
+    }
+}";
+            var name = "IncompleteDObjects.cs";
+            AssertMultipleFilesErrors(
+                ImmutableArray.Create(
+                    new TestFile(SingleInputFileName, input),
+                    new TestFile(name, incomplete, isInFlow: false)
+                ),
+                errors => AssertError(errors.Single(), "", DependencyPropertiesCompleter.PropertyTypeMissedId, "", 9, 26)
+            );
+        }
         #endregion
 
     }

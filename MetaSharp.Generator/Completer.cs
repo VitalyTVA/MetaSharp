@@ -1,4 +1,5 @@
 ﻿using MetaSharp.Native;
+using MetaSharp.Utils;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -12,10 +13,12 @@ using System.Threading.Tasks;
 namespace MetaSharp {
     delegate string TypeCompleter(SemanticModel model, INamedTypeSymbol type);
     //TODO USE MONADS, NOT EXCEPTIONS!!! (this way you can have more than 1 error!!!)
-    class CompleterErrorException {
-        public readonly GeneratorError Error;
-        public CompleterErrorException(GeneratorError error) {
-            Error = error;
+    class CompleterErrorException : Exception {
+        public readonly string Id;
+        public readonly FileLinePositionSpan Span;
+        public CompleterErrorException(string id, FileLinePositionSpan span) {
+            Span = span;
+            Id = id;
         }
     }
     public static class Completer {
@@ -42,32 +45,41 @@ namespace MetaSharp {
             //TODO generate errors if class is not partial
             //TODO allow to specify default complete attributes in MetaProto attribute??
 
-            var result = prototypes
-                .Select(pair => {
-                    var tree = pair.Key;
-                    var model = compilationWithPrototypes.GetSemanticModel(tree);
-                    var classSyntaxes = tree.GetRoot().DescendantNodes(x => !(x is ClassDeclarationSyntax)).OfType<ClassDeclarationSyntax>();
-                    var text = classSyntaxes
-                        .Select(x => model.GetDeclaredSymbol(x))
-                        .Select(type => {
+            try {
+                var result = prototypes
+                        .Select(pair => {
+                            var tree = pair.Key;
+                            var model = compilationWithPrototypes.GetSemanticModel(tree);
+                            var classSyntaxes = tree.GetRoot().DescendantNodes(x => !(x is ClassDeclarationSyntax)).OfType<ClassDeclarationSyntax>();
+                            var text = classSyntaxes
+                                .Select(x => model.GetDeclaredSymbol(x))
+                                .Select(type => {
                             //TODO support multiple completers for single file
                             var completer = type.GetAttributes()
-                                .Select(attributeData => symbolToTypeMap.GetValueOrDefault(attributeData.AttributeClass))
-                                .Where(attributeType => attributeType != null)
-                                .Select(attributeType => Completers[attributeType])
-                                .SingleOrDefault();
-                            return new { type, completer };
+                                        .Select(attributeData => symbolToTypeMap.GetValueOrDefault(attributeData.AttributeClass))
+                                        .Where(attributeType => attributeType != null)
+                                        .Select(attributeType => Completers[attributeType])
+                                        .SingleOrDefault();
+                                    return new { type, completer };
+                                })
+                                .Where(x => x.completer != null)
+                                .Select(x => {
+                                    var context = x.type.CreateContext();
+                                    var completion = x.completer(model, x.type);
+                                    return context.WrapMembers(completion);
+                                }).ConcatStringsWithNewLines();
+                            return new Output(text, pair.Value);
                         })
-                        .Where(x => x.completer != null)
-                        .Select(x => {
-                            var context = x.type.CreateContext();
-                            var completion = x.completer(model, x.type);
-                            return context.WrapMembers(completion);
-                        }).ConcatStringsWithNewLines();
-                    return new Output(text, pair.Value);
-                })
-                .ToImmutableArray();
-            return Either.Right<ImmutableArray<GeneratorError>, ImmutableArray<Output>>(result);
+                        .ToImmutableArray();
+                return Either.Right<ImmutableArray<GeneratorError>, ImmutableArray<Output>>(result);
+            } catch(CompleterErrorException e) {
+                var error = GeneratorError.Create(id: e.Id,
+                                    file: e.Span.Path,
+                                    message: "",
+                                    span: e.Span
+                                    );
+                return Either.Left<ImmutableArray<GeneratorError>, ImmutableArray<Output>>(error.YieldToImmutable());
+            }
         }
     }
 }

@@ -562,6 +562,8 @@ namespace MetaSharp.HelloWorld {
             AssertError(error, file, id);
             Assert.Equal(lineNumber, error.LineNumber);
             Assert.Equal(columnNumber, error.ColumnNumber);
+            Assert.Equal(lineNumber, error.EndLineNumber);
+            Assert.Equal(columnNumber, error.EndColumnNumber);
         }
         protected static void AssertError(GeneratorError error, string file, string id) {
             Assert.Equal(file, error.File);

@@ -187,7 +187,12 @@ namespace MetaSharp {
                     })
                     .ToImmutableArray();
 
-                var completions = Completer.GetCompletions(compilation, environment).ToRight();
+
+
+                var completerResult = Completer.GetCompletions(compilation, environment);
+                if(completerResult.IsLeft())
+                    return new GeneratorResult(ImmutableArray<string>.Empty, completerResult.ToLeft());
+                var completions = completerResult.ToRight();
                 var outputFiles = outputs.Concat(completions)
                     .Select(output => { 
                         environment.WriteText(output.FileName.FileName, output.Text);
@@ -268,14 +273,10 @@ namespace MetaSharp {
             return OutputFileName.Create(fileName, environment, location);
         }
         static GeneratorError ToGeneratorError(this Diagnostic error, string file, FileLinePositionSpan span) {
-            return new GeneratorError(
-                                    id: error.Id,
+            return GeneratorError.Create(id: error.Id,
                                     file: file,
                                     message: error.GetMessage(),
-                                    lineNumber: span.StartLinePosition.Line + 1,
-                                    columnNumber: span.StartLinePosition.Character + 1,
-                                    endLineNumber: span.EndLinePosition.Line + 1,
-                                    endColumnNumber: span.EndLinePosition.Character + 1
+                                    span: span
                                     );
         }
     }
@@ -456,9 +457,20 @@ namespace MetaSharp {
         }
     }
     public class GeneratorError {
+        public static GeneratorError Create(string id, string file, string message, FileLinePositionSpan span) {
+            return new GeneratorError(
+                        id: id,
+                        file: file,
+                        message: message,
+                        lineNumber: span.StartLinePosition.Line + 1,
+                        columnNumber: span.StartLinePosition.Character + 1,
+                        endLineNumber: span.EndLinePosition.Line + 1,
+                        endColumnNumber: span.EndLinePosition.Character + 1
+                        );
+        }
         public readonly string Id, File, Message;
         public readonly int LineNumber, ColumnNumber, EndLineNumber, EndColumnNumber;
-        public GeneratorError(string id, string file, string message, int lineNumber, int columnNumber, int endLineNumber, int endColumnNumber) {
+        GeneratorError(string id, string file, string message, int lineNumber, int columnNumber, int endLineNumber, int endColumnNumber) {
             Id = id;
             File = file;
             Message = message;
