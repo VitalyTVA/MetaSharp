@@ -257,8 +257,9 @@ using System;
                     .Register(x => x.No, out NProperty)
                 ;
             }
-            Some<X>.New().Register<string>(x => x.Prop1, out Prop1Property);
-            DependencyPropertiesRegistrator<DObject>.New()
+            Some<X>.New().Register<string>(x => x.No, out NoProperty);
+            DependencyPropertiesRegistrator<X>.Bla().Register<string>(x => x.No, out NoProperty);
+            DependencyPropertiesRegistrator<DObject>. New ()
                 .Register<string>(x => x.Prop1, out Prop1Property)
                 .Register<int>(x => x.Prop2, out Prop2Property)
             ;

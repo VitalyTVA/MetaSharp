@@ -30,7 +30,8 @@ namespace MetaSharp {
                 )
                 .Where(x => {
                     var lastMemberAccess = x.Last().Expression as MemberAccessExpressionSyntax;
-                    return (lastMemberAccess?.Expression as GenericNameSyntax)?.Identifier.ValueText == "DependencyPropertiesRegistrator";
+                    return (lastMemberAccess?.Expression as GenericNameSyntax)?.Identifier.ValueText == "DependencyPropertiesRegistrator"
+                        && lastMemberAccess?.Name.Identifier.ValueText == "New";
                 })
                 .First();
             var last = (MemberAccessExpressionSyntax)chain.Last().Expression;
