@@ -253,26 +253,26 @@ using System;
         static DObject() {
             DoBefore();
             if(true) {
-                DependencyPropertiesRegistrator<DObject>.New()
+                DependencyPropertyRegistrator<DObject>.New()
                     .Register(x => x.No, out NProperty)
                 ;
             }
             Some<X>.New().Register<string>(x => x.No, out NoProperty);
-            DependencyPropertiesRegistrator<X>.Bla().Register<string>(x => x.No, out NoProperty);
-            DependencyPropertiesRegistrator<DObject>. New ()
+            DependencyPropertyRegistrator<X>.Bla().Register<string>(x => x.No, out NoProperty);
+            DependencyPropertyRegistrator<DObject>. New ()
                 .Register<string>(x => x.Prop1, out Prop1Property, x => 5)
                 .SomethingUnknownGeneric<T>()
                 .SomethingUnknown()
                 .RegisterReadOnly<int>(x => x.Prop2, out Prop2Property, out Prop2PropertyKey, 3)
             ;
-            DependencyPropertiesRegistrator<DObject>.New()
+            DependencyPropertyRegistrator<DObject>.New()
                 .RegisterAttached<string>(x => x.Prop3, out Prop3Property)
                 .RegisterAttachedReadOnly<string>(x => x.Prop4, out Prop4Property, out Prop4PropertyKey)
             ;
             DoAfter();
         }
         public DObject() {
-            DependencyPropertiesRegistrator<DObject>.New()
+            DependencyPropertyRegistrator<DObject>.New()
                 .Register(x => x.Prop1, out Prop1Property)
                 .Register(x => x.Prop2, out Prop2Property)
             ;
@@ -339,7 +339,7 @@ using System;
     [MetaCompleteDependencyProperties]
     public partial class DObject {
         static DObject() {
-            DependencyPropertiesRegistrator<DObject>.New()
+            DependencyPropertyRegistrator<DObject>.New()
                 .Register(x => x.Prop1, out Prop1Property, x => 5)
             ;
         }

@@ -77,8 +77,8 @@ namespace MetaSharp {
                 return Either.Right<ImmutableArray<GeneratorError>, ImmutableArray<Output>>(result);
             } catch(CompleterErrorException e) {
                 var error = GeneratorError.Create(id: e.Id,
-                                    file: prototypes[e.Tree].FileName,
-                                    message: "",
+                                    file: System.IO.Path.GetFullPath(prototypes[e.Tree].FileName).Replace("designer.cs", "cs"),
+                                    message: e.Message,
                                     span: e.Span
                                     );
                 return Either.Left<ImmutableArray<GeneratorError>, ImmutableArray<Output>>(error.YieldToImmutable());

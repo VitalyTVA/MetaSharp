@@ -34,7 +34,7 @@ namespace MetaSharp {
                 )
                 .Where(chain => {
                     var lastMemberAccess = chain.Last().Expression as MemberAccessExpressionSyntax;
-                    return (lastMemberAccess?.Expression as GenericNameSyntax)?.Identifier.ValueText == "DependencyPropertiesRegistrator" //TODO check real type from model
+                    return (lastMemberAccess?.Expression as GenericNameSyntax)?.Identifier.ValueText == "DependencyPropertyRegistrator" //TODO check real type from model
                         && lastMemberAccess?.Name.Identifier.ValueText == "New";
                 })
                 .Select(chain => GenerateProperties(type, chain))
