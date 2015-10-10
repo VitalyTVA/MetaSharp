@@ -36,8 +36,14 @@ namespace MetaSharp {
         internal static Either<ImmutableArray<GeneratorError>, ImmutableArray<Output>> GetCompletions(CSharpCompilation compilation, Environment environment) {
             var prototypes = compilation
                 .GetAttributeValues<MetaProtoAttribute, Tuple<string, MetaLocationKind>>(values => values.ToValues<string, MetaLocationKind>())
-                .Select(x => new { Input = x.Item1, Output = OutputFileName.Create(x.Item1, environment, x.Item2) })
-                .ToImmutableDictionary(x => Generator.ParseFile(environment, x.Input), x => x.Output);
+                .Select(x => new {
+                    Input = x.Item1,
+                    Files = new {
+                        Input = x.Item1,
+                        Output = OutputFileName.Create(x.Item1, environment, x.Item2)
+                    }
+                })
+                .ToImmutableDictionary(x => Generator.ParseFile(environment, x.Input), x => x.Files);
             var compilationWithPrototypes = compilation.AddSyntaxTrees(prototypes.Keys);
             var symbolToTypeMap = Completers.Keys.ToImmutableDictionary(
                 type => compilationWithPrototypes.GetTypeByMetadataName(type.FullName),
@@ -71,13 +77,13 @@ namespace MetaSharp {
                                     var completion = x.completer(model, x.type);
                                     return context.WrapMembers(completion);
                                 }).ConcatStringsWithNewLines();
-                            return new Output(text, pair.Value);
+                            return new Output(text, pair.Value.Output);
                         })
                         .ToImmutableArray();
                 return Either.Right<ImmutableArray<GeneratorError>, ImmutableArray<Output>>(result);
             } catch(CompleterErrorException e) {
                 var error = GeneratorError.Create(id: e.Id,
-                                    file: System.IO.Path.GetFullPath(prototypes[e.Tree].FileName).Replace("designer.cs", "cs"),
+                                    file: prototypes[e.Tree].Input,
                                     message: e.Message,
                                     span: e.Span
                                     );
