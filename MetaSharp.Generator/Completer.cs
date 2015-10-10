@@ -80,14 +80,14 @@ namespace MetaSharp {
                             return new Output(text, pair.Value.Output);
                         })
                         .ToImmutableArray();
-                return Either.Right<ImmutableArray<GeneratorError>, ImmutableArray<Output>>(result);
+                return Either<ImmutableArray<GeneratorError>, ImmutableArray<Output>>.Right(result);
             } catch(CompleterErrorException e) {
                 var error = GeneratorError.Create(id: e.Id,
                                     file: prototypes[e.Tree].Input,
                                     message: e.Message,
                                     span: e.Span
                                     );
-                return Either.Left<ImmutableArray<GeneratorError>, ImmutableArray<Output>>(error.YieldToImmutable());
+                return Either<ImmutableArray<GeneratorError>, ImmutableArray<Output>>.Left(error.YieldToImmutable());
             }
         }
     }

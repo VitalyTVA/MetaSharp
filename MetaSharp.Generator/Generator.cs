@@ -12,6 +12,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text;
+using GeneratorResult = MetaSharp.Native.Either<System.Collections.Immutable.ImmutableArray<MetaSharp.GeneratorError>, System.Collections.Immutable.ImmutableArray<string>>;
 
 namespace MetaSharp {
     //TODO wrap output classes into regions
@@ -132,7 +133,7 @@ namespace MetaSharp {
                 .ToImmutableArray();
 
             if(errors.Any())
-                return new GeneratorResult(ImmutableArray<string>.Empty, errors);
+                return Error(errors);
             Assembly compiledAssembly;
             using(var stream = new MemoryStream()) {
                 var compileResult = compilation.Emit(stream);
@@ -191,7 +192,7 @@ namespace MetaSharp {
 
                 var completerResult = Completer.GetCompletions(compilation, environment);
                 if(completerResult.IsLeft())
-                    return new GeneratorResult(ImmutableArray<string>.Empty, completerResult.ToLeft());
+                    return Error(completerResult.ToLeft());
                 var completions = completerResult.ToRight();
                 var outputFiles = outputs.Concat(completions)
                     .Select(output => { 
@@ -201,10 +202,16 @@ namespace MetaSharp {
                     .Where(output => output.FileName.IncludeInOutput)
                     .Select(output => output.FileName.FileName)
                     .ToImmutableArray();
-                return new GeneratorResult(outputFiles, ImmutableArray<GeneratorError>.Empty);
+                return Success(outputFiles);
             } finally {
                 AppDomain.CurrentDomain.AssemblyResolve -= resolveHandler;
             }
+        }
+        static GeneratorResult Success(ImmutableArray<string> files) {
+            return GeneratorResult.Right(files);
+        }
+        static GeneratorResult Error(ImmutableArray<GeneratorError> errors) {
+            return GeneratorResult.Left(errors);
         }
         static ImmutableDictionary<string, string> GetMetaReferences(this CSharpCompilation compilation, BuildConstants buildConsants) {
             return compilation
@@ -294,20 +301,22 @@ namespace MetaSharp {
             Action<ImmutableArray<string>> reportOutputFiles) {
 
             AppDomain.CurrentDomain.AssemblyResolve += CurrentDomain_AssemblyResolve;
-            GeneratorResult result;
             try {
-                result = Generator.Generate(files, CreateEnvironment(buildConstants));
+                var result = Generator.Generate(files, CreateEnvironment(buildConstants));
+                return result.Match(
+                    errors => {
+                        foreach(var error in errors) {
+                            reportError(error);
+                        }
+                        return GeneratorResultCode.Error;
+                    },
+                    outputFiles => {
+                        reportOutputFiles(outputFiles);
+                        return GeneratorResultCode.Success;
+                    }
+                );
             } finally {
                 AppDomain.CurrentDomain.AssemblyResolve -= CurrentDomain_AssemblyResolve;
-            }
-            if(result.Errors.Any()) {
-                foreach(var error in result.Errors) {
-                    reportError(error);
-                }
-                return GeneratorResultCode.Error;
-            } else {
-                reportOutputFiles(result.Files);
-                return GeneratorResultCode.Success;
             }
         }
         static Environment CreateEnvironment(BuildConstants buildConstants) {
@@ -445,15 +454,6 @@ namespace MetaSharp {
         public static SyntaxNode Node(this ISymbol symbol) {
             var location = symbol.Location();
             return location.SourceTree.GetCompilationUnitRoot().FindNode(location.SourceSpan);
-        }
-    }
-    //TODO replace with Either
-    public class GeneratorResult {
-        public readonly ImmutableArray<string> Files;
-        public readonly ImmutableArray<GeneratorError> Errors;
-        public GeneratorResult(ImmutableArray<string> files, ImmutableArray<GeneratorError> errors) {
-            Files = files;
-            Errors = errors;
         }
     }
     public class GeneratorError {

@@ -10,6 +10,7 @@ using MetaSharp.Utils;
 using MetaSharp.Native;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis;
+using GeneratorResult = MetaSharp.Native.Either<System.Collections.Immutable.ImmutableArray<MetaSharp.GeneratorError>, System.Collections.Immutable.ImmutableArray<string>>;
 
 namespace MetaSharp.Test {
     public class  HelloWorldTests : GeneratorTestsBase {
@@ -509,23 +510,21 @@ namespace MetaSharp.HelloWorld {
         }
         protected static void AssertMultipleFilesOutput(ImmutableArray<TestFile> input, ImmutableArray<TestFile> output, BuildConstants buildConstants = null, bool ignoreEmptyLines = false) {
             AssertMultipleFilesResult(input, (result, testEnvironment) => {
-                Assert.Empty(result.Errors);
                 Assert.Equal<string>(
                     output
                         .Where(x => x.IsInFlow)
                         .Select(x => x.Name)
                         .OrderBy(x => x), 
-                    result.Files.OrderBy(x => x));
+                    result.ToRight().OrderBy(x => x));
                 Assert.Equal(input.Length + output.Length, testEnvironment.FileCount);
                 AssertFiles(output, testEnvironment, ignoreEmptyLines);
             }, buildConstants);
         }
         protected static void AssertMultipleFilesErrors(ImmutableArray<TestFile> input, Action<IEnumerable<GeneratorError>> assertErrors, BuildConstants buildConstants = null) {
             AssertMultipleFilesResult(input, (result, testEnvironment) => {
-                Assert.NotEmpty(result.Errors);
+                Assert.NotEmpty(result.ToLeft());
                 Assert.Equal(input.Length, testEnvironment.FileCount);
-                Assert.Empty(result.Files);
-                assertErrors(result.Errors.OrderBy(x => x.File));
+                assertErrors(result.ToLeft().OrderBy(x => x.File));
             }, buildConstants);
         }
         static void AssertFiles(ImmutableArray<TestFile> files, TestEnvironment environment, bool ignoreEmptyLines) {

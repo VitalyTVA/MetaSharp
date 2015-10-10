@@ -152,28 +152,28 @@ namespace MetaSharp.Native {
     }
 
     public abstract class Either<TLeft, TRight> {
+        public static Either<TLeft, TRight> Left(TLeft value) {
+            return new LeftValue(value);
+        }
+        public static Either<TLeft, TRight> Right(TRight value) {
+            return new RightValue(value);
+        }
         Either() { }
-        internal class Left : Either<TLeft, TRight> {
+        internal class LeftValue : Either<TLeft, TRight> {
             internal readonly TLeft Value;
-            internal Left(TLeft value) {
+            internal LeftValue(TLeft value) {
                 Value = value;
             }
         }
-        internal class Right : Either<TLeft, TRight> {
+        internal class RightValue : Either<TLeft, TRight> {
             internal readonly TRight Value;
-            internal Right(TRight value) {
+            internal RightValue(TRight value) {
                 Value = value;
             }
         }
     }
     public static class Either {
         //TODO use friend access diagnostics - only this class can access Either's internals
-        public static Either<TLeft, TRight> Left<TLeft, TRight>(TLeft value) {
-            return new Either<TLeft, TRight>.Left(value);
-        }
-        public static Either<TLeft, TRight> Right<TLeft, TRight>(TRight value) {
-            return new Either<TLeft, TRight>.Right(value);
-        }
         public static bool IsRight<TLeft, TRight>(this Either<TLeft, TRight> value) {
             return value.Match(left => false, right => true);
         }
@@ -187,10 +187,16 @@ namespace MetaSharp.Native {
             return value.Match(left => { throw new InvalidOperationException(); }, right => right);
         }
         public static T Match<TLeft, TRight, T>(this Either<TLeft, TRight> value, Func<TLeft, T> left, Func<TRight, T> right) {
-            var leftValue = value as Either<TLeft, TRight>.Left;
+            var leftValue = value as Either<TLeft, TRight>.LeftValue;
             if(leftValue != null)
                 return left(leftValue.Value);
-            return right((value as Either<TLeft, TRight>.Right).Value);
+            return right((value as Either<TLeft, TRight>.RightValue).Value);
+        }
+        public static void Match<TLeft, TRight>(this Either<TLeft, TRight> value, Action<TLeft> left, Action<TRight> right) {
+            var leftValue = value as Either<TLeft, TRight>.LeftValue;
+            if(leftValue != null)
+                left(leftValue.Value);
+            right((value as Either<TLeft, TRight>.RightValue).Value);
         }
     }
 }
