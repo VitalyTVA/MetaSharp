@@ -76,21 +76,20 @@ namespace MetaSharp {
                                 var completion = x.completer(model, x.type);
                                 return completion.Select(value => context.WrapMembers(value));
                             });
-                        var aggregatedTreeResults = treeResults
-                            .AggregateEither()
-                            .Transform(left => left.SelectMany(x => x), right => right.ConcatStringsWithNewLines());
-                        return aggregatedTreeResults.Select(text => new Output(text, pair.Value.Output));
+                        return treeResults
+                            .AggregateEither(
+                                left => left.SelectMany(x => x), 
+                                right => new Output(right.ConcatStringsWithNewLines(), pair.Value.Output)
+                            );
                     });
-            var aggregatedResults = results
-                .AggregateEither()
-                .Transform(
+            return results
+                .AggregateEither(
                     left => left
                         .SelectMany(x => x)
                         .Select(e => GeneratorError.Create(id: e.Id, file: prototypes[e.Tree].Input, message: e.Message, span: e.Span))
                         .ToImmutableArray(), 
                     right => right.ToImmutableArray()
                 );
-            return aggregatedResults;
         }
     }
 }

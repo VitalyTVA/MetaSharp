@@ -40,16 +40,14 @@ namespace MetaSharp {
                         && lastMemberAccess?.Name.Identifier.ValueText == "New";
                 })
                 .Select(chain => GenerateProperties(type, chain));
-            var result = properties
-                .AggregateEither()
-                .Transform(
+            return properties
+                .AggregateEither(
                     errors => errors.SelectMany(x => x).ToImmutableArray(),
                     values => values.ConcatStringsWithNewLines())
                 .Select(values =>
 $@"partial class {type.Name} {{
 {values.AddTabs(1)}
 }}");
-            return result;
         }
 
         static CompleterResult GenerateProperties(INamedTypeSymbol type, InvocationExpressionSyntax[] chain) {
@@ -82,10 +80,8 @@ $@"partial class {type.Name} {{
                 .Where(x => x != null)
                 .Reverse()
                 .ToArray();
-            var result = properties
-                .AggregateEither()
-                .Transform(errors => errors.ToImmutableArray(), values => values.ConcatStringsWithNewLines());
-            return result;
+            return properties
+                .AggregateEither(errors => errors.ToImmutableArray(), values => values.ConcatStringsWithNewLines());
         }
         static string GenerateFields(string propertyName, bool readOnly) {
             return readOnly
