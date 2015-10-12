@@ -8,10 +8,11 @@ using System.Collections.Immutable;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using CompleterResult = MetaSharp.Native.Either<System.Collections.Immutable.ImmutableArray<MetaSharp.CompleterError>, string>;
 
 namespace MetaSharp {
     static class ClassCompleter {
-        public static string Generate(SemanticModel model, INamedTypeSymbol type) {
+        public static CompleterResult Generate(SemanticModel model, INamedTypeSymbol type) {
             var properties = type.Properties();
             var generator = properties.Aggregate(
                 new ClassGenerator_(type.Name, ClassModifiers.Partial, skipProperties: true),
@@ -20,7 +21,7 @@ namespace MetaSharp {
                     return acc.Property(typeName, property.Name);
                 }
             );
-            return generator.Generate();
+            return CompleterResult.Right(generator.Generate());
         }
     }
 }

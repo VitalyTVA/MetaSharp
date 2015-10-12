@@ -1,4 +1,5 @@
 ﻿using MetaSharp.Native;
+using MetaSharp.Utils;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using System.Collections.Generic;
@@ -6,6 +7,7 @@ using System.Collections.Immutable;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using CompleterResult = MetaSharp.Native.Either<System.Collections.Immutable.ImmutableArray<MetaSharp.CompleterError>, string>;
 
 namespace MetaSharp {
     //TODO report invalid owner type error
@@ -13,11 +15,11 @@ namespace MetaSharp {
     //TODO report property type specified error
     //TODO multiple statements in cctor
     public static class DependencyPropertiesCompleter {
-        const string ErrorPrefix = "MetaDP";
+        const string ErrorPrefix = "M#";
         public const string PropertyTypeMissed_Id = ErrorPrefix + "0001";
         public const string PropertyTypeMissed_Message = "Property type should be explicitly specified to generate dependency property";
 
-        public static string Generate(SemanticModel model, INamedTypeSymbol type) {
+        public static CompleterResult Generate(SemanticModel model, INamedTypeSymbol type) {
             //TODO error or skip if null
             var cctor = type.StaticConstructor();
             var syntax = (ConstructorDeclarationSyntax)cctor.Node();
@@ -37,16 +39,20 @@ namespace MetaSharp {
                     return (lastMemberAccess?.Expression as GenericNameSyntax)?.Identifier.ValueText == "DependencyPropertyRegistrator" //TODO check real type from model
                         && lastMemberAccess?.Name.Identifier.ValueText == "New";
                 })
-                .Select(chain => GenerateProperties(type, chain))
-                .ConcatStringsWithNewLines();
-            var result =
+                .Select(chain => GenerateProperties(type, chain));
+            var result = properties
+                .AggregateEither()
+                .Transform(
+                    errors => errors.SelectMany(x => x).ToImmutableArray(),
+                    values => values.ConcatStringsWithNewLines())
+                .Select(values =>
 $@"partial class {type.Name} {{
-{properties.AddTabs(1)}
-}}";
+{values.AddTabs(1)}
+}}");
             return result;
         }
 
-        private static string GenerateProperties(INamedTypeSymbol type, InvocationExpressionSyntax[] chain) {
+        static CompleterResult GenerateProperties(INamedTypeSymbol type, InvocationExpressionSyntax[] chain) {
             var last = (MemberAccessExpressionSyntax)chain.Last().Expression;
             var ownerType = ((GenericNameSyntax)last.Expression).TypeArgumentList.Arguments.Single().ToFullString(); //TODO check last name == "New"
             var properties = chain
@@ -58,7 +64,7 @@ $@"partial class {type.Name} {{
                     if(nameSyntaxGeneric == null) {
                         if(methodName.StartsWith("Register")) {
                             var span = memberAccess.Name.GetLocation().GetLineSpan();
-                            throw new CompleterErrorException(memberAccess.Name.SyntaxTree, PropertyTypeMissed_Id, PropertyTypeMissed_Message, new FileLinePositionSpan(string.Empty, span.EndLinePosition, span.EndLinePosition));
+                            return Either<CompleterError, string>.Left(new CompleterError(memberAccess.Name.SyntaxTree, PropertyTypeMissed_Id, PropertyTypeMissed_Message, new FileLinePositionSpan(string.Empty, span.EndLinePosition, span.EndLinePosition)));
                         }
                         return null;
                     }
@@ -68,14 +74,18 @@ $@"partial class {type.Name} {{
                     var propertyName = ((IdentifierNameSyntax)x.ArgumentList.Arguments[1].Expression).ToFullString().ReplaceEnd("Property", string.Empty);
                     var readOnly = methodName == "RegisterReadOnly" || methodName == "RegisterAttachedReadOnly";
                     var attached = methodName == "RegisterAttached" || methodName == "RegisterAttachedReadOnly";
-                    return GenerateFields(propertyName, readOnly) + System.Environment.NewLine + (attached
+                    var text = GenerateFields(propertyName, readOnly) + System.Environment.NewLine + (attached
                         ? GenerateAttachedProperty(propertyType, propertyName, readOnly)
                         : GenerateProperty(propertyType, propertyName, readOnly));
+                    return Either<CompleterError, string>.Right(text);
                 })
                 .Where(x => x != null)
                 .Reverse()
                 .ToArray();
-            return properties.ConcatStringsWithNewLines();
+            var result = properties
+                .AggregateEither()
+                .Transform(errors => errors.ToImmutableArray(), values => values.ConcatStringsWithNewLines());
+            return result;
         }
         static string GenerateFields(string propertyName, bool readOnly) {
             return readOnly

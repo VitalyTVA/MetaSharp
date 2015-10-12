@@ -8,6 +8,7 @@ using System.Collections.Immutable;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using CompleterResult = MetaSharp.Native.Either<System.Collections.Immutable.ImmutableArray<MetaSharp.CompleterError>, string>;
 
 namespace MetaSharp {
     static class ViewModelCompleter {
@@ -22,8 +23,8 @@ namespace MetaSharp {
         //    readonly string OnPropertyChangedPropertyName;
         //}
 
-        public static string Generate(SemanticModel model, INamedTypeSymbol type) {
-            return GenerateCore(model, type);
+        public static CompleterResult Generate(SemanticModel model, INamedTypeSymbol type) {
+            return CompleterResult.Right(GenerateCore(model, type));
         }
 
         static string GenerateCore(SemanticModel model, INamedTypeSymbol type) {

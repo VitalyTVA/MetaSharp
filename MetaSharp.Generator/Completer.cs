@@ -9,19 +9,19 @@ using System.Collections.Immutable;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using CompleterResult = MetaSharp.Native.Either<System.Collections.Immutable.ImmutableArray<MetaSharp.CompleterError>, string>;
 
 namespace MetaSharp {
-    delegate string TypeCompleter(SemanticModel model, INamedTypeSymbol type);
-    //TODO USE MONADS, NOT EXCEPTIONS!!! (this way you can have more than 1 error!!!)
-    class CompleterErrorException : Exception {
+    delegate CompleterResult TypeCompleter(SemanticModel model, INamedTypeSymbol type);
+    public class CompleterError {
         public readonly SyntaxTree Tree;
-        public readonly string Id;
+        public readonly string Id, Message;
         public readonly FileLinePositionSpan Span;
-        public CompleterErrorException(SyntaxTree tree, string id, string message, FileLinePositionSpan span) 
-            : base(message) {
+        public CompleterError(SyntaxTree tree, string id, string message, FileLinePositionSpan span) {
             Tree = tree;
             Span = span;
             Id = id;
+            Message = message;
         }
     }
     public static class Completer {
@@ -54,41 +54,43 @@ namespace MetaSharp {
             //TODO generate errors if class is not partial
             //TODO allow to specify default complete attributes in MetaProto attribute??
 
-            try {
-                var result = prototypes
-                        .Select(pair => {
-                            var tree = pair.Key;
-                            var model = compilationWithPrototypes.GetSemanticModel(tree);
-                            var classSyntaxes = tree.GetRoot().DescendantNodes(x => !(x is ClassDeclarationSyntax)).OfType<ClassDeclarationSyntax>();
-                            var text = classSyntaxes
-                                .Select(x => model.GetDeclaredSymbol(x))
-                                .Select(type => {
-                            //TODO support multiple completers for single file
-                            var completer = type.GetAttributes()
-                                        .Select(attributeData => symbolToTypeMap.GetValueOrDefault(attributeData.AttributeClass))
-                                        .Where(attributeType => attributeType != null)
-                                        .Select(attributeType => Completers[attributeType])
-                                        .SingleOrDefault();
-                                    return new { type, completer };
-                                })
-                                .Where(x => x.completer != null)
-                                .Select(x => {
-                                    var context = x.type.CreateContext();
-                                    var completion = x.completer(model, x.type);
-                                    return context.WrapMembers(completion);
-                                }).ConcatStringsWithNewLines();
-                            return new Output(text, pair.Value.Output);
-                        })
-                        .ToImmutableArray();
-                return Either<ImmutableArray<GeneratorError>, ImmutableArray<Output>>.Right(result);
-            } catch(CompleterErrorException e) {
-                var error = GeneratorError.Create(id: e.Id,
-                                    file: prototypes[e.Tree].Input,
-                                    message: e.Message,
-                                    span: e.Span
-                                    );
-                return Either<ImmutableArray<GeneratorError>, ImmutableArray<Output>>.Left(error.YieldToImmutable());
-            }
+            var results = prototypes
+                    .Select(pair => {
+                        var tree = pair.Key;
+                        var model = compilationWithPrototypes.GetSemanticModel(tree);
+                        var classSyntaxes = tree.GetRoot().DescendantNodes(x => !(x is ClassDeclarationSyntax)).OfType<ClassDeclarationSyntax>();
+                        var treeResults = classSyntaxes
+                            .Select(x => model.GetDeclaredSymbol(x))
+                            .Select(type => {
+                                //TODO support multiple completers for single file
+                                var completer = type.GetAttributes()
+                                            .Select(attributeData => symbolToTypeMap.GetValueOrDefault(attributeData.AttributeClass))
+                                            .Where(attributeType => attributeType != null)
+                                            .Select(attributeType => Completers[attributeType])
+                                            .SingleOrDefault();
+                                return new { type, completer };
+                            })
+                            .Where(x => x.completer != null)
+                            .Select(x => {
+                                var context = x.type.CreateContext();
+                                var completion = x.completer(model, x.type);
+                                return completion.Select(value => context.WrapMembers(value));
+                            });
+                        var aggregatedTreeResults = treeResults
+                            .AggregateEither()
+                            .Transform(left => left.SelectMany(x => x), right => right.ConcatStringsWithNewLines());
+                        return aggregatedTreeResults.Select(text => new Output(text, pair.Value.Output));
+                    });
+            var aggregatedResults = results
+                .AggregateEither()
+                .Transform(
+                    left => left
+                        .SelectMany(x => x)
+                        .Select(e => GeneratorError.Create(id: e.Id, file: prototypes[e.Tree].Input, message: e.Message, span: e.Span))
+                        .ToImmutableArray(), 
+                    right => right.ToImmutableArray()
+                );
+            return aggregatedResults;
         }
     }
 }

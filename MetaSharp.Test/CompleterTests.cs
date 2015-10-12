@@ -341,6 +341,7 @@ using System;
         static DObject() {
             DependencyPropertyRegistrator<DObject>.New()
                 .Register(x => x.Prop1, out Prop1Property, x => 5)
+                 .Register(x => x.Prop2, out Prop2Property, x => 5)
             ;
         }
     }
@@ -351,7 +352,10 @@ using System;
                     new TestFile(SingleInputFileName, input),
                     new TestFile(name, incomplete, isInFlow: false)
                 ),
-                errors => AssertError(errors.Single(), name, DependencyPropertiesCompleter.PropertyTypeMissed_Id, DependencyPropertiesCompleter.PropertyTypeMissed_Message, 9, 26)
+                errors => Assert.Collection(errors,
+                        error => AssertError(error, name, DependencyPropertiesCompleter.PropertyTypeMissed_Id, DependencyPropertiesCompleter.PropertyTypeMissed_Message, 9, 26),
+                        error => AssertError(error, name, DependencyPropertiesCompleter.PropertyTypeMissed_Id, DependencyPropertiesCompleter.PropertyTypeMissed_Message, 10, 27)
+                )
             );
         }
         #endregion
