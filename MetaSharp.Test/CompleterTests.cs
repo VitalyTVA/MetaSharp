@@ -270,6 +270,7 @@ using System;
                 .RegisterAttached(x => x.Prop3, out Prop3Property, string.Empty)
                 .RegisterAttachedReadOnly<string>(x => x.Prop4, out Prop4PropertyKey, out Prop4Property, 5)
                 .Register(x => x.Prop5, out Prop5Property, default(Some))
+                .Register(x => x.Prop6, out Prop6Property, (string)GetSome())
             ;
             DoAfter();
         }
@@ -316,6 +317,11 @@ using System;
         public Some Prop5 {
             get { return (Some)GetValue(Prop5Property); }
             set { SetValue(Prop5Property, value); }
+        }
+        public static readonly DependencyProperty Prop6Property;
+        public string Prop6 {
+            get { return (string)GetValue(Prop6Property); }
+            set { SetValue(Prop6Property, value); }
         }
     }
 }";
