@@ -68,10 +68,10 @@ $@"partial class {type.Name} {{
                     }
                     if(!methodName.StartsWith("Register"))
                         return null;
-                    var propertyType = nameSyntaxGeneric.TypeArgumentList.Arguments.Single().ToFullString();
-                    var propertyName = ((IdentifierNameSyntax)x.ArgumentList.Arguments[1].Expression).ToFullString().ReplaceEnd("Property", string.Empty);
                     var readOnly = methodName == "RegisterReadOnly" || methodName == "RegisterAttachedReadOnly";
                     var attached = methodName == "RegisterAttached" || methodName == "RegisterAttachedReadOnly";
+                    var propertyType = nameSyntaxGeneric.TypeArgumentList.Arguments.Single().ToFullString();
+                    var propertyName = ((IdentifierNameSyntax)x.ArgumentList.Arguments[1].Expression).ToFullString().ReplaceEnd("Property" + (readOnly ? "Key" : string.Empty), string.Empty);
                     var text = GenerateFields(propertyName, readOnly) + System.Environment.NewLine + (attached
                         ? GenerateAttachedProperty(propertyType, propertyName, readOnly)
                         : GenerateProperty(propertyType, propertyName, readOnly));

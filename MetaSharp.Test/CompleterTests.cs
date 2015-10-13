@@ -264,11 +264,11 @@ using System;
                 .Register<string>(x => x.Prop1, out Prop1Property, x => 5)
                 .SomethingUnknownGeneric<T>()
                 .SomethingUnknown()
-                .RegisterReadOnly<int>(x => x.Prop2, out Prop2Property, out Prop2PropertyKey, 3)
+                .RegisterReadOnly<int>(x => x.Prop2, out Prop2PropertyKey, out Prop2Property, 3)
             ;
             DependencyPropertyRegistrator<DObject>.New()
                 .RegisterAttached<string>(x => x.Prop3, out Prop3Property)
-                .RegisterAttachedReadOnly<string>(x => x.Prop4, out Prop4Property, out Prop4PropertyKey)
+                .RegisterAttachedReadOnly<string>(x => x.Prop4, out Prop4PropertyKey, out Prop4Property)
             ;
             DoAfter();
         }
