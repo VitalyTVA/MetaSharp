@@ -25,7 +25,7 @@ namespace MetaSharp {
         }
     }
     public class MetaRewriter : CSharpSyntaxRewriter {
-        //TODO improve performance by skipping non-rewritable nodes
+        //TODO improve performance by skipping non-rewritable nodes or rewrite only explycitly marked methods???
         readonly SemanticModel model;
         public MetaRewriter(SemanticModel model) {
             this.model = model;
