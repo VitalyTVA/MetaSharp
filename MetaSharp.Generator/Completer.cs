@@ -6,6 +6,7 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -39,7 +40,7 @@ namespace MetaSharp {
                 .Select(x => new {
                     Input = x.Item1,
                     Files = new {
-                        Input = x.Item1,
+                        Input = Path.GetFullPath(x.Item1),
                         Output = OutputFileName.Create(x.Item1, environment, x.Item2)
                     }
                 })

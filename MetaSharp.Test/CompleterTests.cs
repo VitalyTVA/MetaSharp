@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -236,7 +237,7 @@ namespace MetaSharp.Incomplete {
         }
         #endregion
 
-        #region view model
+        #region dependency properties
         [Fact]
         public void DependencyProperties() {
             var input = @"
@@ -329,7 +330,7 @@ using System;
         public void DependencyProperties_MissingPropertyType() {
             var input = @"
 using MetaSharp;
-[assembly: MetaProto(""IncompleteDObjects.cs"")]
+[assembly: MetaProto(@""Some\..\IncompleteDObjects.cs"")]
 ";
             string incomplete =
 @"
@@ -350,11 +351,11 @@ using System;
             AssertMultipleFilesErrors(
                 ImmutableArray.Create(
                     new TestFile(SingleInputFileName, input),
-                    new TestFile(name, incomplete, isInFlow: false)
+                    new TestFile(@"Some\..\" + name, incomplete, isInFlow: false)
                 ),
                 errors => Assert.Collection(errors,
-                        error => AssertError(error, name, DependencyPropertiesCompleter.PropertyTypeMissed_Id, DependencyPropertiesCompleter.PropertyTypeMissed_Message, 9, 26),
-                        error => AssertError(error, name, DependencyPropertiesCompleter.PropertyTypeMissed_Id, DependencyPropertiesCompleter.PropertyTypeMissed_Message, 10, 27)
+                        error => AssertError(error, Path.GetFullPath(name), DependencyPropertiesCompleter.PropertyTypeMissed_Id, DependencyPropertiesCompleter.PropertyTypeMissed_Message, 9, 26),
+                        error => AssertError(error, Path.GetFullPath(name), DependencyPropertiesCompleter.PropertyTypeMissed_Id, DependencyPropertiesCompleter.PropertyTypeMissed_Message, 10, 27)
                 )
             );
         }
