@@ -14,6 +14,7 @@ namespace MetaSharp {
     //TODO report invalid dependency property [key] field name error
     //TODO report property type specified error
     //TODO multiple statements in cctor
+    //TODO add owner
     public static class DependencyPropertiesCompleter {
         const string ErrorPrefix = "M#";
         public const string PropertyTypeMissed_Id = ErrorPrefix + "0001";
