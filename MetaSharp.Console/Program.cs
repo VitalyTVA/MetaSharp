@@ -26,7 +26,7 @@ namespace MetaSharp.Console {
                 System.Console.WriteLine(e.ToString());
                 return 1;
             } finally {
-                Debug.WriteLine($"Done in {sw.ElapsedMilliseconds}ms");
+                System.Console.WriteLine($"Done in {sw.ElapsedMilliseconds}ms");
             }
         }
 
