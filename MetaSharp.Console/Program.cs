@@ -13,6 +13,7 @@ namespace MetaSharp.Console {
     public static class Program {
         public static int Main(string[] args) {
             //DoWork(args);
+            //System.Windows.Forms.MessageBox.Show("");
             return DoWork(args);
         }
 
