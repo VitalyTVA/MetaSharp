@@ -419,7 +419,10 @@ namespace MetaSharp {
             return type.Location().CreateContext(type.ContainingNamespace.ToString());
         }
         public static string TypeDisplayString(this IPropertySymbol property, SemanticModel model) {
-            return property.Type.ToMinimalDisplayString(model, property.Location().SourceSpan.Start, SymbolDisplayFormat.FullyQualifiedFormat);
+            return property.Type.DisplayString(model, property.Location());
+        }
+        public static string DisplayString(this ITypeSymbol type, SemanticModel model, Location location) {
+            return type.ToMinimalDisplayString(model, location.SourceSpan.Start, SymbolDisplayFormat.FullyQualifiedFormat);
         }
         public static IEnumerable<IPropertySymbol> Properties(this INamedTypeSymbol type) {
             return type.GetMembers().OfType<IPropertySymbol>();

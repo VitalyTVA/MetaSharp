@@ -16,10 +16,11 @@ namespace MetaSharp {
     //TODO multiple statements in cctor
     //TODO AddOwner support
     //TODO determine expression type based on default value??
+    //TODO output errors when too few parameters
     public static class DependencyPropertiesCompleter {
         const string ErrorPrefix = "M#";
         public const string PropertyTypeMissed_Id = ErrorPrefix + "0001";
-        public const string PropertyTypeMissed_Message = "Property type should be explicitly specified to generate dependency property";
+        public const string PropertyTypeMissed_Message = "Either property type should be explicitly specified or default value should be explicitly typed to generate dependency property";
 
         public static CompleterResult Generate(SemanticModel model, INamedTypeSymbol type) {
             //TODO error or skip if null
@@ -41,7 +42,7 @@ namespace MetaSharp {
                     return (lastMemberAccess?.Expression as GenericNameSyntax)?.Identifier.ValueText == "DependencyPropertyRegistrator" //TODO check real type from model
                         && lastMemberAccess?.Name.Identifier.ValueText == "New";
                 })
-                .Select(chain => GenerateProperties(type, chain));
+                .Select(chain => GenerateProperties(model, type, chain));
             return properties
                 .AggregateEither(
                     errors => errors.SelectMany(x => x).ToImmutableArray(),
@@ -52,7 +53,7 @@ $@"partial class {type.Name} {{
 }}");
         }
 
-        static CompleterResult GenerateProperties(INamedTypeSymbol type, InvocationExpressionSyntax[] chain) {
+        static CompleterResult GenerateProperties(SemanticModel model, INamedTypeSymbol type, InvocationExpressionSyntax[] chain) {
             var last = (MemberAccessExpressionSyntax)chain.Last().Expression;
             var ownerType = ((GenericNameSyntax)last.Expression).TypeArgumentList.Arguments.Single().ToFullString(); //TODO check last name == "New"
             var properties = chain
@@ -60,20 +61,26 @@ $@"partial class {type.Name} {{
                 .Select(x => {
                     var memberAccess = (MemberAccessExpressionSyntax)x.Expression;
                     var methodName = memberAccess.Name.Identifier.ValueText;
-                    var nameSyntaxGeneric = memberAccess.Name as GenericNameSyntax;
-                    if(nameSyntaxGeneric == null) {
-                        if(methodName.StartsWith("Register")) {
-                            var span = memberAccess.Name.GetLocation().GetLineSpan();
-                            return Either<CompleterError, string>.Left(new CompleterError(memberAccess.Name.SyntaxTree, PropertyTypeMissed_Id, PropertyTypeMissed_Message, new FileLinePositionSpan(string.Empty, span.EndLinePosition, span.EndLinePosition)));
-                        }
-                        return null;
-                    }
                     if(!methodName.StartsWith("Register"))
                         return null;
                     var readOnly = methodName == "RegisterReadOnly" || methodName == "RegisterAttachedReadOnly";
                     var attached = methodName == "RegisterAttached" || methodName == "RegisterAttachedReadOnly";
-                    var propertyType = nameSyntaxGeneric.TypeArgumentList.Arguments.Single().ToFullString();
-                    var propertyName = ((IdentifierNameSyntax)x.ArgumentList.Arguments[1].Expression).ToFullString().ReplaceEnd("Property" + (readOnly ? "Key" : string.Empty), string.Empty);
+                    
+                    var arguments = x.ArgumentList.Arguments;
+
+
+                    var propertyType = (memberAccess.Name as GenericNameSyntax)?.TypeArgumentList.Arguments.Single().ToFullString();
+                    if(propertyType == null) {
+                        var defaultValueArgument = arguments[readOnly ? 3 : 2].Expression;
+                        var defaultExpressionTypeInfo = model.GetTypeInfo(defaultValueArgument);
+                        propertyType = defaultExpressionTypeInfo.Type?.DisplayString(model, defaultValueArgument.GetLocation());
+                    }
+                    if(propertyType == null) {
+                        var span = memberAccess.Name.GetLocation().GetLineSpan();
+                        return Either<CompleterError, string>.Left(new CompleterError(memberAccess.Name.SyntaxTree, PropertyTypeMissed_Id, PropertyTypeMissed_Message, new FileLinePositionSpan(string.Empty, span.EndLinePosition, span.EndLinePosition)));
+                    }
+
+                    var propertyName = ((IdentifierNameSyntax)arguments[1].Expression).ToFullString().ReplaceEnd("Property" + (readOnly ? "Key" : string.Empty), string.Empty);
                     var text = GenerateFields(propertyName, readOnly) + System.Environment.NewLine + (attached
                         ? GenerateAttachedProperty(propertyType, propertyName, readOnly)
                         : GenerateProperty(propertyType, propertyName, readOnly));

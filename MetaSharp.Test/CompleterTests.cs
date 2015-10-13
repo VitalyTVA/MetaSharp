@@ -261,14 +261,15 @@ using System;
             Some<X>.New().Register<string>(x => x.No, out NoProperty);
             DependencyPropertyRegistrator<X>.Bla().Register<string>(x => x.No, out NoProperty);
             DependencyPropertyRegistrator<DObject>. New ()
-                .Register<string>(x => x.Prop1, out Prop1Property, x => 5)
+                .Register<string>(x => x.Prop1, out Prop1Property, null)
                 .SomethingUnknownGeneric<T>()
                 .SomethingUnknown()
-                .RegisterReadOnly<int>(x => x.Prop2, out Prop2PropertyKey, out Prop2Property, 3)
+                .RegisterReadOnly(x => x.Prop2, out Prop2PropertyKey, out Prop2Property, 3)
             ;
             DependencyPropertyRegistrator<DObject>.New()
-                .RegisterAttached<string>(x => x.Prop3, out Prop3Property)
-                .RegisterAttachedReadOnly<string>(x => x.Prop4, out Prop4PropertyKey, out Prop4Property)
+                .RegisterAttached(x => x.Prop3, out Prop3Property, string.Empty)
+                .RegisterAttachedReadOnly<string>(x => x.Prop4, out Prop4PropertyKey, out Prop4Property, 5)
+                .Register(x => x.Prop5, out Prop5Property, default(Some))
             ;
             DoAfter();
         }
@@ -311,6 +312,11 @@ using System;
         void SetProp4(DependencyObject d, string value) {
             d.SetValue(Prop4PropertyKey, value);
         }
+        public static readonly DependencyProperty Prop5Property;
+        public Some Prop5 {
+            get { return (Some)GetValue(Prop5Property); }
+            set { SetValue(Prop5Property, value); }
+        }
     }
 }";
             var name = "IncompleteDObjects.cs";
@@ -342,7 +348,7 @@ using System;
         static DObject() {
             DependencyPropertyRegistrator<DObject>.New()
                 .Register(x => x.Prop1, out Prop1Property, x => 5)
-                 .Register(x => x.Prop2, out Prop2Property, x => 5)
+                 .Register(x => x.Prop2, out Prop2Property, null)
             ;
         }
     }
