@@ -12,13 +12,23 @@ using System.Threading.Tasks;
 namespace MetaSharp.Console {
     public static class Program {
         public static int Main(string[] args) {
+            //DoWork(args);
+            return DoWork(args);
+        }
+
+        private static int DoWork(string[] args) {
+            var sw = new Stopwatch();
+            sw.Start();
             try {
                 return Process(args);
             } catch(Exception e) {
                 System.Console.WriteLine(e.ToString());
-                return 1; 
+                return 1;
+            } finally {
+                Debug.WriteLine($"Done in {sw.ElapsedMilliseconds}ms");
             }
         }
+
         static int Process(string[] args) {
             var parser = GetParser();
             var result = parser.Parse(args);
