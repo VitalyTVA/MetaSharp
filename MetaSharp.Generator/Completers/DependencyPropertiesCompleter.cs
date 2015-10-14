@@ -2,6 +2,7 @@
 using MetaSharp.Utils;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
@@ -100,19 +101,16 @@ $@"partial class {type.Name} {{
         static Either<CompleterError, string> GetPropertyName(SeparatedSyntaxList<ArgumentSyntax> arguments, bool readOnly, SyntaxTree tree) {
             var propertyName = ((MemberAccessExpressionSyntax)((SimpleLambdaExpressionSyntax)arguments[0].Expression).Body).Name.ToString();
 
-            var fieldName = ((IdentifierNameSyntax)arguments[1].Expression).ToString();
-            if(propertyName + "Property" + (readOnly ? "Key" : string.Empty) != fieldName) {
-                var message = string.Format(IncorrectPropertyName_Message, propertyName, propertyName + "Property" + (readOnly ? "Key" : string.Empty));
-                return Either<CompleterError, string>.Left(new CompleterError(tree, IncorrectPropertyName_Id, message, arguments[1].Expression.GetLocation().GetLineSpan()));
-            }
-            if(readOnly) {
-                var readOnlyFieldName = ((IdentifierNameSyntax)arguments[2].Expression).ToString();
-                if(propertyName + "Property" != readOnlyFieldName) {
-                    var message2 = string.Format(IncorrectPropertyName_Message, propertyName, propertyName + "Property");
-                    return Either<CompleterError, string>.Left(new CompleterError(tree, IncorrectPropertyName_Id, message2, arguments[2].Expression.GetLocation().GetLineSpan()));
+            Func<int, string, CompleterError> getError = (index, suffix) => {
+                var fieldName = ((IdentifierNameSyntax)arguments[index].Expression).ToString();
+                if(propertyName + suffix != fieldName) {
+                    var message = string.Format(IncorrectPropertyName_Message, propertyName, propertyName + suffix);
+                    return new CompleterError(tree, IncorrectPropertyName_Id, message, arguments[index].Expression.GetLocation().GetLineSpan());
                 }
-            }
-            return Either<CompleterError, string>.Right(propertyName);
+                return null;
+            };
+            return (getError(1, "Property" + (readOnly ? "Key" : string.Empty)) ?? (readOnly ? getError(2, "Property") : null))
+                .Return(x => Either<CompleterError, string>.Left(x), () => Either<CompleterError, string>.Right(propertyName));
         }
         static string GenerateFields(string propertyName, bool readOnly) {
             return readOnly
