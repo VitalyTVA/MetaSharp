@@ -406,9 +406,9 @@ using System;
                         error => AssertError(error, Path.GetFullPath(name), DependencyPropertiesCompleter.IncorrectPropertyName_Id,
                             "Dependency property field for the the property 'Prop2' should have 'Prop2Property' name.", 10, 45, 10, 59),
                         error => AssertError(error, Path.GetFullPath(name), DependencyPropertiesCompleter.IncorrectPropertyName_Id,
-                            "Dependency property field for the the property 'Prop3' should have 'Prop3PropertyKey' name.", 11, 53, 11, 66)
-                        //error => AssertError(error, Path.GetFullPath(name), DependencyPropertiesCompleter.IncorrectPropertyName_Id,
-                        //    "Dependency property field for the the property 'Prop4' should have 'Prop4Property' name.", 12, 75, 12, 88)
+                            "Dependency property field for the the property 'Prop3' should have 'Prop3PropertyKey' name.", 11, 53, 11, 66),
+                        error => AssertError(error, Path.GetFullPath(name), DependencyPropertiesCompleter.IncorrectPropertyName_Id,
+                            "Dependency property field for the the property 'Prop4' should have 'Prop4Property' name.", 12, 75, 12, 88)
                 )
             );
         }
