@@ -388,6 +388,8 @@ using System;
             DependencyPropertyRegistrator<DObject>.New()
                 .Register(x => x. Prop1 , out Prop2Property, string.Empty)
                 .Register(x => x.Prop2, out Prop2Property_, 5)
+                .RegisterReadOnly(x => x.Prop3, out Prop3Property, out Prop3Property, 5)
+                .RegisterReadOnly(x => x.Prop4, out Prop4PropertyKey, out Prop3Property, 5)
             ;
         }
     }
@@ -402,7 +404,11 @@ using System;
                         error => AssertError(error, Path.GetFullPath(name), DependencyPropertiesCompleter.IncorrectPropertyName_Id,
                             "Dependency property field for the the property 'Prop1' should have 'Prop1Property' name.", 9, 47, 9, 60),
                         error => AssertError(error, Path.GetFullPath(name), DependencyPropertiesCompleter.IncorrectPropertyName_Id,
-                            "Dependency property field for the the property 'Prop2' should have 'Prop2Property' name.", 10, 45, 10, 59)
+                            "Dependency property field for the the property 'Prop2' should have 'Prop2Property' name.", 10, 45, 10, 59),
+                        error => AssertError(error, Path.GetFullPath(name), DependencyPropertiesCompleter.IncorrectPropertyName_Id,
+                            "Dependency property field for the the property 'Prop3' should have 'Prop3PropertyKey' name.", 11, 53, 11, 66)
+                        //error => AssertError(error, Path.GetFullPath(name), DependencyPropertiesCompleter.IncorrectPropertyName_Id,
+                        //    "Dependency property field for the the property 'Prop4' should have 'Prop4Property' name.", 12, 75, 12, 88)
                 )
             );
         }

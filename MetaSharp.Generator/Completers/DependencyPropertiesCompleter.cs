@@ -68,7 +68,7 @@ $@"partial class {type.Name} {{
                         return null;
                     var readOnly = methodName == "RegisterReadOnly" || methodName == "RegisterAttachedReadOnly";
                     var attached = methodName == "RegisterAttached" || methodName == "RegisterAttachedReadOnly";
-                    
+
                     var arguments = x.ArgumentList.Arguments;
 
 
@@ -83,22 +83,28 @@ $@"partial class {type.Name} {{
                         return Either<CompleterError, string>.Left(new CompleterError(memberAccess.Name.SyntaxTree, PropertyTypeMissed_Id, PropertyTypeMissed_Message, new FileLinePositionSpan(string.Empty, span.EndLinePosition, span.EndLinePosition)));
                     }
 
-                    var fieldName = ((IdentifierNameSyntax)arguments[1].Expression).ToString();
-                    var propertyName = ((MemberAccessExpressionSyntax)((SimpleLambdaExpressionSyntax)arguments[0].Expression).Body).Name.ToString();
-                    if(propertyName + "Property" + (readOnly ? "Key" : string.Empty) != fieldName) {
-                        var message = string.Format(IncorrectPropertyName_Message, propertyName, propertyName + "Property");
-                        return Either<CompleterError, string>.Left(new CompleterError(memberAccess.Name.SyntaxTree, IncorrectPropertyName_Id, message, arguments[1].Expression.GetLocation().GetLineSpan()));
-                    }
-                    var text = GenerateFields(propertyName, readOnly) + System.Environment.NewLine + (attached
-                        ? GenerateAttachedProperty(propertyType, propertyName, readOnly)
-                        : GenerateProperty(propertyType, propertyName, readOnly));
-                    return Either<CompleterError, string>.Right(text);
+                    var propertyName = GetPropertyName(arguments, readOnly, memberAccess.Name.SyntaxTree);
+
+                    return propertyName.Select(name => {
+                        return GenerateFields(name, readOnly) + System.Environment.NewLine + (attached
+                        ? GenerateAttachedProperty(propertyType, name, readOnly)
+                        : GenerateProperty(propertyType, name, readOnly));
+                    });
                 })
                 .Where(x => x != null)
                 .Reverse()
                 .ToArray();
             return properties
                 .AggregateEither(errors => errors.ToImmutableArray(), values => values.ConcatStringsWithNewLines());
+        }
+        static Either<CompleterError, string> GetPropertyName(SeparatedSyntaxList<ArgumentSyntax> arguments, bool readOnly, SyntaxTree tree) {
+            var fieldName = ((IdentifierNameSyntax)arguments[1].Expression).ToString();
+            var propertyName = ((MemberAccessExpressionSyntax)((SimpleLambdaExpressionSyntax)arguments[0].Expression).Body).Name.ToString();
+            if(propertyName + "Property" + (readOnly ? "Key" : string.Empty) != fieldName) {
+                var message = string.Format(IncorrectPropertyName_Message, propertyName, propertyName + "Property" + (readOnly ? "Key" : string.Empty));
+                return Either<CompleterError, string>.Left(new CompleterError(tree, IncorrectPropertyName_Id, message, arguments[1].Expression.GetLocation().GetLineSpan()));
+            }
+            return Either<CompleterError, string>.Right(propertyName);
         }
         static string GenerateFields(string propertyName, bool readOnly) {
             return readOnly
