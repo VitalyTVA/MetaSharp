@@ -388,7 +388,7 @@ using System;
             DependencyPropertyRegistrator<DObject>.New()
                 .Register(x => x. Prop1 , out Prop2Property, string.Empty)
                 .Register(x => x.Prop2, out Prop2Property_, 5)
-                .RegisterReadOnly(x => x.Prop3, out Prop3Property, out Prop3Property, 5)
+                .RegisterReadOnly(x => x.Prop3, out Prop3Property, out Prop2Property, 5)
                 .RegisterReadOnly(x => x.Prop4, out Prop4PropertyKey, out Prop3Property, 5)
             ;
         }
