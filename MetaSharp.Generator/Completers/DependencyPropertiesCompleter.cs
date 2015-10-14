@@ -19,8 +19,11 @@ namespace MetaSharp {
     //TODO output errors when too few parameters
     public static class DependencyPropertiesCompleter {
         const string ErrorPrefix = "M#";
+        //TODO check all messages
         public const string PropertyTypeMissed_Id = ErrorPrefix + "0001";
         public const string PropertyTypeMissed_Message = "Either property type should be explicitly specified or default value should be explicitly typed to generate dependency property";
+        public const string IncorrectPropertyName_Id = ErrorPrefix + "0002";
+        public const string IncorrectPropertyName_Message = "Dependency property field for the the property '{0}' should have '{1}' name.";
 
         public static CompleterResult Generate(SemanticModel model, INamedTypeSymbol type) {
             //TODO error or skip if null
@@ -55,7 +58,7 @@ $@"partial class {type.Name} {{
 
         static CompleterResult GenerateProperties(SemanticModel model, INamedTypeSymbol type, InvocationExpressionSyntax[] chain) {
             var last = (MemberAccessExpressionSyntax)chain.Last().Expression;
-            var ownerType = ((GenericNameSyntax)last.Expression).TypeArgumentList.Arguments.Single().ToFullString(); //TODO check last name == "New"
+            var ownerType = ((GenericNameSyntax)last.Expression).TypeArgumentList.Arguments.Single().ToString(); //TODO check last name == "New"
             var properties = chain
                 .Take(chain.Length - 1)
                 .Select(x => {
@@ -69,7 +72,7 @@ $@"partial class {type.Name} {{
                     var arguments = x.ArgumentList.Arguments;
 
 
-                    var propertyType = (memberAccess.Name as GenericNameSyntax)?.TypeArgumentList.Arguments.Single().ToFullString();
+                    var propertyType = (memberAccess.Name as GenericNameSyntax)?.TypeArgumentList.Arguments.Single().ToString();
                     if(propertyType == null) {
                         var defaultValueArgument = arguments[readOnly ? 3 : 2].Expression;
                         var defaultExpressionTypeInfo = model.GetTypeInfo(defaultValueArgument);
@@ -80,7 +83,12 @@ $@"partial class {type.Name} {{
                         return Either<CompleterError, string>.Left(new CompleterError(memberAccess.Name.SyntaxTree, PropertyTypeMissed_Id, PropertyTypeMissed_Message, new FileLinePositionSpan(string.Empty, span.EndLinePosition, span.EndLinePosition)));
                     }
 
-                    var propertyName = ((IdentifierNameSyntax)arguments[1].Expression).ToFullString().ReplaceEnd("Property" + (readOnly ? "Key" : string.Empty), string.Empty);
+                    var fieldName = ((IdentifierNameSyntax)arguments[1].Expression).ToString();
+                    var propertyName = ((MemberAccessExpressionSyntax)((SimpleLambdaExpressionSyntax)arguments[0].Expression).Body).Name.ToString();
+                    if(propertyName + "Property" + (readOnly ? "Key" : string.Empty) != fieldName) {
+                        var message = string.Format(IncorrectPropertyName_Message, propertyName, propertyName + "Property");
+                        return Either<CompleterError, string>.Left(new CompleterError(memberAccess.Name.SyntaxTree, IncorrectPropertyName_Id, message, arguments[1].Expression.GetLocation().GetLineSpan()));
+                    }
                     var text = GenerateFields(propertyName, readOnly) + System.Environment.NewLine + (attached
                         ? GenerateAttachedProperty(propertyType, propertyName, readOnly)
                         : GenerateProperty(propertyType, propertyName, readOnly));

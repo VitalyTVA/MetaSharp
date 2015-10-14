@@ -557,13 +557,13 @@ namespace MetaSharp.HelloWorld {
                 }
             );
         }
-        protected static void AssertError(GeneratorError error, string file, string id, string message, int lineNumber, int columnNumber) {
+        protected static void AssertError(GeneratorError error, string file, string id, string message, int lineNumber, int columnNumber, int? endLineNumber = null, int? endColumnNumber = null) {
             AssertError(error, file, id);
             Assert.Equal(message, error.Message);
             Assert.Equal(lineNumber, error.LineNumber);
             Assert.Equal(columnNumber, error.ColumnNumber);
-            Assert.Equal(lineNumber, error.EndLineNumber);
-            Assert.Equal(columnNumber, error.EndColumnNumber);
+            Assert.Equal(endLineNumber ?? lineNumber, error.EndLineNumber);
+            Assert.Equal(endColumnNumber ?? columnNumber, error.EndColumnNumber);
         }
         protected static void AssertError(GeneratorError error, string file, string id) {
             Assert.Equal(file, error.File);

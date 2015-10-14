@@ -260,8 +260,8 @@ using System;
             }
             Some<X>.New().Register<string>(x => x.No, out NoProperty);
             DependencyPropertyRegistrator<X>.Bla().Register<string>(x => x.No, out NoProperty);
-            DependencyPropertyRegistrator<DObject>. New ()
-                .Register<string>(x => x.Prop1, out Prop1Property, null)
+            DependencyPropertyRegistrator< DObject >. New ()
+                .Register< string >(x => x. Prop1 , out  Prop1Property , null)
                 .SomethingUnknownGeneric<T>()
                 .SomethingUnknown()
                 .RegisterReadOnly(x => x.Prop2, out Prop2PropertyKey, out Prop2Property, 3)
@@ -368,6 +368,41 @@ using System;
                 errors => Assert.Collection(errors,
                         error => AssertError(error, Path.GetFullPath(name), DependencyPropertiesCompleter.PropertyTypeMissed_Id, DependencyPropertiesCompleter.PropertyTypeMissed_Message, 9, 26),
                         error => AssertError(error, Path.GetFullPath(name), DependencyPropertiesCompleter.PropertyTypeMissed_Id, DependencyPropertiesCompleter.PropertyTypeMissed_Message, 10, 27)
+                )
+            );
+        }
+        [Fact]
+        public void DependencyProperties_InvalidFieldName() {
+            var input = @"
+using MetaSharp;
+[assembly: MetaProto(@""IncompleteDObjects.cs"")]
+";
+            string incomplete =
+@"
+using MetaSharp;
+namespace MetaSharp.Incomplete {
+using System;
+    [MetaCompleteDependencyProperties]
+    public partial class DObject {
+        static DObject() {
+            DependencyPropertyRegistrator<DObject>.New()
+                .Register(x => x. Prop1 , out Prop2Property, string.Empty)
+                .Register(x => x.Prop2, out Prop2Property_, 5)
+            ;
+        }
+    }
+}";
+            var name = "IncompleteDObjects.cs";
+            AssertMultipleFilesErrors(
+                ImmutableArray.Create(
+                    new TestFile(SingleInputFileName, input),
+                    new TestFile(name, incomplete, isInFlow: false)
+                ),
+                errors => Assert.Collection(errors,
+                        error => AssertError(error, Path.GetFullPath(name), DependencyPropertiesCompleter.IncorrectPropertyName_Id,
+                            "Dependency property field for the the property 'Prop1' should have 'Prop1Property' name.", 9, 47, 9, 60),
+                        error => AssertError(error, Path.GetFullPath(name), DependencyPropertiesCompleter.IncorrectPropertyName_Id,
+                            "Dependency property field for the the property 'Prop2' should have 'Prop2Property' name.", 10, 45, 10, 59)
                 )
             );
         }
