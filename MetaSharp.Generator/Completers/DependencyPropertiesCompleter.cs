@@ -12,11 +12,7 @@ using CompleterResult = MetaSharp.Native.Either<System.Collections.Immutable.Imm
 
 namespace MetaSharp {
     //TODO report invalid owner type error
-    //TODO report invalid dependency property [key] field name error
-    //TODO report property type specified error
-    //TODO multiple statements in cctor
     //TODO AddOwner support
-    //TODO determine expression type based on default value??
     //TODO output errors when too few parameters
     public static class DependencyPropertiesCompleter {
         const string ErrorPrefix = "M#";
@@ -59,7 +55,7 @@ $@"partial class {type.Name} {{
 
         static CompleterResult GenerateProperties(SemanticModel model, INamedTypeSymbol type, InvocationExpressionSyntax[] chain) {
             var last = (MemberAccessExpressionSyntax)chain.Last().Expression;
-            var ownerType = ((GenericNameSyntax)last.Expression).TypeArgumentList.Arguments.Single().ToString(); //TODO check last name == "New"
+            var ownerType = ((GenericNameSyntax)last.Expression).TypeArgumentList.Arguments.Single().ToString();
             var properties = chain
                 .Take(chain.Length - 1)
                 .Select(x => {
