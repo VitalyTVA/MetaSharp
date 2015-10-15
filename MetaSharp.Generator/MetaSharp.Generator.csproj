@@ -42,6 +42,7 @@
     <Compile Include="Completers\ViewModelCompleter.cs" />
     <Compile Include="Generator.cs" />
     <Compile Include="LinqExtensions.cs" />
+    <Compile Include="Messages.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Rewriter.cs" />
   </ItemGroup>

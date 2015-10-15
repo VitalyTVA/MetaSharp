@@ -15,12 +15,6 @@ namespace MetaSharp {
     //TODO AddOwner support
     //TODO output errors when too few parameters
     public static class DependencyPropertiesCompleter {
-        const string ErrorPrefix = "M#";
-        //TODO check all messages
-        public const string PropertyTypeMissed_Id = ErrorPrefix + "0001";
-        public const string PropertyTypeMissed_Message = "Either property type should be explicitly specified or default value should be explicitly typed to generate dependency property";
-        public const string IncorrectPropertyName_Id = ErrorPrefix + "0002";
-        public const string IncorrectPropertyName_Message = "Dependency property field for the the property '{0}' should have '{1}' name.";
 
         public static CompleterResult Generate(SemanticModel model, INamedTypeSymbol type) {
             //TODO error or skip if null
@@ -77,7 +71,7 @@ $@"partial class {type.Name} {{
                     }
                     if(propertyType == null) {
                         var span = memberAccess.Name.GetLocation().GetLineSpan();
-                        return Either<CompleterError, string>.Left(new CompleterError(memberAccess.Name.SyntaxTree, PropertyTypeMissed_Id, PropertyTypeMissed_Message, new FileLinePositionSpan(string.Empty, span.EndLinePosition, span.EndLinePosition)));
+                        return Either<CompleterError, string>.Left(new CompleterError(memberAccess.Name.SyntaxTree, Messages.PropertyTypeMissed_Id, Messages.PropertyTypeMissed_Message, new FileLinePositionSpan(string.Empty, span.EndLinePosition, span.EndLinePosition)));
                     }
 
                     var propertyName = GetPropertyName(arguments, readOnly, memberAccess.Name.SyntaxTree);
@@ -100,8 +94,8 @@ $@"partial class {type.Name} {{
             Func<int, string, CompleterError> getError = (index, suffix) => {
                 var fieldName = ((IdentifierNameSyntax)arguments[index].Expression).ToString();
                 if(propertyName + suffix != fieldName) {
-                    var message = string.Format(IncorrectPropertyName_Message, propertyName, propertyName + suffix);
-                    return new CompleterError(tree, IncorrectPropertyName_Id, message, arguments[index].Expression.GetLocation().GetLineSpan());
+                    var message = string.Format(Messages.IncorrectPropertyName_Message, propertyName, propertyName + suffix);
+                    return new CompleterError(tree, Messages.IncorrectPropertyName_Id, message, arguments[index].Expression.GetLocation().GetLineSpan());
                 }
                 return null;
             };

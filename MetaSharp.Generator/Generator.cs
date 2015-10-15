@@ -173,7 +173,7 @@ namespace MetaSharp {
                     )
                     .Where(method => methodsMap.ContainsKey(GetMethodId(method)))
                     .GroupBy(method => methodsMap[GetMethodId(method)].Location().SourceTree)
-                    .SelectMany(grouping => {
+                    .Select(grouping => {
                         var methods = grouping
                             .Select(method => new {
                                 Method = method,
@@ -181,21 +181,23 @@ namespace MetaSharp {
                             })
                             .OrderBy(info => info.Symbol.Location().GetLineSpan().StartLinePosition)
                             .Select(info => {
-                                var context = info.Symbol.Location().CreateContext(info.Method.DeclaringType.Namespace);
-                                return new MethodContext(info.Method, context);
+                                var location = info.Symbol.Location(); //TODO use main location
+                                var context = location.CreateContext(info.Method.DeclaringType.Namespace);
+                                return new MethodContext(info.Method, context, location.GetLineSpan(), trees[location.SourceTree]);
                             })
                             .ToImmutableArray();
                         return GenerateOutputs(methods, trees[grouping.Key], environment);
                     })
-                    .ToImmutableArray();
+                    .AggregateEither(e => e.SelectMany(x => x).ToImmutableArray(), values => values.SelectMany(x => x).ToImmutableArray());
 
-
+                if(outputs.IsLeft())
+                    return Error(outputs.ToLeft());
 
                 var completerResult = Completer.GetCompletions(compilation, environment);
                 if(completerResult.IsLeft())
                     return Error(completerResult.ToLeft());
                 var completions = completerResult.ToRight();
-                var outputFiles = outputs.Concat(completions)
+                var outputFiles = outputs.ToRight().Concat(completions)
                     .Select(output => { 
                         environment.WriteText(output.FileName.FileName, output.Text);
                         return output;
@@ -246,7 +248,7 @@ namespace MetaSharp {
             return new MethodId(method.Name, method.DeclaringType.FullName);
         }
 
-        static ImmutableArray<Output> GenerateOutputs(ImmutableArray<MethodContext> methods, string inputFileName, Environment environment) {
+        static Either<ImmutableArray<GeneratorError>,ImmutableArray<Output>> GenerateOutputs(ImmutableArray<MethodContext> methods, string inputFileName, Environment environment) {
             return methods
                 .GroupBy(method => GetOutputFileName(method.Method, inputFileName, environment))
                 .Select(byOutputGrouping => {
@@ -259,20 +261,29 @@ namespace MetaSharp {
                                     var parameters = methodContext.Method.GetParameters().Length == 1
                                         ? methodContext.Context.YieldToArray()
                                         : null;
-                                    var methodResult = methodContext.Method.Invoke(null, parameters);
-                                    if(methodContext.Method.ReturnType == typeof(string)) {
-                                        return (string)methodResult;
-                                    } else
-                                        return ((IEnumerable<string>)methodContext.Method.Invoke(null, parameters)).ConcatStringsWithNewLines();
-                                })
-                                .InsertDelimeter(NewLine);
+                                    try {
+                                        var methodResult = methodContext.Method.Invoke(null, parameters);
+                                        if(methodContext.Method.ReturnType == typeof(string)) {
+                                            return Either<GeneratorError, string>.Right((string)methodResult);
+                                        } else {
+                                            return Either<GeneratorError, string>.Right(((IEnumerable<string>)methodContext.Method.Invoke(null, parameters)).ConcatStringsWithNewLines());
+                                        }
+                                    } catch(TargetInvocationException e) {
+                                        var error = GeneratorError.Create(Messages.Exception_Id, methodContext.FileName, string.Format(Messages.Exception_Message, e.InnerException.Message, e.InnerException), methodContext.MethodSpan);
+                                        return Either<GeneratorError, string>.Left(error);
+                                    }                                })
+                                .AggregateEither(errors => errors, values => values.InsertDelimeter(NewLine));
                         })
-                    .InsertDelimeter(Enumerable.Repeat(NewLine, 2))
-                    .SelectMany(x => x)
-                    .ConcatStrings();
-                    return new Output(output, byOutputGrouping.Key);
+                        .AggregateEither(
+                            errors => errors.SelectMany(x => x),
+                            values => values.InsertDelimeter(Enumerable.Repeat(NewLine, 2)).SelectMany(x => x).ConcatStrings()
+                        );
+                    return output.Select(x => new Output(x, byOutputGrouping.Key));
                 })
-                .ToImmutableArray();
+                .AggregateEither(
+                    errors => errors.SelectMany(x => x).ToImmutableArray(),
+                    values => values.ToImmutableArray()
+                );
         }
         static OutputFileName GetOutputFileName(MethodInfo method, string fileName, Environment environment) {
             var location = method.GetCustomAttribute<MetaLocationAttribute>()?.Location
@@ -377,9 +388,13 @@ namespace MetaSharp {
     public class MethodContext {
         public readonly MetaContext Context;
         public readonly MethodInfo Method;
-        public MethodContext(MethodInfo method, MetaContext context) {
+        public readonly FileLinePositionSpan MethodSpan;
+        public readonly string FileName;
+        public MethodContext(MethodInfo method, MetaContext context, FileLinePositionSpan methodSpan, string fileName) {
             Context = context;
             Method = method;
+            MethodSpan = methodSpan;
+            FileName = fileName;
         }
     }
     public static class RoslynExtensions {

@@ -366,8 +366,8 @@ using System;
                     new TestFile(@"Some\..\" + name, incomplete, isInFlow: false)
                 ),
                 errors => Assert.Collection(errors,
-                        error => AssertError(error, Path.GetFullPath(name), DependencyPropertiesCompleter.PropertyTypeMissed_Id, DependencyPropertiesCompleter.PropertyTypeMissed_Message, 9, 26),
-                        error => AssertError(error, Path.GetFullPath(name), DependencyPropertiesCompleter.PropertyTypeMissed_Id, DependencyPropertiesCompleter.PropertyTypeMissed_Message, 10, 27)
+                        error => AssertError(error, Path.GetFullPath(name), Messages.PropertyTypeMissed_Id, Messages.PropertyTypeMissed_Message, 9, 26),
+                        error => AssertError(error, Path.GetFullPath(name), Messages.PropertyTypeMissed_Id, Messages.PropertyTypeMissed_Message, 10, 27)
                 )
             );
         }
@@ -401,13 +401,13 @@ using System;
                     new TestFile(name, incomplete, isInFlow: false)
                 ),
                 errors => Assert.Collection(errors,
-                        error => AssertError(error, Path.GetFullPath(name), DependencyPropertiesCompleter.IncorrectPropertyName_Id,
+                        error => AssertError(error, Path.GetFullPath(name), Messages.IncorrectPropertyName_Id,
                             "Dependency property field for the the property 'Prop1' should have 'Prop1Property' name.", 9, 47, 9, 60),
-                        error => AssertError(error, Path.GetFullPath(name), DependencyPropertiesCompleter.IncorrectPropertyName_Id,
+                        error => AssertError(error, Path.GetFullPath(name), Messages.IncorrectPropertyName_Id,
                             "Dependency property field for the the property 'Prop2' should have 'Prop2Property' name.", 10, 45, 10, 59),
-                        error => AssertError(error, Path.GetFullPath(name), DependencyPropertiesCompleter.IncorrectPropertyName_Id,
+                        error => AssertError(error, Path.GetFullPath(name), Messages.IncorrectPropertyName_Id,
                             "Dependency property field for the the property 'Prop3' should have 'Prop3PropertyKey' name.", 11, 53, 11, 66),
-                        error => AssertError(error, Path.GetFullPath(name), DependencyPropertiesCompleter.IncorrectPropertyName_Id,
+                        error => AssertError(error, Path.GetFullPath(name), Messages.IncorrectPropertyName_Id,
                             "Dependency property field for the the property 'Prop4' should have 'Prop4Property' name.", 12, 75, 12, 88)
                 )
             );

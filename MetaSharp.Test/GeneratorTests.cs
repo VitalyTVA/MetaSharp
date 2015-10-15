@@ -220,7 +220,7 @@ namespace MetaSharp.HelloWorld {
             );
         }
         [Fact]
-        public void MultipleFileErrors() {
+        public void MultipleFilesErrors() {
             var input1 = @"
 namespace MetaSharp.HelloWorld {
     public static class HelloWorldGenerator {
@@ -247,6 +247,53 @@ namespace MetaSharp.HelloWorld {
                     Assert.Collection(errors,
                         error => AssertError(error, name1, "CS1002"),
                         error => AssertError(error, name2, "CS1513"));
+                }
+            );
+        }
+        [Fact]
+        public void MultipleFilesExceptions() {
+            var input1 = @"
+using System;
+namespace MetaSharp.HelloWorld {
+    public static class HelloWorldGenerator {
+        public static string Fail() {
+             throw new InvalidOperationException();
+        }
+        public static string ThenSayHelloInVoid() {
+             return ""Hello World!"";
+        }
+    }
+}
+";
+            var input2 = @"
+using System;
+namespace MetaSharp.HelloWorld {
+    public static class HelloAgainGenerator2 {
+        public static string Fail() {
+             throw new NotSupportedException();
+        }
+        public static string AndAgain() {
+             throw new ArgumentNullException();
+        }
+    }
+}
+";
+            var name1 = "file1.meta.cs";
+            var name2 = "file2.meta.cs";
+            AssertMultipleFilesErrors(
+                ImmutableArray.Create(new TestFile(name1, input1), new TestFile(name2, input2)),
+                errors => {
+                    try {
+                        throw new InvalidOperationException();
+                    } catch(Exception e) {
+                        Assert.Contains(e.Message, errors.First().Message);
+                        Assert.Contains("InvalidOperationException:", errors.First().Message);
+                        Assert.DoesNotContain("TargetInvocationException:", errors.First().Message);
+                        Assert.Collection(errors,
+                            error => AssertError(error, name1, Messages.Exception_Id, 5, 30, 5, 34),
+                            error => AssertError(error, name2, Messages.Exception_Id),
+                            error => AssertError(error, name2, Messages.Exception_Id));
+                    }
                 }
             );
         }
@@ -558,8 +605,11 @@ namespace MetaSharp.HelloWorld {
             );
         }
         protected static void AssertError(GeneratorError error, string file, string id, string message, int lineNumber, int columnNumber, int? endLineNumber = null, int? endColumnNumber = null) {
-            AssertError(error, file, id);
+            AssertError(error, file, id, lineNumber, columnNumber, endLineNumber, endColumnNumber);
             Assert.Equal(message, error.Message);
+        }
+        protected static void AssertError(GeneratorError error, string file, string id, int lineNumber, int columnNumber, int? endLineNumber = null, int? endColumnNumber = null) {
+            AssertError(error, file, id);
             Assert.Equal(lineNumber, error.LineNumber);
             Assert.Equal(columnNumber, error.ColumnNumber);
             Assert.Equal(endLineNumber ?? lineNumber, error.EndLineNumber);
