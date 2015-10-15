@@ -15,6 +15,7 @@ using System.Text;
 using GeneratorResult = MetaSharp.Native.Either<System.Collections.Immutable.ImmutableArray<MetaSharp.GeneratorError>, System.Collections.Immutable.ImmutableArray<string>>;
 
 namespace MetaSharp {
+    //TODO different exception messages for console and task mode (no need to format task message at all - simply use to string)
     //TODO wrap output classes into regions
     //TODO show verbose error in correct location when reference or include file or etc. is not found + (incorrect enum type name in MetaReference)
     //TODO Conditional("METASHARP") attribute for all meta attributes so they do not go to final assembly
