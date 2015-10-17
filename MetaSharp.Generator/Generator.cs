@@ -172,23 +172,26 @@ namespace MetaSharp {
                         .Where(method => !method.IsSpecialName) //TODO filter out methods which do not return something useful (or even fail if there are such)
                     )
                     .Where(method => methodsMap.ContainsKey(GetMethodId(method)))
-                    .GroupBy(method => methodsMap[GetMethodId(method)].Location().SourceTree)
-                    .Select(grouping => {
-                        var methods = grouping
-                            .Select(method => new {
-                                Method = method,
-                                Symbol = methodsMap[GetMethodId(method)]
-                            })
-                            .OrderBy(info => info.Symbol.Location().GetLineSpan().StartLinePosition)
-                            .Select(info => {
-                                var location = info.Symbol.Location(); //TODO use main location
-                                var context = location.CreateContext(info.Method.DeclaringType.Namespace);
-                                return new MethodContext(info.Method, context, location.GetLineSpan(), trees[grouping.Key]);
-                            })
-                            .ToImmutableArray();
-                        return GenerateOutputs(methods, trees[grouping.Key], environment);
+                    .Select(method => new {
+                        Method = method,
+                        Symbol = methodsMap[GetMethodId(method)]
                     })
-                    .AggregateEither(e => e.SelectMany(x => x).ToImmutableArray(), values => values.SelectMany(x => x).ToImmutableArray());
+                    .Select(info => {
+                        var location = info.Symbol.Location(); //TODO use main location
+                        var context = location.CreateContext(info.Method.DeclaringType.Namespace);
+                        var tree = methodsMap[GetMethodId(info.Method)].Location().SourceTree;
+                        return new MethodContext(info.Method, context, location.GetLineSpan(), trees[tree]);
+                    })
+                    .Select(methodContext => GetMethodOutput(methodContext)
+                        .Select(x => new Output(x, GetOutputFileName(methodContext.Method, methodContext.FileName, environment)))
+                    )
+                    .AggregateEither(
+                        e => e.ToImmutableArray(),
+                        values => values
+                            .GroupBy(x => x.FileName)
+                            .Select(x => new Output(x.Select(output => output.Text).ConcatStringsWithNewLines(), x.Key))
+                            .ToImmutableArray()
+                    );
 
                 if(outputs.IsLeft())
                     return Error(outputs.ToLeft());
@@ -246,29 +249,6 @@ namespace MetaSharp {
 
         static MethodId GetMethodId(MethodInfo method) {
             return new MethodId(method.Name, method.DeclaringType.FullName);
-        }
-
-        static Either<ImmutableArray<GeneratorError>, ImmutableArray<Output>> GenerateOutputs(ImmutableArray<MethodContext> methods, string inputFileName, Environment environment) {
-            return methods
-                .GroupBy(method => GetOutputFileName(method.Method, inputFileName, environment))
-                .Select(byOutputGrouping => {
-                    var output = byOutputGrouping
-                        .GroupBy(methodContext => methodContext.Method.DeclaringType)
-                        .Select(grouping => {
-                            return grouping
-                                .Select(GetMethodOutput)
-                                .AggregateEither(errors => errors, values => values);
-                        })
-                        .AggregateEither(
-                            errors => errors.SelectMany(x => x),
-                            values => values.SelectMany(x => x).ConcatStringsWithNewLines()
-                        );
-                    return output.Select(x => new Output(x, byOutputGrouping.Key));
-                })
-                .AggregateEither(
-                    errors => errors.SelectMany(x => x).ToImmutableArray(),
-                    values => values.ToImmutableArray()
-                );
         }
         static Either<GeneratorError, string> GetMethodOutput(MethodContext methodContext) {
             //TODO check args
