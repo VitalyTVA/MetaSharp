@@ -180,7 +180,6 @@ namespace MetaSharp.HelloWorld {
 }
 ";
             var output = @"Hello World!
-
 Hello World Again!
 Hello World One More Time!";
             AssertSingleFileSimpleOutput(input, output);

@@ -257,11 +257,11 @@ namespace MetaSharp {
                         .Select(grouping => {
                             return grouping
                                 .Select(GetMethodOutput)
-                                .AggregateEither(errors => errors, values => values.InsertDelimeter(NewLine));
+                                .AggregateEither(errors => errors, values => values);
                         })
                         .AggregateEither(
                             errors => errors.SelectMany(x => x),
-                            values => values.InsertDelimeter(Enumerable.Repeat(NewLine, 2)).SelectMany(x => x).ConcatStrings()
+                            values => values.SelectMany(x => x).ConcatStringsWithNewLines()
                         );
                     return output.Select(x => new Output(x, byOutputGrouping.Key));
                 })
