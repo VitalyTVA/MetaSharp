@@ -172,19 +172,14 @@ namespace MetaSharp {
                         .Where(method => !method.IsSpecialName) //TODO filter out methods which do not return something useful (or even fail if there are such)
                     )
                     .Where(method => methodsMap.ContainsKey(GetMethodId(method)))
-                    .Select(method => new {
-                        Method = method,
-                        Symbol = methodsMap[GetMethodId(method)]
+                    .Select(method => { 
+                        var location = methodsMap[GetMethodId(method)].Location(); //TODO use main location
+                        var context = location.CreateContext(method.DeclaringType.Namespace);
+                        var tree = methodsMap[GetMethodId(method)].Location().SourceTree;
+                        var methodContext = new MethodContext(method, context, location.GetLineSpan(), trees[tree]);
+                        return GetMethodOutput(methodContext)
+                            .Select(x => new Output(x, GetOutputFileName(methodContext.Method, methodContext.FileName, environment)));
                     })
-                    .Select(info => {
-                        var location = info.Symbol.Location(); //TODO use main location
-                        var context = location.CreateContext(info.Method.DeclaringType.Namespace);
-                        var tree = methodsMap[GetMethodId(info.Method)].Location().SourceTree;
-                        return new MethodContext(info.Method, context, location.GetLineSpan(), trees[tree]);
-                    })
-                    .Select(methodContext => GetMethodOutput(methodContext)
-                        .Select(x => new Output(x, GetOutputFileName(methodContext.Method, methodContext.FileName, environment)))
-                    )
                     .AggregateEither(
                         e => e.ToImmutableArray(),
                         values => values
