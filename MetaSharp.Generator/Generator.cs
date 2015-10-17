@@ -183,7 +183,7 @@ namespace MetaSharp {
                             .Select(info => {
                                 var location = info.Symbol.Location(); //TODO use main location
                                 var context = location.CreateContext(info.Method.DeclaringType.Namespace);
-                                return new MethodContext(info.Method, context, location.GetLineSpan(), trees[location.SourceTree]);
+                                return new MethodContext(info.Method, context, location.GetLineSpan(), trees[grouping.Key]);
                             })
                             .ToImmutableArray();
                         return GenerateOutputs(methods, trees[grouping.Key], environment);
@@ -248,7 +248,7 @@ namespace MetaSharp {
             return new MethodId(method.Name, method.DeclaringType.FullName);
         }
 
-        static Either<ImmutableArray<GeneratorError>,ImmutableArray<Output>> GenerateOutputs(ImmutableArray<MethodContext> methods, string inputFileName, Environment environment) {
+        static Either<ImmutableArray<GeneratorError>, ImmutableArray<Output>> GenerateOutputs(ImmutableArray<MethodContext> methods, string inputFileName, Environment environment) {
             return methods
                 .GroupBy(method => GetOutputFileName(method.Method, inputFileName, environment))
                 .Select(byOutputGrouping => {
