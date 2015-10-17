@@ -16,5 +16,8 @@ namespace MetaSharp {
 
         public const string IncorrectPropertyName_Id = ErrorPrefix + "0002";
         public const string IncorrectPropertyName_Message = "Dependency property field for the the property '{0}' should have '{1}' name.";
+
+        public const string IncorrectOwnerType_Id = ErrorPrefix + "0003";
+        public const string IncorrectOwnerType_Message = "Owner type doesn't match the enclosing type.";
     }
 }

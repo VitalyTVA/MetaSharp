@@ -412,6 +412,38 @@ using System;
                 )
             );
         }
+        [Fact]
+        public void DependencyProperties_InvalidType() {
+            var input = @"
+using MetaSharp;
+[assembly: MetaProto(@""IncompleteDObjects.cs"")]
+";
+            string incomplete =
+@"
+using MetaSharp;
+namespace MetaSharp.Incomplete {
+using System;
+    [MetaCompleteDependencyProperties]
+    public partial class DObject {
+        static DObject() {
+            DependencyPropertyRegistrator< Bla.DObject  >.New()
+                .Register(x => x. Prop1 , out Prop1Property, string.Empty)
+            ;
+        }
+    }
+}";
+            var name = "IncompleteDObjects.cs";
+            AssertMultipleFilesErrors(
+                ImmutableArray.Create(
+                    new TestFile(SingleInputFileName, input),
+                    new TestFile(name, incomplete, isInFlow: false)
+                ),
+                errors => Assert.Collection(errors,
+                        error => AssertError(error, Path.GetFullPath(name), Messages.IncorrectOwnerType_Id,
+                            Messages.IncorrectOwnerType_Message, 8, 44, 8, 55)
+                )
+            );
+        }
         #endregion
 
     }

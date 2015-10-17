@@ -49,7 +49,10 @@ $@"partial class {type.Name} {{
 
         static CompleterResult GenerateProperties(SemanticModel model, INamedTypeSymbol type, InvocationExpressionSyntax[] chain) {
             var last = (MemberAccessExpressionSyntax)chain.Last().Expression;
-            var ownerType = ((GenericNameSyntax)last.Expression).TypeArgumentList.Arguments.Single().ToString();
+            var ownerTypeSyntax = ((GenericNameSyntax)last.Expression).TypeArgumentList.Arguments.Single();
+            var ownerType = model.GetTypeInfo(ownerTypeSyntax).Type;
+            if(ownerType != type)
+                return CompleterResult.Left(new CompleterError(last.SyntaxTree, Messages.IncorrectOwnerType_Id, Messages.IncorrectOwnerType_Message, ownerTypeSyntax.GetLocation().GetLineSpan()).YieldToImmutable());
             var properties = chain
                 .Take(chain.Length - 1)
                 .Select(x => {
@@ -71,7 +74,7 @@ $@"partial class {type.Name} {{
                     }
                     if(propertyType == null) {
                         var span = memberAccess.Name.GetLocation().GetLineSpan();
-                        return Either<CompleterError, string>.Left(new CompleterError(memberAccess.Name.SyntaxTree, Messages.PropertyTypeMissed_Id, Messages.PropertyTypeMissed_Message, new FileLinePositionSpan(string.Empty, span.EndLinePosition, span.EndLinePosition)));
+                        return Either<CompleterError, string>.Left(new CompleterError(memberAccess.SyntaxTree, Messages.PropertyTypeMissed_Id, Messages.PropertyTypeMissed_Message, new FileLinePositionSpan(string.Empty, span.EndLinePosition, span.EndLinePosition)));
                     }
 
                     var propertyName = GetPropertyName(arguments, readOnly, memberAccess.Name.SyntaxTree);
