@@ -256,22 +256,7 @@ namespace MetaSharp {
                         .GroupBy(methodContext => methodContext.Method.DeclaringType)
                         .Select(grouping => {
                             return grouping
-                                .Select(methodContext => {
-                                    //TODO check args
-                                    var parameters = methodContext.Method.GetParameters().Length == 1
-                                        ? methodContext.Context.YieldToArray()
-                                        : null;
-                                    try {
-                                        var methodResult = methodContext.Method.Invoke(null, parameters);
-                                        if(methodContext.Method.ReturnType == typeof(string)) {
-                                            return Either<GeneratorError, string>.Right((string)methodResult);
-                                        } else {
-                                            return Either<GeneratorError, string>.Right(((IEnumerable<string>)methodContext.Method.Invoke(null, parameters)).ConcatStringsWithNewLines());
-                                        }
-                                    } catch(TargetInvocationException e) {
-                                        var error = GeneratorError.Create(Messages.Exception_Id, methodContext.FileName, string.Format(Messages.Exception_Message, e.InnerException.Message, e.InnerException), methodContext.MethodSpan);
-                                        return Either<GeneratorError, string>.Left(error);
-                                    }                                })
+                                .Select(GetMethodOutput)
                                 .AggregateEither(errors => errors, values => values.InsertDelimeter(NewLine));
                         })
                         .AggregateEither(
@@ -285,6 +270,24 @@ namespace MetaSharp {
                     values => values.ToImmutableArray()
                 );
         }
+        static Either<GeneratorError, string> GetMethodOutput(MethodContext methodContext) {
+            //TODO check args
+            var parameters = methodContext.Method.GetParameters().Length == 1
+                ? methodContext.Context.YieldToArray()
+                : null;
+            try {
+                var methodResult = methodContext.Method.Invoke(null, parameters);
+                if(methodContext.Method.ReturnType == typeof(string)) {
+                    return Either<GeneratorError, string>.Right((string)methodResult);
+                } else {
+                    return Either<GeneratorError, string>.Right(((IEnumerable<string>)methodContext.Method.Invoke(null, parameters)).ConcatStringsWithNewLines());
+                }
+            } catch(TargetInvocationException e) {
+                var error = GeneratorError.Create(Messages.Exception_Id, methodContext.FileName, string.Format(Messages.Exception_Message, e.InnerException.Message, e.InnerException), methodContext.MethodSpan);
+                return Either<GeneratorError, string>.Left(error);
+            }
+        }
+
         static OutputFileName GetOutputFileName(MethodInfo method, string fileName, Environment environment) {
             var location = method.GetCustomAttribute<MetaLocationAttribute>()?.Location
                 ?? method.DeclaringType.GetCustomAttribute<MetaLocationAttribute>()?.Location
