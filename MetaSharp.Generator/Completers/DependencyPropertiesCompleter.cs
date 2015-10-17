@@ -11,7 +11,6 @@ using System.Threading.Tasks;
 using CompleterResult = MetaSharp.Native.Either<System.Collections.Immutable.ImmutableArray<MetaSharp.CompleterError>, string>;
 
 namespace MetaSharp {
-    //TODO report invalid owner type error
     //TODO AddOwner support
     //TODO output errors when too few parameters
     public static class DependencyPropertiesCompleter {
@@ -52,7 +51,7 @@ $@"partial class {type.Name} {{
             var ownerTypeSyntax = ((GenericNameSyntax)last.Expression).TypeArgumentList.Arguments.Single();
             var ownerType = model.GetTypeInfo(ownerTypeSyntax).Type;
             if(ownerType != type)
-                return CompleterResult.Left(new CompleterError(last.SyntaxTree, Messages.IncorrectOwnerType_Id, Messages.IncorrectOwnerType_Message, ownerTypeSyntax.GetLocation().GetLineSpan()).YieldToImmutable());
+                return CompleterResult.Left(new CompleterError(ownerTypeSyntax, Messages.IncorrectOwnerType_Id, Messages.IncorrectOwnerType_Message).YieldToImmutable());
             var properties = chain
                 .Take(chain.Length - 1)
                 .Select(x => {
@@ -73,7 +72,7 @@ $@"partial class {type.Name} {{
                         propertyType = defaultExpressionTypeInfo.Type?.DisplayString(model, defaultValueArgument.GetLocation());
                     }
                     if(propertyType == null) {
-                        var span = memberAccess.Name.GetLocation().GetLineSpan();
+                        var span = memberAccess.Name.LineSpan();
                         return Either<CompleterError, string>.Left(new CompleterError(memberAccess.SyntaxTree, Messages.PropertyTypeMissed_Id, Messages.PropertyTypeMissed_Message, new FileLinePositionSpan(string.Empty, span.EndLinePosition, span.EndLinePosition)));
                     }
 
@@ -91,6 +90,7 @@ $@"partial class {type.Name} {{
             return properties
                 .AggregateEither(errors => errors.ToImmutableArray(), values => values.ConcatStringsWithNewLines());
         }
+
         static Either<CompleterError, string> GetPropertyName(SeparatedSyntaxList<ArgumentSyntax> arguments, bool readOnly, SyntaxTree tree) {
             var propertyName = ((MemberAccessExpressionSyntax)((SimpleLambdaExpressionSyntax)arguments[0].Expression).Body).Name.ToString();
 
@@ -98,7 +98,7 @@ $@"partial class {type.Name} {{
                 var fieldName = ((IdentifierNameSyntax)arguments[index].Expression).ToString();
                 if(propertyName + suffix != fieldName) {
                     var message = string.Format(Messages.IncorrectPropertyName_Message, propertyName, propertyName + suffix);
-                    return new CompleterError(tree, Messages.IncorrectPropertyName_Id, message, arguments[index].Expression.GetLocation().GetLineSpan());
+                    return new CompleterError(arguments[index].Expression, Messages.IncorrectPropertyName_Id, message);
                 }
                 return null;
             };

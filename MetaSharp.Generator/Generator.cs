@@ -474,6 +474,9 @@ namespace MetaSharp {
             var location = symbol.Location();
             return location.SourceTree.GetCompilationUnitRoot().FindNode(location.SourceSpan);
         }
+        public static FileLinePositionSpan LineSpan(this SyntaxNode syntax) {
+            return syntax.GetLocation().GetLineSpan();
+        }
     }
     public class GeneratorError {
         public static GeneratorError Create(string id, string file, string message, FileLinePositionSpan span) {

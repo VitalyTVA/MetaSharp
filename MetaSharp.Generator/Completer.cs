@@ -24,6 +24,9 @@ namespace MetaSharp {
             Id = id;
             Message = message;
         }
+        public CompleterError(SyntaxNode node, string id, string message)
+            : this(node.SyntaxTree, id, message, node.LineSpan()) {
+        }
     }
     public static class Completer {
         static ImmutableDictionary<Type, TypeCompleter> Completers;
