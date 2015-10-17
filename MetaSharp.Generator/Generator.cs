@@ -177,8 +177,7 @@ namespace MetaSharp {
                         var context = location.CreateContext(method.DeclaringType.Namespace);
                         var tree = methodsMap[GetMethodId(method)].Location().SourceTree;
                         var methodContext = new MethodContext(method, context, location.GetLineSpan(), trees[tree]);
-                        return GetMethodOutput(methodContext)
-                            .Select(x => new Output(x, GetOutputFileName(methodContext.Method, methodContext.FileName, environment)));
+                        return GetMethodOutput(methodContext, environment);
                     })
                     .AggregateEither(
                         e => e.ToImmutableArray(),
@@ -245,21 +244,21 @@ namespace MetaSharp {
         static MethodId GetMethodId(MethodInfo method) {
             return new MethodId(method.Name, method.DeclaringType.FullName);
         }
-        static Either<GeneratorError, string> GetMethodOutput(MethodContext methodContext) {
+        static Either<GeneratorError, Output> GetMethodOutput(MethodContext methodContext, Environment environment) {
             //TODO check args
             var parameters = methodContext.Method.GetParameters().Length == 1
                 ? methodContext.Context.YieldToArray()
                 : null;
             try {
                 var methodResult = methodContext.Method.Invoke(null, parameters);
-                if(methodContext.Method.ReturnType == typeof(string)) {
-                    return Either<GeneratorError, string>.Right((string)methodResult);
-                } else {
-                    return Either<GeneratorError, string>.Right(((IEnumerable<string>)methodContext.Method.Invoke(null, parameters)).ConcatStringsWithNewLines());
-                }
+                var stringResult = methodContext.Method.ReturnType == typeof(string)
+                    ? (string)methodResult
+                    : ((IEnumerable<string>)methodResult).ConcatStringsWithNewLines();
+                var output = new Output(stringResult, GetOutputFileName(methodContext.Method, methodContext.FileName, environment));
+                return Either<GeneratorError, Output>.Right(output);
             } catch(TargetInvocationException e) {
                 var error = GeneratorError.Create(Messages.Exception_Id, methodContext.FileName, string.Format(Messages.Exception_Message, e.InnerException.Message, e.InnerException), methodContext.MethodSpan);
-                return Either<GeneratorError, string>.Left(error);
+                return Either<GeneratorError, Output>.Left(error);
             }
         }
 
