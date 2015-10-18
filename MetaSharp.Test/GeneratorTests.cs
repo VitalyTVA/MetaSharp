@@ -141,6 +141,26 @@ namespace MetaSharp.HelloWorld {
             AssertSingleFileSimpleOutput(input, "Hello World!\r\nHello World Again!\r\nHello World from array!\r\nHello World from array again!");
         }
         [Fact]
+        public void CustomOutputs() {
+            var input = @"
+using System;
+using System.Collections.Generic;
+namespace MetaSharp.HelloWorld {
+    public static class HelloWorldGenerator {
+        public static Output SayHello() {
+            return new Output(""Hello World!"", @""Subfolder\CustomOutputName.cs"");
+        }
+    }
+}
+";
+            AssertMultipleFilesOutput(
+                ImmutableArray.Create(new TestFile("file.meta.cs", input)),
+                ImmutableArray.Create(
+                    new TestFile(@"Subfolder\CustomOutputName.cs", "Hello World!", isInFlow: false)
+                )
+            );
+        }
+        [Fact]
         public void CompilationError() {
             var input = @"
 namespace MetaSharp.HelloWorld {
@@ -531,8 +551,8 @@ namespace MetaSharp.HelloWorld {
         }
     }
     public class GeneratorTestsBase {
-        const string DefaultIntermediateOutputPath = "obj";
-        const string DefaultTargetPath = "bin";
+        protected const string DefaultIntermediateOutputPath = "obj";
+        protected const string DefaultTargetPath = "bin";
         protected const string SingleInputFileName = "file.meta.cs";
 
         protected class TestEnvironment {

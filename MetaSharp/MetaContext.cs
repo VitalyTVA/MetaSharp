@@ -28,7 +28,7 @@ $@"namespace {metaContext.Namespace} {{
 }}";
         }
     }
-    public class Output {
+    public sealed class Output {
         public readonly string Text;
         public readonly OutputFileName FileName;
         public Output(string text, OutputFileName fileName) {
@@ -36,10 +36,10 @@ $@"namespace {metaContext.Namespace} {{
             FileName = fileName;
         }
         public Output(string text, string fileName)
-            : this(text, new OutputFileName(fileName, includeInOutput: true)) {
+            : this(text, new OutputFileName(fileName, includeInOutput: false)) {
         }
     }
-    public class OutputFileName {
+    public sealed class OutputFileName {
         public readonly string FileName;
         public readonly bool IncludeInOutput;
 

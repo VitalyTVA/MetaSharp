@@ -251,10 +251,14 @@ namespace MetaSharp {
                 : null;
             try {
                 var methodResult = methodContext.Method.Invoke(null, parameters);
-                var stringResult = methodContext.Method.ReturnType == typeof(string)
-                    ? (string)methodResult
-                    : ((IEnumerable<string>)methodResult).ConcatStringsWithNewLines();
-                var output = new Output(stringResult, GetOutputFileName(methodContext.Method, methodContext.FileName, environment));
+                Func<string, Output> getDefaultOutput = s => new Output(s, GetOutputFileName(methodContext.Method, methodContext.FileName, environment));
+                Output output;
+                if(methodContext.Method.ReturnType == typeof(string))
+                    output = getDefaultOutput((string)methodResult);
+                else if(typeof(IEnumerable<string>).IsAssignableFrom(methodContext.Method.ReturnType))
+                    output = getDefaultOutput(((IEnumerable<string>)methodResult).ConcatStringsWithNewLines());
+                else
+                    output = (Output)methodResult;
                 return Either<GeneratorError, Output>.Right(output);
             } catch(TargetInvocationException e) {
                 var error = GeneratorError.Create(Messages.Exception_Id, methodContext.FileName, string.Format(Messages.Exception_Message, e.InnerException.Message, e.InnerException), methodContext.MethodSpan);
