@@ -9,9 +9,11 @@ namespace MetaSharp {
     public class MetaContext {
         public string Namespace { get; }
         public IEnumerable<string> Usings { get; }
-        public MetaContext(string @namespace, IEnumerable<string> usings) {
+        internal Func<string, string> GetIntermediateOutputFileName;
+        public MetaContext(string @namespace, IEnumerable<string> usings, Func<string, string> getIntermediateOutputFileName) {
             Namespace = @namespace;
             Usings = usings;
+            GetIntermediateOutputFileName = getIntermediateOutputFileName;
         }
     }
     public static class MetaContextExtensions {
@@ -26,6 +28,9 @@ $@"namespace {metaContext.Namespace} {{
 
 {members.ConcatStringsWithNewLines().AddTabs(1)}
 }}";
+        }
+        public static Output CreateIntermediateOutput(this MetaContext metaContext, string text, string fileName) {
+            return new Output(text, new OutputFileName(metaContext.GetIntermediateOutputFileName(fileName), includeInOutput: true));
         }
     }
     public sealed class Output {

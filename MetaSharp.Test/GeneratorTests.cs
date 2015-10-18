@@ -150,13 +150,17 @@ namespace MetaSharp.HelloWorld {
         public static Output SayHello() {
             return new Output(""Hello World!"", @""Subfolder\CustomOutputName.cs"");
         }
+        public static Output SayHelloToIntermediate(MetaContext context) {
+            return context.CreateIntermediateOutput(""Hello World to intermediate!"", @""Subfolder2\CustomOutputName.cs"");
+        }
     }
 }
 ";
             AssertMultipleFilesOutput(
                 ImmutableArray.Create(new TestFile("file.meta.cs", input)),
                 ImmutableArray.Create(
-                    new TestFile(@"Subfolder\CustomOutputName.cs", "Hello World!", isInFlow: false)
+                    new TestFile(@"Subfolder\CustomOutputName.cs", "Hello World!", isInFlow: false),
+                    new TestFile(Path.Combine(DefaultIntermediateOutputPath, @"Subfolder2\CustomOutputName.cs"), "Hello World to intermediate!")
                 )
             );
         }

@@ -74,7 +74,7 @@ namespace MetaSharp {
                                             .SingleOrDefault();
                                 if(completer == null)
                                     return null;
-                                var context = type.CreateContext();
+                                var context = type.CreateContext(environment);
                                 var completion = completer(model, type);
                                 return completion.Transform(
                                     errors => errors.Select(e => GeneratorError.Create(id: e.Id, file: prototypes[e.Tree].Input, message: e.Message, span: e.Span)),

@@ -9,7 +9,7 @@ namespace MetaSharp.Test {
     public class MetaContextTest {
         [Fact]
         public void WrapMembers() {
-            var context = new MetaContext("Some.Namepace", new[] { "using System;", "using System.Linq;" });
+            var context = new MetaContext("Some.Namepace", new[] { "using System;", "using System.Linq;" }, null);
             var input = 
 @"public class B {
 

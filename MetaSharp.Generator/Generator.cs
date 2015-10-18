@@ -174,7 +174,7 @@ namespace MetaSharp {
                     .Where(method => methodsMap.ContainsKey(GetMethodId(method)))
                     .Select(method => { 
                         var location = methodsMap[GetMethodId(method)].Location(); //TODO use main location
-                        var context = location.CreateContext(method.DeclaringType.Namespace);
+                        var context = location.CreateContext(method.DeclaringType.Namespace, environment);
                         var tree = methodsMap[GetMethodId(method)].Location().SourceTree;
                         var methodContext = new MethodContext(method, context, location.GetLineSpan(), trees[tree]);
                         return GetMethodOutput(methodContext, environment);
@@ -365,13 +365,13 @@ namespace MetaSharp {
         public static IEnumerable<SyntaxNode> GetParents(this SyntaxNode node) {
             return LinqExtensions.Unfold(node.Parent, x => x.Parent);
         }
-        public static MetaContext CreateContext(this Location location, string @namespace) {
+        public static MetaContext CreateContext(this Location location, string @namespace, Environment environment) {
             var nodes = location.SourceTree.GetCompilationUnitRoot().DescendantNodes(location.SourceSpan);
             var namespaces = nodes.OfType<NamespaceDeclarationSyntax>().Single(); //TODO nested namespaces
-            return new MetaContext(@namespace, namespaces.Usings.Select(x => x.ToString()).ToArray());
+            return new MetaContext(@namespace, namespaces.Usings.Select(x => x.ToString()).ToArray(), x => Path.Combine(environment.BuildConstants.IntermediateOutputPath, x));
         }
-        public static MetaContext CreateContext(this INamedTypeSymbol type) {
-            return type.Location().CreateContext(type.ContainingNamespace.ToString());
+        public static MetaContext CreateContext(this INamedTypeSymbol type, Environment environment) {
+            return type.Location().CreateContext(type.ContainingNamespace.ToString(), environment);
         }
         public static string TypeDisplayString(this IPropertySymbol property, SemanticModel model) {
             return property.Type.DisplayString(model, property.Location());
@@ -447,7 +447,7 @@ namespace MetaSharp {
         }
     }
     public class Environment {
-        static string GetOutputFileName(MetaLocationKind location, string fileName, BuildConstants buildConstants) {
+        internal static string GetOutputFileName(MetaLocationKind location, string fileName, BuildConstants buildConstants) {
             switch(location) {
             case MetaLocationKind.IntermediateOutput:
                 return Path.Combine(buildConstants.IntermediateOutputPath, fileName.ReplaceEnd(Generator.CShaprFileExtension, Generator.DefaultOutputFileEnd));
