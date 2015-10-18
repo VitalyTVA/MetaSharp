@@ -64,22 +64,21 @@ namespace MetaSharp {
                         var model = compilationWithPrototypes.GetSemanticModel(tree);
                         var classSyntaxes = tree.GetRoot().DescendantNodes(x => !(x is ClassDeclarationSyntax)).OfType<ClassDeclarationSyntax>();
                         var treeResults = classSyntaxes
-                            .Select(x => model.GetDeclaredSymbol(x))
-                            .Select(type => {
+                            .Select(x => {
+                                var type = model.GetDeclaredSymbol(x);
                                 //TODO support multiple completers for single file
                                 var completer = type.GetAttributes()
                                             .Select(attributeData => symbolToTypeMap.GetValueOrDefault(attributeData.AttributeClass))
                                             .Where(attributeType => attributeType != null)
                                             .Select(attributeType => Completers[attributeType])
                                             .SingleOrDefault();
-                                return new { type, completer };
-                            })
-                            .Where(x => x.completer != null)
-                            .Select(x => {
-                                var context = x.type.CreateContext();
-                                var completion = x.completer(model, x.type);
+                                if(completer == null)
+                                    return null;
+                                var context = type.CreateContext();
+                                var completion = completer(model, type);
                                 return completion.Select(value => context.WrapMembers(value));
-                            });
+                            })
+                            .Where(x => x != null);
                         return treeResults
                             .AggregateEither(
                                 left => left.SelectMany(x => x), 
