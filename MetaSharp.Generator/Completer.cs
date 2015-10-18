@@ -76,7 +76,10 @@ namespace MetaSharp {
                                     return null;
                                 var context = type.CreateContext();
                                 var completion = completer(model, type);
-                                return completion.Select(value => context.WrapMembers(value));
+                                return completion.Transform(
+                                    errors => errors.Select(e => GeneratorError.Create(id: e.Id, file: prototypes[e.Tree].Input, message: e.Message, span: e.Span)),
+                                    value => context.WrapMembers(value)
+                                );
                             })
                             .Where(x => x != null);
                         return treeResults
@@ -89,10 +92,10 @@ namespace MetaSharp {
                 .AggregateEither(
                     left => left
                         .SelectMany(x => x)
-                        .Select(e => GeneratorError.Create(id: e.Id, file: prototypes[e.Tree].Input, message: e.Message, span: e.Span))
                         .ToImmutableArray(), 
                     right => right.ToImmutableArray()
                 );
         }
+        //static Either<ImmutableArray<Com>>
     }
 }
