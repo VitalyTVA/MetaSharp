@@ -44,7 +44,7 @@ namespace MetaSharp {
                     Input = x.Item1,
                     Files = new {
                         Input = Path.GetFullPath(x.Item1),
-                        Output = OutputFileName.Create(x.Item1, environment, x.Item2)
+                        Output = environment.CreateOutput(x.Item1, x.Item2)
                     }
                 })
                 .ToImmutableDictionary(x => Generator.ParseFile(environment, x.Input), x => x.Files);

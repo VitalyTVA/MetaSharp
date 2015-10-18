@@ -28,6 +28,33 @@ $@"namespace {metaContext.Namespace} {{
 }}";
         }
     }
+    public class Output {
+        public readonly string Text;
+        public readonly OutputFileName FileName;
+        public Output(string text, OutputFileName fileName) {
+            Text = text;
+            FileName = fileName;
+        }
+        public Output(string text, string fileName)
+            : this(text, new OutputFileName(fileName, includeInOutput: true)) {
+        }
+    }
+    public class OutputFileName {
+        public readonly string FileName;
+        public readonly bool IncludeInOutput;
+
+        public OutputFileName(string fileName, bool includeInOutput) {
+            FileName = fileName;
+            IncludeInOutput = includeInOutput;
+        }
+        public override int GetHashCode() {
+            return FileName.GetHashCode() ^ IncludeInOutput.GetHashCode();
+        }
+        public override bool Equals(object obj) {
+            var other = obj as OutputFileName;
+            return other != null && other.FileName == FileName && other.IncludeInOutput == IncludeInOutput;
+        }
+    }
     public enum MetaLocationKind {
         IntermediateOutput,
         IntermediateOutputNoIntellisense,
