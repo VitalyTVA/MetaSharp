@@ -331,14 +331,14 @@ namespace MetaSharp {
     }
     class OutputFileName {
         public static OutputFileName Create(string fileName, Environment environment, MetaLocationKind location) {
-            return new OutputFileName(GetOutputFileName(location, fileName, environment), location != MetaLocationKind.Designer);
+            return new OutputFileName(GetOutputFileName(location, fileName, environment.BuildConstants), location != MetaLocationKind.Designer);
         }
-        static string GetOutputFileName(MetaLocationKind location, string fileName, Environment environment) {
+        static string GetOutputFileName(MetaLocationKind location, string fileName, BuildConstants buildConstants) {
             switch(location) {
             case MetaLocationKind.IntermediateOutput:
-                return Path.Combine(environment.BuildConstants.IntermediateOutputPath, fileName.ReplaceEnd(Generator.CShaprFileExtension, Generator.DefaultOutputFileEnd));
+                return Path.Combine(buildConstants.IntermediateOutputPath, fileName.ReplaceEnd(Generator.CShaprFileExtension, Generator.DefaultOutputFileEnd));
             case MetaLocationKind.IntermediateOutputNoIntellisense:
-                return Path.Combine(environment.BuildConstants.IntermediateOutputPath, fileName.ReplaceEnd(Generator.CShaprFileExtension, Generator.DefaultOutputFileEnd_IntellisenseInvisible));
+                return Path.Combine(buildConstants.IntermediateOutputPath, fileName.ReplaceEnd(Generator.CShaprFileExtension, Generator.DefaultOutputFileEnd_IntellisenseInvisible));
             case MetaLocationKind.Designer:
                 return fileName.ReplaceEnd(Generator.CShaprFileExtension, Generator.DesignerOutputFileEnd);
             default:
