@@ -1,7 +1,7 @@
 ﻿using MetaSharp;
 using System.Collections.Immutable;
+using System.Collections.Generic;
 
-[assembly: MetaProto("Incomplete.cs", MetaLocationKind.Designer)]
 [assembly: MetaInclude("helper.cs")]
 [assembly: MetaReference(@"System.Collections.Immutable.dll", ReferenceRelativeLocation.TargetPath)]
 
@@ -9,6 +9,11 @@ namespace MetaSharp.Sample {
     using System;
     using System.Linq;
     public static class Class1 {
+        [MetaLocation(MetaLocationKind.Designer)]
+        public static Either<IEnumerable<MetaError>, Output> CompletePOCOModels(MetaContext context) {
+            return context.Complete("Incomplete.cs")
+                .Select(text => new Output(text, "Incomplete.designer.cs"));
+        }
         public static string Do(MetaContext context) {
             var name = ImmutableArray.Create("B").Single();
             return context.WrapMembers(
