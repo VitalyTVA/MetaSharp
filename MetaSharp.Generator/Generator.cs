@@ -274,7 +274,7 @@ namespace MetaSharp {
             Func<string, ImmutableArray<Output>> getDefaultOutput = s => new Output(s, GetOutputFileName(methodContext.Method, methodContext.FileName, environment)).YieldToImmutable();
             if(valueType == typeof(string))
                 return getDefaultOutput((string)value);
-            else if(typeof(IEnumerable<string>).IsAssignableFrom(methodContext.Method.ReturnType))
+            else if(typeof(IEnumerable<string>).IsAssignableFrom(valueType))
                 return getDefaultOutput(((IEnumerable<string>)value).ConcatStringsWithNewLines());
             else if(methodContext.Method.ReturnType == typeof(Output))
                 return ((Output)value).YieldToImmutable();

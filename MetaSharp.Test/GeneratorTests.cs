@@ -159,8 +159,11 @@ namespace MetaSharp.HelloWorld {
             return context.CreateIntermediateOutput(""Hello World to intermediate!"", @""Subfolder2\CustomOutputName.cs"");
         }
         [MetaLocation(Location = MetaLocationKind.Designer)]
-        public static Either<MetaError, string> SayHelloEither(MetaContext context) {
+        public static Either<MetaError, string> SayHelloEither() {
             return Either<MetaError, string>.Right(""Hello World from either!"");
+        }
+        public static Either<MetaError, IEnumerable<string>> SayHelloEitherMultiple(MetaContext context) {
+            return Either<MetaError, IEnumerable<string>>.Right(new[] { ""Hello World from either 1"",  ""Hello World from either 2""});
         }
     }
 }
@@ -173,7 +176,8 @@ namespace MetaSharp.HelloWorld {
                     new TestFile(@"CustomOutputName1.cs", "Hello World 1", isInFlow: false),
                     new TestFile(@"CustomOutputName2.cs", "Hello World 2", isInFlow: false),
                     new TestFile(Path.Combine(DefaultIntermediateOutputPath, @"Subfolder2\CustomOutputName.cs"), "Hello World to intermediate!"),
-                    new TestFile(GetOutputFileNameDesigner(name), "Hello World from either!", isInFlow: false)
+                    new TestFile(GetOutputFileNameDesigner(name), "Hello World from either!", isInFlow: false),
+                    new TestFile(GetOutputFileName(name), "Hello World from either 1\r\nHello World from either 2")
                 )
             );
         }
