@@ -10,7 +10,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using CompleterResult = MetaSharp.Native.Either<System.Collections.Immutable.ImmutableArray<MetaSharp.CompleterError>, string>;
+using CompleterResult = MetaSharp.Either<System.Collections.Immutable.ImmutableArray<MetaSharp.CompleterError>, string>;
 
 namespace MetaSharp {
     delegate CompleterResult TypeCompleter(SemanticModel model, INamedTypeSymbol type);
@@ -37,7 +37,7 @@ namespace MetaSharp {
                 .Add(typeof(MetaCompleteDependencyPropertiesAttribute), DependencyPropertiesCompleter.Generate)
             ;
         }
-        internal static Either<ImmutableArray<GeneratorError>, ImmutableArray<Output>> GetCompletions(CSharpCompilation compilation, Environment environment) {
+        internal static Either<ImmutableArray<MetaError>, ImmutableArray<Output>> GetCompletions(CSharpCompilation compilation, Environment environment) {
             var prototypes = compilation
                 .GetAttributeValues<MetaProtoAttribute, Tuple<string, MetaLocationKind>>(values => values.ToValues<string, MetaLocationKind>())
                 .Select(x => new {
@@ -77,7 +77,7 @@ namespace MetaSharp {
                                 var context = type.CreateContext(environment);
                                 var completion = completer(model, type);
                                 return completion.Transform(
-                                    errors => errors.Select(e => GeneratorError.Create(id: e.Id, file: prototypes[e.Tree].Input, message: e.Message, span: e.Span)),
+                                    errors => errors.Select(e => Generator.CreateError(id: e.Id, file: prototypes[e.Tree].Input, message: e.Message, span: e.Span)),
                                     value => context.WrapMembers(value)
                                 );
                             })

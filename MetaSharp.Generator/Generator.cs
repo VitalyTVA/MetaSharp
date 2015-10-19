@@ -12,7 +12,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text;
-using GeneratorResult = MetaSharp.Native.Either<System.Collections.Immutable.ImmutableArray<MetaSharp.GeneratorError>, System.Collections.Immutable.ImmutableArray<string>>;
+using GeneratorResult = MetaSharp.Either<System.Collections.Immutable.ImmutableArray<MetaSharp.MetaError>, System.Collections.Immutable.ImmutableArray<string>>;
 
 namespace MetaSharp {
     //TODO different exception messages for console and task mode (no need to format task message at all - simply use to string)
@@ -180,8 +180,9 @@ namespace MetaSharp {
                         return GetMethodOutput(methodContext, environment);
                     })
                     .AggregateEither(
-                        e => e.ToImmutableArray(),
+                        e => e.SelectMany(x => x).ToImmutableArray(),
                         values => values
+                            .SelectMany(x => x)
                             .GroupBy(x => x.FileName)
                             .Select(x => new Output(x.Select(output => output.Text).ConcatStringsWithNewLines(), x.Key))
                             .ToImmutableArray()
@@ -210,7 +211,7 @@ namespace MetaSharp {
         static GeneratorResult Success(ImmutableArray<string> files) {
             return GeneratorResult.Right(files);
         }
-        static GeneratorResult Error(ImmutableArray<GeneratorError> errors) {
+        static GeneratorResult Error(ImmutableArray<MetaError> errors) {
             return GeneratorResult.Left(errors);
         }
         static ImmutableDictionary<string, string> GetMetaReferences(this CSharpCompilation compilation, BuildConstants buildConsants) {
@@ -244,26 +245,41 @@ namespace MetaSharp {
         static MethodId GetMethodId(MethodInfo method) {
             return new MethodId(method.Name, method.DeclaringType.FullName);
         }
-        static Either<GeneratorError, Output> GetMethodOutput(MethodContext methodContext, Environment environment) {
+        static Either<ImmutableArray<MetaError>, ImmutableArray<Output>> GetMethodOutput(MethodContext methodContext, Environment environment) {
             //TODO check args
+            //TODO check return type
             var parameters = methodContext.Method.GetParameters().Length == 1
                 ? methodContext.Context.YieldToArray()
                 : null;
             try {
                 var methodResult = methodContext.Method.Invoke(null, parameters);
-                Func<string, Output> getDefaultOutput = s => new Output(s, GetOutputFileName(methodContext.Method, methodContext.FileName, environment));
-                Output output;
-                if(methodContext.Method.ReturnType == typeof(string))
-                    output = getDefaultOutput((string)methodResult);
-                else if(typeof(IEnumerable<string>).IsAssignableFrom(methodContext.Method.ReturnType))
-                    output = getDefaultOutput(((IEnumerable<string>)methodResult).ConcatStringsWithNewLines());
-                else
-                    output = (Output)methodResult;
-                return Either<GeneratorError, Output>.Right(output);
+                if(methodContext.Method.ReturnType.IsGenericType && methodContext.Method.ReturnType.GetGenericTypeDefinition() == typeof(Either<,>)) {
+                    var method = typeof(Generator).GetMethod("ToMethodOutput", BindingFlags.Static |BindingFlags.NonPublic).MakeGenericMethod(methodContext.Method.ReturnType.GetGenericArguments());
+                    return (Either<ImmutableArray<MetaError>, ImmutableArray<Output>>)method.Invoke(null, new[] { methodResult, methodContext, environment });
+                }
+                ImmutableArray<Output> output = ValueToOutputs(methodResult, methodContext.Method.ReturnType, methodContext, environment);
+                return Either<ImmutableArray<MetaError>, ImmutableArray<Output>>.Right(output);
             } catch(TargetInvocationException e) {
-                var error = GeneratorError.Create(Messages.Exception_Id, methodContext.FileName, string.Format(Messages.Exception_Message, e.InnerException.Message, e.InnerException), methodContext.MethodSpan);
-                return Either<GeneratorError, Output>.Left(error);
+                var error = CreateError(Messages.Exception_Id, methodContext.FileName, string.Format(Messages.Exception_Message, e.InnerException.Message, e.InnerException), methodContext.MethodSpan);
+                return Either<ImmutableArray<MetaError>, ImmutableArray<Output>>.Left(error.YieldToImmutable());
             }
+        }
+        static Either<ImmutableArray<MetaError>, ImmutableArray<Output>> ToMethodOutput<TLeft, TRight>(Either<TLeft, TRight> value, MethodContext methodContext, Environment environment) {
+            return value.Transform(
+                error => ImmutableArray<MetaError>.Empty,
+                val => ValueToOutputs(val, methodContext.Method.ReturnType.GetGenericArguments().Last(), methodContext, environment)
+            );
+        }
+        static ImmutableArray<Output> ValueToOutputs(object value, Type valueType, MethodContext methodContext, Environment environment) {
+            Func<string, ImmutableArray<Output>> getDefaultOutput = s => new Output(s, GetOutputFileName(methodContext.Method, methodContext.FileName, environment)).YieldToImmutable();
+            if(valueType == typeof(string))
+                return getDefaultOutput((string)value);
+            else if(typeof(IEnumerable<string>).IsAssignableFrom(methodContext.Method.ReturnType))
+                return getDefaultOutput(((IEnumerable<string>)value).ConcatStringsWithNewLines());
+            else if(methodContext.Method.ReturnType == typeof(Output))
+                return ((Output)value).YieldToImmutable();
+            else
+                return ((IEnumerable<Output>)value).ToImmutableArray();
         }
 
         static OutputFileName GetOutputFileName(MethodInfo method, string fileName, Environment environment) {
@@ -272,12 +288,19 @@ namespace MetaSharp {
                 ?? default(MetaLocationKind);
             return environment.CreateOutput(fileName, location);
         }
-        static GeneratorError ToGeneratorError(this Diagnostic error, string file, FileLinePositionSpan span) {
-            return GeneratorError.Create(id: error.Id,
-                                    file: file,
-                                    message: error.GetMessage(),
-                                    span: span
-                                    );
+        static MetaError ToGeneratorError(this Diagnostic error, string file, FileLinePositionSpan span) {
+            return CreateError(id: error.Id, file: file, message: error.GetMessage(), span: span);
+        }
+        public static MetaError CreateError(string id, string file, string message, FileLinePositionSpan span) {
+            return new MetaError(
+                        id: id,
+                        file: file,
+                        message: message,
+                        lineNumber: span.StartLinePosition.Line + 1,
+                        columnNumber: span.StartLinePosition.Character + 1,
+                        endLineNumber: span.EndLinePosition.Line + 1,
+                        endColumnNumber: span.EndLinePosition.Character + 1
+                        );
         }
     }
 
@@ -290,7 +313,7 @@ namespace MetaSharp {
         public static GeneratorResultCode Generate(
             ImmutableArray<string> files, 
             BuildConstants buildConstants, 
-            Action<GeneratorError> reportError, 
+            Action<MetaError> reportError, 
             Action<ImmutableArray<string>> reportOutputFiles) {
 
             AppDomain.CurrentDomain.AssemblyResolve += CurrentDomain_AssemblyResolve;
@@ -416,34 +439,6 @@ namespace MetaSharp {
         }
         public static FileLinePositionSpan LineSpan(this SyntaxNode syntax) {
             return syntax.GetLocation().GetLineSpan();
-        }
-    }
-    public class GeneratorError {
-        public static GeneratorError Create(string id, string file, string message, FileLinePositionSpan span) {
-            return new GeneratorError(
-                        id: id,
-                        file: file,
-                        message: message,
-                        lineNumber: span.StartLinePosition.Line + 1,
-                        columnNumber: span.StartLinePosition.Character + 1,
-                        endLineNumber: span.EndLinePosition.Line + 1,
-                        endColumnNumber: span.EndLinePosition.Character + 1
-                        );
-        }
-        public readonly string Id, File, Message;
-        public readonly int LineNumber, ColumnNumber, EndLineNumber, EndColumnNumber;
-        GeneratorError(string id, string file, string message, int lineNumber, int columnNumber, int endLineNumber, int endColumnNumber) {
-            Id = id;
-            File = file;
-            Message = message;
-            LineNumber = lineNumber;
-            ColumnNumber = columnNumber;
-            EndLineNumber = endLineNumber;
-            EndColumnNumber = endColumnNumber;
-        }
-
-        public override string ToString() {
-            return $"{File}({LineNumber},{ColumnNumber},{EndLineNumber},{EndColumnNumber}): error {Id}: {Message}";
         }
     }
     public class Environment {

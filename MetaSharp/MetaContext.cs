@@ -33,6 +33,23 @@ $@"namespace {metaContext.Namespace} {{
             return new Output(text, new OutputFileName(metaContext.GetIntermediateOutputFileName(fileName), includeInOutput: true));
         }
     }
+    public class MetaError {
+        public readonly string Id, File, Message;
+        public readonly int LineNumber, ColumnNumber, EndLineNumber, EndColumnNumber;
+        public MetaError(string id, string file, string message, int lineNumber, int columnNumber, int endLineNumber, int endColumnNumber) {
+            Id = id;
+            File = file;
+            Message = message;
+            LineNumber = lineNumber;
+            ColumnNumber = columnNumber;
+            EndLineNumber = endLineNumber;
+            EndColumnNumber = endColumnNumber;
+        }
+
+        public override string ToString() {
+            return $"{File}({LineNumber},{ColumnNumber},{EndLineNumber},{EndColumnNumber}): error {Id}: {Message}";
+        }
+    }
     public sealed class Output {
         public readonly string Text;
         public readonly OutputFileName FileName;

@@ -10,7 +10,7 @@ using MetaSharp.Utils;
 using MetaSharp.Native;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis;
-using GeneratorResult = MetaSharp.Native.Either<System.Collections.Immutable.ImmutableArray<MetaSharp.GeneratorError>, System.Collections.Immutable.ImmutableArray<string>>;
+using GeneratorResult = MetaSharp.Either<System.Collections.Immutable.ImmutableArray<MetaSharp.MetaError>, System.Collections.Immutable.ImmutableArray<string>>;
 
 namespace MetaSharp.Test {
     public class  HelloWorldTests : GeneratorTestsBase {
@@ -145,25 +145,60 @@ namespace MetaSharp.HelloWorld {
             var input = @"
 using System;
 using System.Collections.Generic;
+using MetaSharp;
 namespace MetaSharp.HelloWorld {
     public static class HelloWorldGenerator {
         public static Output SayHello() {
             return new Output(""Hello World!"", @""Subfolder\CustomOutputName.cs"");
         }
+        public static IEnumerable<Output> SayHelloMultiple() {
+            yield return new Output(""Hello World 1"", ""CustomOutputName1.cs"");
+            yield return new Output(""Hello World 2"", ""CustomOutputName2.cs"");
+        }
         public static Output SayHelloToIntermediate(MetaContext context) {
             return context.CreateIntermediateOutput(""Hello World to intermediate!"", @""Subfolder2\CustomOutputName.cs"");
+        }
+        [MetaLocation(Location = MetaLocationKind.Designer)]
+        public static Either<MetaError, string> SayHelloEither(MetaContext context) {
+            return Either<MetaError, string>.Right(""Hello World from either!"");
         }
     }
 }
 ";
+            var name = "file.meta.cs";
             AssertMultipleFilesOutput(
                 ImmutableArray.Create(new TestFile("file.meta.cs", input)),
                 ImmutableArray.Create(
                     new TestFile(@"Subfolder\CustomOutputName.cs", "Hello World!", isInFlow: false),
-                    new TestFile(Path.Combine(DefaultIntermediateOutputPath, @"Subfolder2\CustomOutputName.cs"), "Hello World to intermediate!")
+                    new TestFile(@"CustomOutputName1.cs", "Hello World 1", isInFlow: false),
+                    new TestFile(@"CustomOutputName2.cs", "Hello World 2", isInFlow: false),
+                    new TestFile(Path.Combine(DefaultIntermediateOutputPath, @"Subfolder2\CustomOutputName.cs"), "Hello World to intermediate!"),
+                    new TestFile(GetOutputFileNameDesigner(name), "Hello World from either!", isInFlow: false)
                 )
             );
         }
+//        [Fact]
+//        public void CustomErrors() {
+//            var input = @"
+//using System;
+//using MetaSharp;
+//using System.Collections.Generic;
+//namespace MetaSharp.HelloWorld {
+//    public static class HelloWorldGenerator {
+//        public static Either<Error, string> SayHello() {
+//            return new Output(""Hello World!"", @""Subfolder\CustomOutputName.cs"");
+//        }
+//    }
+//}
+//";
+//            var inputFileName = "file.meta.cs";
+//            AssertMultipleFilesErrors(
+//                ImmutableArray.Create(new TestFile(inputFileName, input)),
+//                errors => Assert.Collection(errors,
+//                        error => AssertError(error, Path.GetFullPath(inputFileName), Messages.PropertyTypeMissed_Id, Messages.PropertyTypeMissed_Message, 9, 26)
+//                )
+//            );
+//        }
         [Fact]
         public void CompilationError() {
             var input = @"
@@ -590,7 +625,7 @@ namespace MetaSharp.HelloWorld {
                 AssertFiles(output, testEnvironment, ignoreEmptyLines);
             }, buildConstants);
         }
-        protected static void AssertMultipleFilesErrors(ImmutableArray<TestFile> input, Action<IEnumerable<GeneratorError>> assertErrors, BuildConstants buildConstants = null) {
+        protected static void AssertMultipleFilesErrors(ImmutableArray<TestFile> input, Action<IEnumerable<MetaError>> assertErrors, BuildConstants buildConstants = null) {
             AssertMultipleFilesResult(input, (result, testEnvironment) => {
                 Assert.NotEmpty(result.ToLeft());
                 Assert.Equal(input.Length, testEnvironment.FileCount);
@@ -619,7 +654,7 @@ namespace MetaSharp.HelloWorld {
                 ignoreEmptyLines
             );
         }
-        protected static void AssertSingleFileErrors(string input, Action<IEnumerable<GeneratorError>> assertErrors) {
+        protected static void AssertSingleFileErrors(string input, Action<IEnumerable<MetaError>> assertErrors) {
             AssertMultipleFilesErrors(
                 ImmutableArray.Create(new TestFile(SingleInputFileName, input)),
                 errors => {
@@ -627,18 +662,18 @@ namespace MetaSharp.HelloWorld {
                 }
             );
         }
-        protected static void AssertError(GeneratorError error, string file, string id, string message, int lineNumber, int columnNumber, int? endLineNumber = null, int? endColumnNumber = null) {
+        protected static void AssertError(MetaError error, string file, string id, string message, int lineNumber, int columnNumber, int? endLineNumber = null, int? endColumnNumber = null) {
             AssertError(error, file, id, lineNumber, columnNumber, endLineNumber, endColumnNumber);
             Assert.Equal(message, error.Message);
         }
-        protected static void AssertError(GeneratorError error, string file, string id, int lineNumber, int columnNumber, int? endLineNumber = null, int? endColumnNumber = null) {
+        protected static void AssertError(MetaError error, string file, string id, int lineNumber, int columnNumber, int? endLineNumber = null, int? endColumnNumber = null) {
             AssertError(error, file, id);
             Assert.Equal(lineNumber, error.LineNumber);
             Assert.Equal(columnNumber, error.ColumnNumber);
             Assert.Equal(endLineNumber ?? lineNumber, error.EndLineNumber);
             Assert.Equal(endColumnNumber ?? columnNumber, error.EndColumnNumber);
         }
-        protected static void AssertError(GeneratorError error, string file, string id) {
+        protected static void AssertError(MetaError error, string file, string id) {
             Assert.Equal(file, error.File);
             Assert.Equal(id, error.Id);
         }

@@ -54,7 +54,7 @@ namespace MetaSharp.Tasks {
             //}
         }
 
-        static BuildErrorEventArgs ToBuildError(GeneratorError error) {
+        static BuildErrorEventArgs ToBuildError(MetaError error) {
             return new BuildErrorEventArgs(
                         subcategory: "MetaSharp",
                         code: error.Id,
