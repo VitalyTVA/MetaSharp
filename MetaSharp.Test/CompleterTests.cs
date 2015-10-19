@@ -241,10 +241,6 @@ namespace MetaSharp.Incomplete {
         #region dependency properties
         [Fact]
         public void DependencyProperties() {
-            var input = @"
-using MetaSharp;
-[assembly: MetaProto(""IncompleteDObjects.cs"")]
-";
             string incomplete =
 @"
 using MetaSharp;
@@ -329,11 +325,11 @@ using System;
             var name = "IncompleteDObjects.cs";
             AssertMultipleFilesOutput(
                 ImmutableArray.Create(
-                    new TestFile(SingleInputFileName, input),
+                    new TestFile(SingleInputFileName, GetInput(@"IncompleteDObjects.cs")),
                     new TestFile(name, incomplete, isInFlow: false)
                 ),
                 ImmutableArray.Create(
-                    new TestFile(GetProtoOutputFileName(name), output)
+                    new TestFile(GetOutputFileName(SingleInputFileName), output)
                 ),
                 ignoreEmptyLines: true
             );
@@ -370,10 +366,6 @@ using System;
         }
         [Fact]
         public void DependencyProperties_InvalidFieldName() {
-            var input = @"
-using MetaSharp;
-[assembly: MetaProto(@""IncompleteDObjects.cs"")]
-";
             string incomplete =
 @"
 using MetaSharp;
@@ -394,7 +386,7 @@ using System;
             var name = "IncompleteDObjects.cs";
             AssertMultipleFilesErrors(
                 ImmutableArray.Create(
-                    new TestFile(SingleInputFileName, input),
+                    new TestFile(SingleInputFileName, GetInput(@"IncompleteDObjects.cs")),
                     new TestFile(name, incomplete, isInFlow: false)
                 ),
                 errors => Assert.Collection(errors,
@@ -411,10 +403,6 @@ using System;
         }
         [Fact]
         public void DependencyProperties_InvalidType() {
-            var input = @"
-using MetaSharp;
-[assembly: MetaProto(@""IncompleteDObjects.cs"")]
-";
             string incomplete =
 @"
 using MetaSharp;
@@ -432,7 +420,7 @@ using System;
             var name = "IncompleteDObjects.cs";
             AssertMultipleFilesErrors(
                 ImmutableArray.Create(
-                    new TestFile(SingleInputFileName, input),
+                    new TestFile(SingleInputFileName, GetInput(@"IncompleteDObjects.cs")),
                     new TestFile(name, incomplete, isInFlow: false)
                 ),
                 errors => Assert.Collection(errors,
