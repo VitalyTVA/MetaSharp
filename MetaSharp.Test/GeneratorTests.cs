@@ -199,7 +199,7 @@ namespace MetaSharp.HelloWorld {
             AssertMultipleFilesErrors(
                 ImmutableArray.Create(new TestFile(inputFileName, input)),
                 errors => Assert.Collection(errors,
-                        error => AssertError(error, "TODO", MessagesCore.CustomEror_Id, "Error 1", 7, 49, 7, 57)
+                        error => AssertError(error, Path.GetFullPath(inputFileName), MessagesCore.CustomEror_Id, "Error 1", 7, 49, 7, 57)
                 )
             );
         }

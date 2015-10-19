@@ -172,9 +172,10 @@ namespace MetaSharp {
                     .Where(method => methodsMap.ContainsKey(GetMethodId(method)))
                     .Select(method => { 
                         var location = methodsMap[GetMethodId(method)].Location(); //TODO use main location
-                        var context = location.CreateContext(method.DeclaringType.Namespace, environment);
                         var tree = methodsMap[GetMethodId(method)].Location().SourceTree;
-                        var methodContext = new MethodContext(method, context, location.GetLineSpan(), trees[tree]);
+                        var fileName = trees[tree];
+                        var context = location.CreateContext(method.DeclaringType.Namespace, environment, fileName);
+                        var methodContext = new MethodContext(method, context, location.GetLineSpan(), fileName);
                         return MethodProcessor.GetMethodOutput(methodContext, environment);
                     })
                     .AggregateEither(
@@ -343,17 +344,17 @@ namespace MetaSharp {
         public static IEnumerable<SyntaxNode> GetParents(this SyntaxNode node) {
             return LinqExtensions.Unfold(node.Parent, x => x.Parent);
         }
-        public static MetaContext CreateContext(this Location location, string @namespace, Environment environment) {
+        public static MetaContext CreateContext(this Location location, string @namespace, Environment environment, string fileName) {
             var nodes = location.SourceTree.GetCompilationUnitRoot().DescendantNodes(location.SourceSpan);
             var namespaces = nodes.OfType<NamespaceDeclarationSyntax>().Single(); //TODO nested namespaces
             return new MetaContext(
                 @namespace, 
                 namespaces.Usings.Select(x => x.ToString()).ToArray(), 
                 x => Path.Combine(environment.BuildConstants.IntermediateOutputPath, x),
-                (id, message) => Generator.CreateError(id, "TODO", message, location.GetLineSpan()));
+                (id, message) => Generator.CreateError(id, Path.GetFullPath(fileName), message, location.GetLineSpan()));
         }
         public static MetaContext CreateContext(this INamedTypeSymbol type, Environment environment) {//TODO remove when comleter rewritten
-            return type.Location().CreateContext(type.ContainingNamespace.ToString(), environment);
+            return type.Location().CreateContext(type.ContainingNamespace.ToString(), environment, null);
         }
         public static string TypeDisplayString(this IPropertySymbol property, SemanticModel model) {
             return property.Type.DisplayString(model, property.Location());
