@@ -150,4 +150,8 @@ namespace MetaSharp.Native {
             return input;
         }
     }
+    public static class MessagesCore {
+        public const string MessagePrefix = "M#";
+        public const string CustomEror_Id = MessagePrefix + "9999";
+    }
 }

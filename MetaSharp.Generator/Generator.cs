@@ -346,9 +346,13 @@ namespace MetaSharp {
         public static MetaContext CreateContext(this Location location, string @namespace, Environment environment) {
             var nodes = location.SourceTree.GetCompilationUnitRoot().DescendantNodes(location.SourceSpan);
             var namespaces = nodes.OfType<NamespaceDeclarationSyntax>().Single(); //TODO nested namespaces
-            return new MetaContext(@namespace, namespaces.Usings.Select(x => x.ToString()).ToArray(), x => Path.Combine(environment.BuildConstants.IntermediateOutputPath, x));
+            return new MetaContext(
+                @namespace, 
+                namespaces.Usings.Select(x => x.ToString()).ToArray(), 
+                x => Path.Combine(environment.BuildConstants.IntermediateOutputPath, x),
+                (id, message) => Generator.CreateError(id, "TODO", message, location.GetLineSpan()));
         }
-        public static MetaContext CreateContext(this INamedTypeSymbol type, Environment environment) {
+        public static MetaContext CreateContext(this INamedTypeSymbol type, Environment environment) {//TODO remove when comleter rewritten
             return type.Location().CreateContext(type.ContainingNamespace.ToString(), environment);
         }
         public static string TypeDisplayString(this IPropertySymbol property, SemanticModel model) {

@@ -181,28 +181,28 @@ namespace MetaSharp.HelloWorld {
                 )
             );
         }
-//        [Fact]
-//        public void CustomErrors() {
-//            var input = @"
-//using System;
-//using MetaSharp;
-//using System.Collections.Generic;
-//namespace MetaSharp.HelloWorld {
-//    public static class HelloWorldGenerator {
-//        public static Either<Error, string> SayHello() {
-//            return new Output(""Hello World!"", @""Subfolder\CustomOutputName.cs"");
-//        }
-//    }
-//}
-//";
-//            var inputFileName = "file.meta.cs";
-//            AssertMultipleFilesErrors(
-//                ImmutableArray.Create(new TestFile(inputFileName, input)),
-//                errors => Assert.Collection(errors,
-//                        error => AssertError(error, Path.GetFullPath(inputFileName), Messages.PropertyTypeMissed_Id, Messages.PropertyTypeMissed_Message, 9, 26)
-//                )
-//            );
-//        }
+        [Fact]
+        public void CustomErrors() {
+            var input = @"
+using System;
+using MetaSharp;
+using System.Collections.Generic;
+namespace MetaSharp.HelloWorld {
+    public static class HelloWorldGenerator {
+        public static Either<MetaError, string> SayHello(MetaContext context) {
+            return Either<MetaError, string>.Left(context.Error(""Error 1""));
+        }
+    }
+}
+";
+            var inputFileName = "file.meta.cs";
+            AssertMultipleFilesErrors(
+                ImmutableArray.Create(new TestFile(inputFileName, input)),
+                errors => Assert.Collection(errors,
+                        error => AssertError(error, "TODO", MessagesCore.CustomEror_Id, "Error 1", 7, 49, 7, 57)
+                )
+            );
+        }
         [Fact]
         public void CompilationError() {
             var input = @"

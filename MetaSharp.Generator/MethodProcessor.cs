@@ -36,7 +36,7 @@ namespace MetaSharp {
         }
         static Either<ImmutableArray<MetaError>, ImmutableArray<Output>> ToMethodOutput<TLeft, TRight>(Either<TLeft, TRight> value, Type valueType, Func<string, ImmutableArray<Output>> getDefaultOutput) {
             return value.Transform(
-                error => ImmutableArray<MetaError>.Empty,
+                error => (error as MetaError).YieldToImmutable(),
                 val => ValueToOutputs(val, valueType, getDefaultOutput)
             );
         }

@@ -9,11 +9,19 @@ namespace MetaSharp {
     public class MetaContext {
         public string Namespace { get; }
         public IEnumerable<string> Usings { get; }
-        internal Func<string, string> GetIntermediateOutputFileName;
-        public MetaContext(string @namespace, IEnumerable<string> usings, Func<string, string> getIntermediateOutputFileName) {
+        Func<string, string> getIntermediateOutputFileName;
+        Func<string, string, MetaError> error;
+        public MetaContext(string @namespace, IEnumerable<string> usings, Func<string, string> getIntermediateOutputFileName, Func<string, string, MetaError> error) {
             Namespace = @namespace;
             Usings = usings;
-            GetIntermediateOutputFileName = getIntermediateOutputFileName;
+            this.getIntermediateOutputFileName = getIntermediateOutputFileName;
+            this.error = error;
+        }
+        public Output CreateIntermediateOutput(string text, string fileName) {
+            return new Output(text, new OutputFileName(getIntermediateOutputFileName(fileName), includeInOutput: true));
+        }
+        public MetaError Error(string message/*, string id = MessagesCore.CustomEror_Id*/) {
+            return error(MessagesCore.CustomEror_Id, message);
         }
     }
     public static class MetaContextExtensions {
@@ -28,9 +36,6 @@ $@"namespace {metaContext.Namespace} {{
 
 {members.ConcatStringsWithNewLines().AddTabs(1)}
 }}";
-        }
-        public static Output CreateIntermediateOutput(this MetaContext metaContext, string text, string fileName) {
-            return new Output(text, new OutputFileName(metaContext.GetIntermediateOutputFileName(fileName), includeInOutput: true));
         }
     }
     public class MetaError {
