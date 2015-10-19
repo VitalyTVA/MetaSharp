@@ -9,13 +9,22 @@ namespace MetaSharp {
     public class MetaContext {
         public string Namespace { get; }
         public IEnumerable<string> Usings { get; }
-        Func<string, string> getIntermediateOutputFileName;
-        Func<string, string, MetaError> error;
-        public MetaContext(string @namespace, IEnumerable<string> usings, Func<string, string> getIntermediateOutputFileName, Func<string, string, MetaError> error) {
+        readonly Func<string, string> getIntermediateOutputFileName;
+        readonly Func<string, string, MetaError> error;
+        readonly Func<IEnumerable<string>, Either<IEnumerable<MetaError>, IEnumerable<string>>> complete;
+
+        public MetaContext(
+            string @namespace, 
+            IEnumerable<string> usings, 
+            Func<string, string> getIntermediateOutputFileName, 
+            Func<string, string, MetaError> error,
+            Func<IEnumerable<string>, Either<IEnumerable<MetaError>, IEnumerable<string>>> complete
+        ) {
             Namespace = @namespace;
             Usings = usings;
             this.getIntermediateOutputFileName = getIntermediateOutputFileName;
             this.error = error;
+            this.complete = complete;
         }
         public Output CreateIntermediateOutput(string text, string fileName) {
             return new Output(text, new OutputFileName(getIntermediateOutputFileName(fileName), includeInOutput: true));
@@ -23,15 +32,22 @@ namespace MetaSharp {
         public MetaError Error(string message, string id = MessagesCore.CustomEror_Id) {
             return error(id, message);
         }
+        //TODO multiple completions
+        public Either<IEnumerable<MetaError>, string> Complete(string fileName) {
+            return complete(fileName.Yield()).Select(x => x.Single());
+        }
     }
     public static class MetaContextExtensions {
         //TODO replace all string types with tree string builder
         public static string WrapMembers(this MetaContext metaContext, string members)
             => metaContext.WrapMembers(members.Yield());
         public static string WrapMembers(this MetaContext metaContext, IEnumerable<string> members) {
-            var usings = metaContext.Usings.ConcatStringsWithNewLines();
-            return 
-$@"namespace {metaContext.Namespace} {{
+            return WrapMembers(members, metaContext.Namespace, metaContext.Usings);
+        }
+        public static string WrapMembers(IEnumerable<string> members, string @namespace, IEnumerable<string> usingsList) {
+            var usings = usingsList.ConcatStringsWithNewLines();
+            return
+$@"namespace {@namespace} {{
 {usings}
 
 {members.ConcatStringsWithNewLines().AddTabs(1)}
@@ -103,15 +119,15 @@ $@"namespace {metaContext.Namespace} {{
         public string FileName { get; private set; }
     }
 
-    [AttributeUsage(AttributeTargets.Assembly, AllowMultiple = true)]
-    public sealed class MetaProtoAttribute : Attribute {
-        public MetaProtoAttribute(string fileName, MetaLocationKind location = default(MetaLocationKind)) {
-            FileName = fileName;
-            Location = location;
-        }
-        public string FileName { get; private set; }
-        public MetaLocationKind Location { get; private set; }
-    }
+    //[AttributeUsage(AttributeTargets.Assembly, AllowMultiple = true)]
+    //public sealed class MetaProtoAttribute : Attribute {
+    //    public MetaProtoAttribute(string fileName, MetaLocationKind location = default(MetaLocationKind)) {
+    //        FileName = fileName;
+    //        Location = location;
+    //    }
+    //    public string FileName { get; private set; }
+    //    public MetaLocationKind Location { get; private set; }
+    //}
 
     [AttributeUsage(AttributeTargets.Class)]
     public sealed class MetaCompleteClassAttribute : Attribute {

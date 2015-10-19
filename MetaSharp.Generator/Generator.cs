@@ -174,7 +174,7 @@ namespace MetaSharp {
                         var location = methodsMap[GetMethodId(method)].Location(); //TODO use main location
                         var tree = methodsMap[GetMethodId(method)].Location().SourceTree;
                         var fileName = trees[tree];
-                        var context = location.CreateContext(method.DeclaringType.Namespace, environment, fileName);
+                        var context = location.CreateContext(method.DeclaringType.Namespace, environment, fileName, compilation);
                         var methodContext = new MethodContext(method, context, location.GetLineSpan(), fileName);
                         return MethodProcessor.GetMethodOutput(methodContext, environment);
                     })
@@ -190,11 +190,7 @@ namespace MetaSharp {
                 if(outputs.IsLeft())
                     return Error(outputs.ToLeft());
 
-                var completerResult = Completer.GetCompletions(compilation, environment);
-                if(completerResult.IsLeft())
-                    return Error(completerResult.ToLeft());
-                var completions = completerResult.ToRight();
-                var outputFiles = outputs.ToRight().Concat(completions)
+                var outputFiles = outputs.ToRight()
                     .Select(output => { 
                         environment.WriteText(output.FileName.FileName, output.Text);
                         return output;
@@ -206,6 +202,15 @@ namespace MetaSharp {
             } finally {
                 AppDomain.CurrentDomain.AssemblyResolve -= resolveHandler;
             }
+        }
+        static MetaContext CreateContext(this Location location, string @namespace, Environment environment, string fileName, CSharpCompilation compilation) {
+            string[] usings = location.GetUsings();
+            return new MetaContext(
+                @namespace,
+                usings,
+                x => Path.Combine(environment.BuildConstants.IntermediateOutputPath, x),
+                (id, message) => CreateError(id, Path.GetFullPath(fileName), message, location.GetLineSpan()),
+                files => Completer.GetCompletions(compilation, environment, files).Transform(x => (IEnumerable<MetaError>)x, x => (IEnumerable<string>)x));
         }
         static GeneratorResult Success(ImmutableArray<string> files) {
             return GeneratorResult.Right(files);
@@ -344,18 +349,14 @@ namespace MetaSharp {
         public static IEnumerable<SyntaxNode> GetParents(this SyntaxNode node) {
             return LinqExtensions.Unfold(node.Parent, x => x.Parent);
         }
-        public static MetaContext CreateContext(this Location location, string @namespace, Environment environment, string fileName) {
+
+        public static string[] GetUsings(this Location location) {
             var nodes = location.SourceTree.GetCompilationUnitRoot().DescendantNodes(location.SourceSpan);
-            var namespaces = nodes.OfType<NamespaceDeclarationSyntax>().Single(); //TODO nested namespaces
-            return new MetaContext(
-                @namespace, 
-                namespaces.Usings.Select(x => x.ToString()).ToArray(), 
-                x => Path.Combine(environment.BuildConstants.IntermediateOutputPath, x),
-                (id, message) => Generator.CreateError(id, Path.GetFullPath(fileName), message, location.GetLineSpan()));
+            var usings = nodes.OfType<NamespaceDeclarationSyntax>().Single().Usings.Select(x => x.ToString()).ToArray(); //TODO nested namespaces
+            return usings;
         }
-        public static MetaContext CreateContext(this INamedTypeSymbol type, Environment environment) {//TODO remove when comleter rewritten
-            return type.Location().CreateContext(type.ContainingNamespace.ToString(), environment, null);
-        }
+        public static string Namespace(this ISymbol type)
+            => type.ContainingNamespace.ToString();
         public static string TypeDisplayString(this IPropertySymbol property, SemanticModel model) {
             return property.Type.DisplayString(model, property.Location());
         }

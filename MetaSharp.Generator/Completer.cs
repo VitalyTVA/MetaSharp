@@ -37,17 +37,9 @@ namespace MetaSharp {
                 .Add(typeof(MetaCompleteDependencyPropertiesAttribute), DependencyPropertiesCompleter.Generate)
             ;
         }
-        internal static Either<ImmutableArray<MetaError>, ImmutableArray<Output>> GetCompletions(CSharpCompilation compilation, Environment environment) {
-            var prototypes = compilation
-                .GetAttributeValues<MetaProtoAttribute, Tuple<string, MetaLocationKind>>(values => values.ToValues<string, MetaLocationKind>())
-                .Select(x => new {
-                    Input = x.Item1,
-                    Files = new {
-                        Input = Path.GetFullPath(x.Item1),
-                        Output = environment.CreateOutput(x.Item1, x.Item2)
-                    }
-                })
-                .ToImmutableDictionary(x => Generator.ParseFile(environment, x.Input), x => x.Files);
+        internal static Either<ImmutableArray<MetaError>, ImmutableArray<string>> GetCompletions(CSharpCompilation compilation, Environment environment, IEnumerable<string> files) {
+            var prototypes = files
+                .ToImmutableDictionary(x => Generator.ParseFile(environment, x), x => Path.GetFullPath(x));
             var compilationWithPrototypes = compilation.AddSyntaxTrees(prototypes.Keys);
             var symbolToTypeMap = Completers.Keys.ToImmutableDictionary(
                 type => compilationWithPrototypes.GetTypeByMetadataName(type.FullName),
@@ -74,28 +66,28 @@ namespace MetaSharp {
                                             .SingleOrDefault();
                                 if(completer == null)
                                     return null;
-                                var context = type.CreateContext(environment);
+                                Func<string, string> wrapMembers = val 
+                                    => MetaContextExtensions.WrapMembers(val.Yield(), type.Namespace(), type.Location().GetUsings());
                                 var completion = completer(model, type);
                                 return completion.Transform(
-                                    errors => errors.Select(e => Generator.CreateError(id: e.Id, file: prototypes[e.Tree].Input, message: e.Message, span: e.Span)),
-                                    value => context.WrapMembers(value)
+                                    errors => errors.Select(e => Generator.CreateError(id: e.Id, file: prototypes[e.Tree], message: e.Message, span: e.Span)),
+                                    value => wrapMembers(value)
                                 );
                             })
                             .Where(x => x != null);
                         return treeResults
                             .AggregateEither(
-                                left => left.SelectMany(x => x), 
-                                right => new Output(right.ConcatStringsWithNewLines(), pair.Value.Output)
+                                left => left.SelectMany(x => x),
+                                right => right.ConcatStringsWithNewLines()
                             );
                     });
             return results
                 .AggregateEither(
                     left => left
                         .SelectMany(x => x)
-                        .ToImmutableArray(), 
+                        .ToImmutableArray(),
                     right => right.ToImmutableArray()
                 );
         }
-        //static Either<ImmutableArray<Com>>
     }
 }
