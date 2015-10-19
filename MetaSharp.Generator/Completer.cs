@@ -38,9 +38,9 @@ namespace MetaSharp {
             ;
         }
         internal static Either<ImmutableArray<MetaError>, ImmutableArray<string>> GetCompletions(CSharpCompilation compilation, Environment environment, IEnumerable<string> files) {
-            var prototypes = files
-                .ToImmutableDictionary(x => Generator.ParseFile(environment, x), x => Path.GetFullPath(x));
-            var compilationWithPrototypes = compilation.AddSyntaxTrees(prototypes.Keys);
+            var trees = files
+                .ToImmutableDictionary(x => x, x => Generator.ParseFile(environment, x));
+            var compilationWithPrototypes = compilation.AddSyntaxTrees(trees.Values);
             var symbolToTypeMap = Completers.Keys.ToImmutableDictionary(
                 type => compilationWithPrototypes.GetTypeByMetadataName(type.FullName),
                 type => type
@@ -51,9 +51,9 @@ namespace MetaSharp {
             //TODO generate errors if class is not partial
             //TODO allow to specify default complete attributes in MetaProto attribute??
 
-            var results = prototypes
-                    .Select(pair => {
-                        var tree = pair.Key;
+            var results = files
+                    .Select(file => {
+                        var tree = trees[file];
                         var model = compilationWithPrototypes.GetSemanticModel(tree);
                         var classSyntaxes = tree.GetRoot().DescendantNodes(x => !(x is ClassDeclarationSyntax)).OfType<ClassDeclarationSyntax>();
                         var treeResults = classSyntaxes
@@ -71,7 +71,7 @@ namespace MetaSharp {
                                     => MetaContextExtensions.WrapMembers(val.Yield(), type.Namespace(), type.Location().GetUsings());
                                 var completion = completer(model, type);
                                 return completion.Transform(
-                                    errors => errors.Select(e => Generator.CreateError(id: e.Id, file: prototypes[e.Tree], message: e.Message, span: e.Span)),
+                                    errors => errors.Select(e => Generator.CreateError(id: e.Id, file: Path.GetFullPath(file), message: e.Message, span: e.Span)),
                                     value => wrapMembers(value)
                                 );
                             })

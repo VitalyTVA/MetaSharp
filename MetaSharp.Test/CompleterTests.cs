@@ -13,11 +13,8 @@ namespace MetaSharp.Test {
         #region class
         [Fact]
         public void CompletePrototypeFiles() {
-            var input = @"
-using MetaSharp;
-[assembly: MetaProto(""IncompleteClasses1.cs"")]
-[assembly: MetaProto(""IncompleteClasses2.cs"", MetaLocationKind.Designer)]
-
+            var input = GetInput(@"IncompleteClasses1.cs", @"IncompleteClasses2.cs") + 
+@"
 namespace MetaSharp.HelloWorld {
     public partial class NoCompletion {
         public int IntProperty { get; }
@@ -54,7 +51,7 @@ using FooBoo;
     }
 }";
 
-            string output1 =
+            string output =
 @"namespace MetaSharp.Incomplete {
 using FooBoo;
     partial class Foo {
@@ -72,9 +69,8 @@ using FooBoo;
             BooProperty = booProperty;
         }
     }
-}";
-            string output2 =
-@"namespace MetaSharp.Incomplete {
+}
+namespace MetaSharp.Incomplete {
 using FooBoo;
     partial class Foo3 {
         public Foo3(Boo booProperty) {
@@ -100,19 +96,15 @@ namespace FooBoo {
                     new TestFile(name2, incomplete2, isInFlow: false)
                 ),
                 ImmutableArray.Create(
-                    new TestFile(GetProtoOutputFileName(name1), output1),
-                    new TestFile(GetProtoOutputFileNameDesigner(name2), output2, isInFlow: false)
+                    new TestFile(GetOutputFileName(SingleInputFileName), output)
                 ),
                 ignoreEmptyLines: true
             );
-            AssertCompiles(input, incomplete1, incomplete2, output1, output2, additionalClasses);
+            AssertCompiles(input, incomplete1, incomplete2, output, additionalClasses);
         }
         [Fact]
         public void CompletePrototypeFiles_TypeNameWithNameSpace_ShortName_Alias() {
-            var input = @"
-using MetaSharp;
-[assembly: MetaProto(""IncompleteClasses.cs"")]
-";
+            var input = GetInput(@"IncompleteClasses.cs");
             string incomplete =
 @"
 using MetaSharp;
@@ -155,7 +147,7 @@ namespace FooBoo {
                     new TestFile(name, incomplete, isInFlow: false)
                 ),
                 ImmutableArray.Create(
-                    new TestFile(GetProtoOutputFileName(name), output)
+                    new TestFile(GetOutputFileName(SingleInputFileName), output)
                 ),
                 ignoreEmptyLines: true
             );
@@ -166,10 +158,6 @@ namespace FooBoo {
         #region view model
         [Fact]
         public void CompleteViewModel() {
-            var input = @"
-using MetaSharp;
-[assembly: MetaProto(""IncompleteViewModels.cs"")]
-";
             string incomplete =
 @"
 using MetaSharp;
@@ -224,13 +212,14 @@ namespace MetaSharp.Incomplete {
     }
 }";
             var name = "IncompleteViewModels.cs";
+            var input = GetInput(@"IncompleteViewModels.cs");
             AssertMultipleFilesOutput(
                 ImmutableArray.Create(
                     new TestFile(SingleInputFileName, input),
                     new TestFile(name, incomplete, isInFlow: false)
                 ),
                 ImmutableArray.Create(
-                    new TestFile(GetProtoOutputFileName(name), output)
+                    new TestFile(GetOutputFileName(SingleInputFileName), output)
                 ),
                 ignoreEmptyLines: true
             );
