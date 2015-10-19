@@ -45,6 +45,7 @@ namespace MetaSharp {
                 type => compilationWithPrototypes.GetTypeByMetadataName(type.FullName),
                 type => type
             );
+            //TODO think how not to create new compilations all the time
             //TODO check syntax errors first
             //TODO use rewriters/rewriting rules from already compiled meta assembly
             //TODO generate errors if class is not partial

@@ -168,6 +168,7 @@ namespace MetaSharp {
                     .SelectMany(type => type
                         .GetMethods(BindingFlags.Static | BindingFlags.Public)
                         .Where(method => !method.IsSpecialName) //TODO filter out methods which do not return something useful (or even fail if there are such)
+                        //TODO classes without namespaces
                     )
                     .Where(method => methodsMap.ContainsKey(GetMethodId(method)))
                     .Select(method => { 

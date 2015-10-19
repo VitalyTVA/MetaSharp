@@ -32,9 +32,11 @@ namespace MetaSharp {
         public MetaError Error(string message, string id = MessagesCore.CustomEror_Id) {
             return error(id, message);
         }
-        //TODO multiple completions
+        public Either<IEnumerable<MetaError>, IEnumerable<string>> Complete(IEnumerable<string> fileNames) {
+            return complete(fileNames);
+        }
         public Either<IEnumerable<MetaError>, string> Complete(string fileName) {
-            return complete(fileName.Yield()).Select(x => x.Single());
+            return Complete(fileName.Yield()).Select(x => x.Single());
         }
     }
     public static class MetaContextExtensions {

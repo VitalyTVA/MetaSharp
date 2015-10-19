@@ -1,4 +1,5 @@
-﻿using System;
+﻿using MetaSharp.Native;
+using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.IO;
@@ -340,10 +341,6 @@ using System;
         }
         [Fact]
         public void DependencyProperties_MissingPropertyType() {
-            var input = @"
-using MetaSharp;
-[assembly: MetaProto(@""Some\..\IncompleteDObjects.cs"")]
-";
             string incomplete =
 @"
 using MetaSharp;
@@ -362,7 +359,7 @@ using System;
             var name = "IncompleteDObjects.cs";
             AssertMultipleFilesErrors(
                 ImmutableArray.Create(
-                    new TestFile(SingleInputFileName, input),
+                    new TestFile(SingleInputFileName, GetInput(@"Some\..\" + name)),
                     new TestFile(@"Some\..\" + name, incomplete, isInFlow: false)
                 ),
                 errors => Assert.Collection(errors,
@@ -446,5 +443,20 @@ using System;
         }
         #endregion
 
+        static string GetInput(params string[] protoFiles) {
+            var files = protoFiles.Select(x => "@\"" + x + "\"").ConcatStrings(", ");
+            return
+$@"
+using MetaSharp;
+using System.Collections.Generic;
+namespace MetaSharp.Incomplete {{
+    public static class CompleteFiles {{
+        public static Either<IEnumerable<MetaError>, IEnumerable<string>> CompletePOCOModels(MetaContext context) {{
+            return context.Complete(new[] {{ {files} }});
+        }}
+    }}
+}}
+";
+        }
     }
 }
