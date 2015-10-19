@@ -252,31 +252,31 @@ namespace MetaSharp {
                 ? methodContext.Context.YieldToArray()
                 : null;
             try {
+                Func<string, ImmutableArray<Output>> getDefaultOutput = s => new Output(s, GetOutputFileName(methodContext.Method, methodContext.FileName, environment)).YieldToImmutable();
                 var methodResult = methodContext.Method.Invoke(null, parameters);
                 if(methodContext.Method.ReturnType.IsGenericType && methodContext.Method.ReturnType.GetGenericTypeDefinition() == typeof(Either<,>)) {
                     var method = typeof(Generator).GetMethod("ToMethodOutput", BindingFlags.Static |BindingFlags.NonPublic).MakeGenericMethod(methodContext.Method.ReturnType.GetGenericArguments());
-                    return (Either<ImmutableArray<MetaError>, ImmutableArray<Output>>)method.Invoke(null, new[] { methodResult, methodContext, environment });
+                    return (Either<ImmutableArray<MetaError>, ImmutableArray<Output>>)method.Invoke(null, new[] { methodResult, methodContext.Method.ReturnType.GetGenericArguments().Last(), getDefaultOutput });
                 }
-                ImmutableArray<Output> output = ValueToOutputs(methodResult, methodContext.Method.ReturnType, methodContext, environment);
+                ImmutableArray<Output> output = ValueToOutputs(methodResult, methodContext.Method.ReturnType, getDefaultOutput);
                 return Either<ImmutableArray<MetaError>, ImmutableArray<Output>>.Right(output);
             } catch(TargetInvocationException e) {
                 var error = CreateError(Messages.Exception_Id, methodContext.FileName, string.Format(Messages.Exception_Message, e.InnerException.Message, e.InnerException), methodContext.MethodSpan);
                 return Either<ImmutableArray<MetaError>, ImmutableArray<Output>>.Left(error.YieldToImmutable());
             }
         }
-        static Either<ImmutableArray<MetaError>, ImmutableArray<Output>> ToMethodOutput<TLeft, TRight>(Either<TLeft, TRight> value, MethodContext methodContext, Environment environment) {
+        static Either<ImmutableArray<MetaError>, ImmutableArray<Output>> ToMethodOutput<TLeft, TRight>(Either<TLeft, TRight> value, Type valueType, Func<string, ImmutableArray<Output>> getDefaultOutput) {
             return value.Transform(
                 error => ImmutableArray<MetaError>.Empty,
-                val => ValueToOutputs(val, methodContext.Method.ReturnType.GetGenericArguments().Last(), methodContext, environment)
+                val => ValueToOutputs(val, valueType, getDefaultOutput)
             );
         }
-        static ImmutableArray<Output> ValueToOutputs(object value, Type valueType, MethodContext methodContext, Environment environment) {
-            Func<string, ImmutableArray<Output>> getDefaultOutput = s => new Output(s, GetOutputFileName(methodContext.Method, methodContext.FileName, environment)).YieldToImmutable();
+        static ImmutableArray<Output> ValueToOutputs(object value, Type valueType, Func<string, ImmutableArray<Output>> getDefaultOutput) {
             if(valueType == typeof(string))
                 return getDefaultOutput((string)value);
             else if(typeof(IEnumerable<string>).IsAssignableFrom(valueType))
                 return getDefaultOutput(((IEnumerable<string>)value).ConcatStringsWithNewLines());
-            else if(methodContext.Method.ReturnType == typeof(Output))
+            else if(valueType == typeof(Output))
                 return ((Output)value).YieldToImmutable();
             else
                 return ((IEnumerable<Output>)value).ToImmutableArray();
