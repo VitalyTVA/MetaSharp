@@ -15,8 +15,10 @@ using GeneratorResult = MetaSharp.Either<System.Collections.Immutable.ImmutableA
 namespace MetaSharp {
     public static class MethodProcessor {
         public static Either<ImmutableArray<MetaError>, ImmutableArray<Output>> GetMethodOutput(MethodContext methodContext, Environment environment) {
+            //TODO use user-friendly types to return errors instead of Either
             //TODO check args
-            //TODO check return type
+            //TODO check return value type
+            //TODO check return error type
             var parameters = methodContext.Method.GetParameters().Length == 1
                 ? methodContext.Context.YieldToArray()
                 : null;
@@ -25,7 +27,7 @@ namespace MetaSharp {
                 var methodResult = methodContext.Method.Invoke(null, parameters);
                 if(methodContext.Method.ReturnType.IsGenericType && methodContext.Method.ReturnType.GetGenericTypeDefinition() == typeof(Either<,>)) {
                     var method = typeof(MethodProcessor).GetMethod("ToMethodOutput", BindingFlags.Static | BindingFlags.NonPublic).MakeGenericMethod(methodContext.Method.ReturnType.GetGenericArguments());
-                    return (Either<ImmutableArray<MetaError>, ImmutableArray<Output>>)method.Invoke(null, new[] { methodResult, methodContext.Method.ReturnType.GetGenericArguments().Last(), getDefaultOutput });
+                    return (Either<ImmutableArray<MetaError>, ImmutableArray<Output>>)method.Invoke(null, new[] { methodResult, getDefaultOutput });
                 }
                 ImmutableArray<Output> output = ValueToOutputs(methodResult, methodContext.Method.ReturnType, getDefaultOutput);
                 return Either<ImmutableArray<MetaError>, ImmutableArray<Output>>.Right(output);
@@ -34,10 +36,15 @@ namespace MetaSharp {
                 return Either<ImmutableArray<MetaError>, ImmutableArray<Output>>.Left(error.YieldToImmutable());
             }
         }
-        static Either<ImmutableArray<MetaError>, ImmutableArray<Output>> ToMethodOutput<TLeft, TRight>(Either<TLeft, TRight> value, Type valueType, Func<string, ImmutableArray<Output>> getDefaultOutput) {
+        static Either<ImmutableArray<MetaError>, ImmutableArray<Output>> ToMethodOutput<TLeft, TRight>(Either<TLeft, TRight> value, Func<string, ImmutableArray<Output>> getDefaultOutput) {
             return value.Transform(
-                error => (error as MetaError).YieldToImmutable(),
-                val => ValueToOutputs(val, valueType, getDefaultOutput)
+                error => {
+                    if(typeof(TLeft) == typeof(MetaError))
+                        return (error as MetaError).YieldToImmutable();
+                    else
+                        return (error as IEnumerable<MetaError>).ToImmutableArray();
+                },
+                val => ValueToOutputs(val, typeof(TRight), getDefaultOutput)
             );
         }
         static ImmutableArray<Output> ValueToOutputs(object value, Type valueType, Func<string, ImmutableArray<Output>> getDefaultOutput) {

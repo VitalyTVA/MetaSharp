@@ -20,8 +20,8 @@ namespace MetaSharp {
         public Output CreateIntermediateOutput(string text, string fileName) {
             return new Output(text, new OutputFileName(getIntermediateOutputFileName(fileName), includeInOutput: true));
         }
-        public MetaError Error(string message/*, string id = MessagesCore.CustomEror_Id*/) {
-            return error(MessagesCore.CustomEror_Id, message);
+        public MetaError Error(string message, string id = MessagesCore.CustomEror_Id) {
+            return error(id, message);
         }
     }
     public static class MetaContextExtensions {

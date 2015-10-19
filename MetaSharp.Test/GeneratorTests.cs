@@ -189,8 +189,11 @@ using MetaSharp;
 using System.Collections.Generic;
 namespace MetaSharp.HelloWorld {
     public static class HelloWorldGenerator {
-        public static Either<MetaError, string> SayHello(MetaContext context) {
+        public static Either<MetaError, string> Fail(MetaContext context) {
             return Either<MetaError, string>.Left(context.Error(""Error 1""));
+        }
+        public static Either<MetaError[], Output[]> EpicFail(MetaContext context) {
+            return Either<MetaError[], Output[]>.Left(new[] { context.Error(""Error 2""), context.Error(""Error 3"", ""MyID"")});
         }
     }
 }
@@ -199,7 +202,9 @@ namespace MetaSharp.HelloWorld {
             AssertMultipleFilesErrors(
                 ImmutableArray.Create(new TestFile(inputFileName, input)),
                 errors => Assert.Collection(errors,
-                        error => AssertError(error, Path.GetFullPath(inputFileName), MessagesCore.CustomEror_Id, "Error 1", 7, 49, 7, 57)
+                        error => AssertError(error, Path.GetFullPath(inputFileName), MessagesCore.CustomEror_Id, "Error 1", 7, 49, 7, 53),
+                        error => AssertError(error, Path.GetFullPath(inputFileName), MessagesCore.CustomEror_Id, "Error 2", 10, 53, 10, 61),
+                        error => AssertError(error, Path.GetFullPath(inputFileName), "MyID", "Error 3", 10, 53, 10, 61)
                 )
             );
         }
