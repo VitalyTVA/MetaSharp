@@ -132,7 +132,7 @@ namespace MetaSharp {
                 .ToImmutableArray();
 
             if(errors.Any())
-                return Error(errors);
+                return errors;
             Assembly compiledAssembly;
             using(var stream = new MemoryStream()) {
                 var compileResult = compilation.Emit(stream);
@@ -189,7 +189,7 @@ namespace MetaSharp {
                     );
 
                 if(outputs.IsLeft())
-                    return Error(outputs.ToLeft());
+                    return outputs.ToLeft();
 
                 var outputFiles = outputs.ToRight()
                     .Select(output => { 
@@ -199,7 +199,7 @@ namespace MetaSharp {
                     .Where(output => output.FileName.IncludeInOutput)
                     .Select(output => output.FileName.FileName)
                     .ToImmutableArray();
-                return Success(outputFiles);
+                return outputFiles;
             } finally {
                 AppDomain.CurrentDomain.AssemblyResolve -= resolveHandler;
             }
@@ -212,12 +212,6 @@ namespace MetaSharp {
                 x => Path.Combine(environment.BuildConstants.IntermediateOutputPath, x),
                 (id, message) => CreateError(id, Path.GetFullPath(fileName), message, location.GetLineSpan()),
                 files => Completer.GetCompletions(compilation, environment, files).Transform(x => (IEnumerable<MetaError>)x, x => (IEnumerable<string>)x));
-        }
-        static GeneratorResult Success(ImmutableArray<string> files) {
-            return GeneratorResult.Right(files);
-        }
-        static GeneratorResult Error(ImmutableArray<MetaError> errors) {
-            return GeneratorResult.Left(errors);
         }
         static ImmutableDictionary<string, string> GetMetaReferences(this CSharpCompilation compilation, BuildConstants buildConsants) {
             return compilation

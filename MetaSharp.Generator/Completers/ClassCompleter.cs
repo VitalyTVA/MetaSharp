@@ -21,7 +21,7 @@ namespace MetaSharp {
                     return acc.Property(typeName, property.Name);
                 }
             );
-            return CompleterResult.Right(generator.Generate());
+            return generator.Generate();
         }
     }
 }

@@ -51,7 +51,7 @@ $@"partial class {type.Name} {{
             var ownerTypeSyntax = ((GenericNameSyntax)last.Expression).TypeArgumentList.Arguments.Single();
             var ownerType = model.GetTypeInfo(ownerTypeSyntax).Type;
             if(ownerType != type)
-                return CompleterResult.Left(new CompleterError(ownerTypeSyntax, Messages.IncorrectOwnerType_Id, Messages.IncorrectOwnerType_Message).YieldToImmutable());
+                return new CompleterError(ownerTypeSyntax, Messages.IncorrectOwnerType_Id, Messages.IncorrectOwnerType_Message).YieldToImmutable();
             var properties = chain
                 .Take(chain.Length - 1)
                 .Select(x => {
@@ -73,7 +73,7 @@ $@"partial class {type.Name} {{
                     }
                     if(propertyType == null) {
                         var span = memberAccess.Name.LineSpan();
-                        return Either<CompleterError, string>.Left(new CompleterError(memberAccess.SyntaxTree, Messages.PropertyTypeMissed_Id, Messages.PropertyTypeMissed_Message, new FileLinePositionSpan(string.Empty, span.EndLinePosition, span.EndLinePosition)));
+                        return new CompleterError(memberAccess.SyntaxTree, Messages.PropertyTypeMissed_Id, Messages.PropertyTypeMissed_Message, new FileLinePositionSpan(string.Empty, span.EndLinePosition, span.EndLinePosition));
                     }
 
                     var propertyName = GetPropertyName(arguments, readOnly, memberAccess.Name.SyntaxTree);
@@ -103,7 +103,7 @@ $@"partial class {type.Name} {{
                 return null;
             };
             return (getError(1, "Property" + (readOnly ? "Key" : string.Empty)) ?? (readOnly ? getError(2, "Property") : null))
-                .Return(x => Either<CompleterError, string>.Left(x), () => Either<CompleterError, string>.Right(propertyName));
+                .Return(x => Either<CompleterError, string>.Left(x), () => propertyName);
         }
         static string GenerateFields(string propertyName, bool readOnly) {
             return readOnly

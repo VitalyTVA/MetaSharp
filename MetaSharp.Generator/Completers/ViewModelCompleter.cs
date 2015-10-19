@@ -24,7 +24,7 @@ namespace MetaSharp {
         //}
 
         public static CompleterResult Generate(SemanticModel model, INamedTypeSymbol type) {
-            return CompleterResult.Right(GenerateCore(model, type));
+            return GenerateCore(model, type);
         }
 
         static string GenerateCore(SemanticModel model, INamedTypeSymbol type) {

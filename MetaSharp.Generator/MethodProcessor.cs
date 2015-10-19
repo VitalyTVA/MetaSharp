@@ -30,10 +30,10 @@ namespace MetaSharp {
                     return (Either<ImmutableArray<MetaError>, ImmutableArray<Output>>)method.Invoke(null, new[] { methodResult, getDefaultOutput });
                 }
                 ImmutableArray<Output> output = ValueToOutputs(methodResult, methodContext.Method.ReturnType, getDefaultOutput);
-                return Either<ImmutableArray<MetaError>, ImmutableArray<Output>>.Right(output);
+                return output;
             } catch(TargetInvocationException e) {
                 var error = Generator.CreateError(Messages.Exception_Id, methodContext.FileName, string.Format(Messages.Exception_Message, e.InnerException.Message, e.InnerException), methodContext.MethodSpan);
-                return Either<ImmutableArray<MetaError>, ImmutableArray<Output>>.Left(error.YieldToImmutable());
+                return error.YieldToImmutable();
             }
         }
         static Either<ImmutableArray<MetaError>, ImmutableArray<Output>> ToMethodOutput<TLeft, TRight>(Either<TLeft, TRight> value, Func<string, ImmutableArray<Output>> getDefaultOutput) {

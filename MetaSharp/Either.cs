@@ -4,6 +4,12 @@ using System.Linq;
 
 namespace MetaSharp {
     public abstract class Either<TLeft, TRight> {
+        public static implicit operator Either<TLeft, TRight>(TLeft val)  {
+            return new LeftValue(val);
+        }
+        public static implicit operator Either<TLeft, TRight>(TRight val) {
+            return new RightValue(val);
+        }
         public static Either<TLeft, TRight> Left(TLeft value) {
             return new LeftValue(value);
         }

@@ -160,10 +160,10 @@ namespace MetaSharp.HelloWorld {
         }
         [MetaLocation(Location = MetaLocationKind.Designer)]
         public static Either<MetaError, string> SayHelloEither() {
-            return Either<MetaError, string>.Right(""Hello World from either!"");
+            return ""Hello World from either!"";
         }
-        public static Either<MetaError, IEnumerable<string>> SayHelloEitherMultiple(MetaContext context) {
-            return Either<MetaError, IEnumerable<string>>.Right(new[] { ""Hello World from either 1"",  ""Hello World from either 2""});
+        public static Either<MetaError, string[]> SayHelloEitherMultiple(MetaContext context) {
+            return new[] { ""Hello World from either 1"",  ""Hello World from either 2""};
         }
     }
 }
@@ -190,10 +190,10 @@ using System.Collections.Generic;
 namespace MetaSharp.HelloWorld {
     public static class HelloWorldGenerator {
         public static Either<MetaError, string> Fail(MetaContext context) {
-            return Either<MetaError, string>.Left(context.Error(""Error 1""));
+            return context.Error(""Error 1"");
         }
         public static Either<MetaError[], Output[]> EpicFail(MetaContext context) {
-            return Either<MetaError[], Output[]>.Left(new[] { context.Error(""Error 2""), context.Error(""Error 3"", ""MyID"")});
+            return new[] { context.Error(""Error 2""), context.Error(""Error 3"", ""MyID"")};
         }
     }
 }
