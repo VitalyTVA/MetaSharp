@@ -158,7 +158,7 @@ namespace MetaSharp.HelloWorld {
         public static Output SayHelloToIntermediate(MetaContext context) {
             return context.CreateIntermediateOutput(""Hello World to intermediate!"", @""Subfolder2\CustomOutputName.cs"");
         }
-        [MetaLocation(MetaLocationKind.Designer)]
+        [MetaLocation(Location = MetaLocationKind.Designer)]
         public static Either<MetaError, string> SayHelloEither() {
             return ""Hello World from either!"";
         }
@@ -467,7 +467,7 @@ namespace MetaSharp.HelloWorld {
              return ""I am hidden!"";
         }
     }
-    [MetaLocation(MetaLocationKind.Designer)]
+    [MetaLocation(Location = MetaLocationKind.Designer)]
     public static class HelloWorldGenerator_Designer{
         public static string SayHelloAgain() {
              return ""I am dependent upon!"";
@@ -490,7 +490,7 @@ namespace MetaSharp.HelloWorld {
             var input = @"
 using MetaSharp;
 namespace MetaSharp.HelloWorld {
-    [MetaLocation(MetaLocationKind.Designer)]
+    [MetaLocation(Location = MetaLocationKind.Designer)]
     public static class HelloWorldGenerator {
         [MetaLocation(MetaLocationKind.IntermediateOutput)]
         public static string SayHello() {
@@ -500,7 +500,7 @@ namespace MetaSharp.HelloWorld {
         public static string SayHelloAgain() {
              return ""I am hidden!"";
         }
-        [MetaLocation(MetaLocationKind.Designer)]
+        [MetaLocation(Location = MetaLocationKind.Designer)]
         public static string SayHelloOneMoreTime() {
              return ""I am dependent upon!"";
         }
