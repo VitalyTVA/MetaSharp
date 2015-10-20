@@ -58,12 +58,12 @@ namespace MetaSharp {
                 return ((IEnumerable<Output>)value).ToImmutableArray();
         }
         static OutputFileName GetOutputFileName(MethodInfo method, string fileName, Environment environment) {
-            var locationAttribute = method.GetCustomAttribute<MetaLocationAttribute>() 
-                ?? method.DeclaringType.GetCustomAttribute<MetaLocationAttribute>();
+            var methodAttribute = method.GetCustomAttribute<MetaLocationAttribute>();
+            var typeAttribute = method.DeclaringType.GetCustomAttribute<MetaLocationAttribute>();
 
-            var location = locationAttribute?.Location 
+            var location = methodAttribute?.Location ?? typeAttribute?.Location
                 ?? (environment.BuildConstants.GeneratorMode == GeneratorMode.ConsoleApp ? MetaLocation.Project : MetaLocation.IntermediateOutput);
-            var outputFileName = locationAttribute?.FileName.With(x => string.Format(x, Path.GetFileNameWithoutExtension(fileName))) 
+            var outputFileName = (methodAttribute?.FileName ?? typeAttribute?.FileName).With(x => string.Format(x, Path.GetFileNameWithoutExtension(fileName))) 
                 ?? GetOutputFileName(location, fileName);
 
             var path = Path.Combine(GetOutputDirectory(location, environment.BuildConstants), outputFileName);

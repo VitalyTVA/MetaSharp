@@ -26,7 +26,7 @@ namespace MetaSharp {
             this.error = error;
             this.complete = complete;
         }
-        public Output CreateIntermediateOutput(string text, string fileName) {
+        public Output CreateOutput(string text, string fileName) {
             return new Output(text, new OutputFileName(getIntermediateOutputFileName(fileName), includeInOutput: true));
         }
         public MetaError Error(string message, string id = MessagesCore.CustomEror_Id) {

@@ -156,7 +156,7 @@ namespace MetaSharp.HelloWorld {
             yield return new Output(""Hello World 2"", ""CustomOutputName2.cs"");
         }
         public static Output SayHelloToIntermediate(MetaContext context) {
-            return context.CreateIntermediateOutput(""Hello World to intermediate!"", @""Subfolder2\CustomOutputName.cs"");
+            return context.CreateOutput(""Hello World to intermediate!"", @""Subfolder2\CustomOutputName.cs"");
         }
         [MetaLocation(MetaLocation.Project)]
         public static Either<MetaError, string> SayHelloEither() {
@@ -518,7 +518,7 @@ namespace MetaSharp.HelloWorld {
                     new TestFile(GetOutputFileName(name), "Hello World!"),
                     new TestFile(GetOutputFileNameNoIntellisense(name), "I am hidden!"),
                     new TestFile(GetOutputFileNameDesigner(name), "I am dependent upon!", isInFlow: false),
-                    new TestFile(Path.Combine(DefaultIntermediateOutputPath, "Custom.cs"), "I am in custom file!")
+                    new TestFile("Custom.cs", "I am in custom file!", isInFlow: false)
                 )
             );
         }
@@ -555,6 +555,41 @@ namespace MetaSharp.HelloWorld {
                     new TestFile(GetOutputFileNameDesigner(name), "ProjectOutput\r\nDefaultOutput", isInFlow: false)
                 ),
                 CreateBuildConstants(generatorMode: GeneratorMode.ConsoleApp)
+            );
+        }
+        [Fact]
+        public void MsBuildMode_ProjectLocationForClass() {
+            var input = @"
+using MetaSharp;
+namespace MetaSharp.HelloWorld {
+    [MetaLocation(MetaLocation.Project)]
+    public static class HelloWorldGenerator {
+        [MetaLocation(MetaLocation.IntermediateOutput)]
+        public static string IntermediateOutput() {
+             return ""IntermediateOutput"";
+        }
+        [MetaLocation(""{0}.g.cs"")]
+        public static string ProjectOutputCustomName() {
+             return ""ProjectOutput custom name"";
+        }
+        [MetaLocation(MetaLocation.Project)]
+        public static string ProjectOutput() {
+             return ""ProjectOutput"";
+        }
+        public static string DefaultOutput() {
+             return ""DefaultOutput"";
+        }
+    }
+}
+";
+            var name = "file.meta.cs";
+            AssertMultipleFilesOutput(
+                new TestFile(name, input).YieldToImmutable(),
+                ImmutableArray.Create(
+                    new TestFile(GetOutputFileName(name), "IntermediateOutput"),
+                    new TestFile("file.meta.g.cs", "ProjectOutput custom name", isInFlow: false),
+                    new TestFile(GetOutputFileNameDesigner(name), "ProjectOutput\r\nDefaultOutput", isInFlow: false)
+                )
             );
         }
         [Fact]
