@@ -399,19 +399,6 @@ namespace MetaSharp {
         }
     }
     public class Environment {
-        internal static string GetOutputFileName(MetaLocationKind location, string fileName, BuildConstants buildConstants) {
-            switch(location) {
-            case MetaLocationKind.IntermediateOutput:
-                return Path.Combine(buildConstants.IntermediateOutputPath, fileName.ReplaceEnd(Generator.CShaprFileExtension, Generator.DefaultOutputFileEnd));
-            case MetaLocationKind.IntermediateOutputNoIntellisense:
-                return Path.Combine(buildConstants.IntermediateOutputPath, fileName.ReplaceEnd(Generator.CShaprFileExtension, Generator.DefaultOutputFileEnd_IntellisenseInvisible));
-            case MetaLocationKind.Designer:
-                return fileName.ReplaceEnd(Generator.CShaprFileExtension, Generator.DesignerOutputFileEnd);
-            default:
-                throw new InvalidOperationException();
-            }
-        }
-
         public readonly Func<string, string> ReadText;
         public readonly Action<string, string> WriteText;
         public readonly BuildConstants BuildConstants; 
@@ -422,10 +409,6 @@ namespace MetaSharp {
             ReadText = readText;
             WriteText = writeText;
             BuildConstants = buildConstants;
-        }
-
-        public OutputFileName CreateOutput(string fileName, MetaLocationKind location) {
-            return new OutputFileName(GetOutputFileName(location, fileName, BuildConstants), location != MetaLocationKind.Designer);
         }
     }
     public class BuildConstants {

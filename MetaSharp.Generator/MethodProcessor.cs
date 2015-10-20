@@ -58,10 +58,38 @@ namespace MetaSharp {
                 return ((IEnumerable<Output>)value).ToImmutableArray();
         }
         static OutputFileName GetOutputFileName(MethodInfo method, string fileName, Environment environment) {
-            var location = method.GetCustomAttribute<MetaLocationAttribute>()?.Location
-                ?? method.DeclaringType.GetCustomAttribute<MetaLocationAttribute>()?.Location
-                ?? default(MetaLocationKind);
-            return environment.CreateOutput(fileName, location);
+            var locationAttribute = method.GetCustomAttribute<MetaLocationAttribute>() 
+                ?? method.DeclaringType.GetCustomAttribute<MetaLocationAttribute>();
+
+            var location = locationAttribute?.Location ?? default(MetaLocationKind);
+            var outputFileName = locationAttribute?.FileName ?? GetOutputFileName(location, fileName);
+
+            var path = Path.Combine(GetOutputDirectory(location, environment.BuildConstants), outputFileName);
+            return new OutputFileName(path, location != MetaLocationKind.Designer);
+        }
+        static string GetOutputDirectory(MetaLocationKind location, BuildConstants buildConstants) {
+            switch(location) {
+            case MetaLocationKind.IntermediateOutput:
+                return buildConstants.IntermediateOutputPath;
+            case MetaLocationKind.IntermediateOutputNoIntellisense:
+                return buildConstants.IntermediateOutputPath;
+            case MetaLocationKind.Designer:
+                return string.Empty;
+            default:
+                throw new InvalidOperationException();
+            }
+        }
+        static string GetOutputFileName(MetaLocationKind location, string fileName) {
+            switch(location) {
+            case MetaLocationKind.IntermediateOutput:
+                return fileName.ReplaceEnd(Generator.CShaprFileExtension, Generator.DefaultOutputFileEnd);
+            case MetaLocationKind.IntermediateOutputNoIntellisense:
+                return fileName.ReplaceEnd(Generator.CShaprFileExtension, Generator.DefaultOutputFileEnd_IntellisenseInvisible);
+            case MetaLocationKind.Designer:
+                return fileName.ReplaceEnd(Generator.CShaprFileExtension, Generator.DesignerOutputFileEnd);
+            default:
+                throw new InvalidOperationException();
+            }
         }
     }
 }

@@ -461,7 +461,7 @@ namespace MetaSharp.HelloWorld {
              return ""Hello World!"";
         }
     }
-    [MetaLocation(MetaLocationKind.IntermediateOutputNoIntellisense)]
+    [MetaLocation(Location = MetaLocationKind.IntermediateOutputNoIntellisense)]
     public static class HelloWorldGenerator_NoIntellisense {
         public static string SayHelloAgain() {
              return ""I am hidden!"";
@@ -492,17 +492,21 @@ using MetaSharp;
 namespace MetaSharp.HelloWorld {
     [MetaLocation(Location = MetaLocationKind.Designer)]
     public static class HelloWorldGenerator {
-        [MetaLocation(MetaLocationKind.IntermediateOutput)]
+        [MetaLocation(Location = MetaLocationKind.IntermediateOutput)]
         public static string SayHello() {
              return ""Hello World!"";
         }
-        [MetaLocation(MetaLocationKind.IntermediateOutputNoIntellisense)]
+        [MetaLocation(Location = MetaLocationKind.IntermediateOutputNoIntellisense)]
         public static string SayHelloAgain() {
              return ""I am hidden!"";
         }
         [MetaLocation(Location = MetaLocationKind.Designer)]
         public static string SayHelloOneMoreTime() {
              return ""I am dependent upon!"";
+        }
+        [MetaLocation(""Custom.cs"")]
+        public static string SayHelloToCustomFile() {
+             return ""I am in custom file!"";
         }
     }
 }
@@ -513,7 +517,8 @@ namespace MetaSharp.HelloWorld {
                 ImmutableArray.Create(
                     new TestFile(GetOutputFileName(name), "Hello World!"),
                     new TestFile(GetOutputFileNameNoIntellisense(name), "I am hidden!"),
-                    new TestFile(GetOutputFileNameDesigner(name), "I am dependent upon!", isInFlow: false)
+                    new TestFile(GetOutputFileNameDesigner(name), "I am dependent upon!", isInFlow: false),
+                    new TestFile(Path.Combine(DefaultIntermediateOutputPath, "Custom.cs"), "I am in custom file!")
                 )
             );
         }
