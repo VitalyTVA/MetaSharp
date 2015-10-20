@@ -61,28 +61,28 @@ namespace MetaSharp {
             var locationAttribute = method.GetCustomAttribute<MetaLocationAttribute>() 
                 ?? method.DeclaringType.GetCustomAttribute<MetaLocationAttribute>();
 
-            var location = locationAttribute?.Location ?? default(MetaLocationKind);
+            var location = locationAttribute?.Location ?? default(MetaLocation);
             var outputFileName = locationAttribute?.FileName.With(x => string.Format(x, Path.GetFileNameWithoutExtension(fileName))) 
                 ?? GetOutputFileName(location, fileName);
 
             var path = Path.Combine(GetOutputDirectory(location, environment.BuildConstants), outputFileName);
-            return new OutputFileName(path, location != MetaLocationKind.Designer);
+            return new OutputFileName(path, location != MetaLocation.Designer);
         }
-        static string GetOutputDirectory(MetaLocationKind location, BuildConstants buildConstants) {
+        static string GetOutputDirectory(MetaLocation location, BuildConstants buildConstants) {
             switch(location) {
-            case MetaLocationKind.IntermediateOutput:
+            case MetaLocation.IntermediateOutput:
                 return buildConstants.IntermediateOutputPath;
-            case MetaLocationKind.Designer:
+            case MetaLocation.Designer:
                 return string.Empty;
             default:
                 throw new InvalidOperationException();
             }
         }
-        static string GetOutputFileName(MetaLocationKind location, string fileName) {
+        static string GetOutputFileName(MetaLocation location, string fileName) {
             switch(location) {
-            case MetaLocationKind.IntermediateOutput:
+            case MetaLocation.IntermediateOutput:
                 return fileName.ReplaceEnd(Generator.CShaprFileExtension, Generator.DefaultOutputFileEnd);
-            case MetaLocationKind.Designer:
+            case MetaLocation.Designer:
                 return fileName.ReplaceEnd(Generator.CShaprFileExtension, Generator.DesignerOutputFileEnd);
             default:
                 throw new InvalidOperationException();

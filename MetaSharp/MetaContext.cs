@@ -100,17 +100,17 @@ $@"namespace {@namespace} {{
             return other != null && other.FileName == FileName && other.IncludeInOutput == IncludeInOutput;
         }
     }
-    public enum MetaLocationKind {
+    public enum MetaLocation {
         IntermediateOutput,
         Designer,
     }
     [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method)]
     public sealed class MetaLocationAttribute : Attribute {
-        public MetaLocationAttribute(string fileName = null, MetaLocationKind location = default(MetaLocationKind)) {
+        public MetaLocationAttribute(string fileName = null, MetaLocation location = default(MetaLocation)) {
             FileName = fileName;
             Location = location;
         }
-        public MetaLocationKind Location { get; set; }
+        public MetaLocation Location { get; set; }
         public string FileName { get; }
     }
 
