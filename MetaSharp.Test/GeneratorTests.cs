@@ -195,6 +195,8 @@ namespace MetaSharp.HelloWorld {
         public static IEnumerable<Output> SayHelloToProject(MetaContext context) {
             yield return context.CreateOutput(""Hello World to project!"", @""Subfolder2\CustomOutputName.cs"");
             yield return context.CreateOutput(""Hello World to project 2!"", ""{0}.hello.cs"");
+            yield return context.CreateOutput(""Hello World to project 3!"");
+            yield return context.CreateOutput(""Hello World to intermediate!"", location: MetaLocation.IntermediateOutput);
         }
     }
 }
@@ -205,7 +207,9 @@ namespace MetaSharp.HelloWorld {
                 ImmutableArray.Create(
                     new TestFile(@"Subfolder\CustomOutputName.cs", "Hello World!", isInFlow: false),
                     new TestFile(@"Subfolder2\CustomOutputName.cs", "Hello World to project!", isInFlow: false),
-                    new TestFile(@"file.meta.hello.cs", "Hello World to project 2!", isInFlow: false)
+                    new TestFile(@"file.meta.hello.cs", "Hello World to project 2!", isInFlow: false),
+                    new TestFile(@"file.meta.designer.cs", "Hello World to project 3!", isInFlow: false),
+                    new TestFile(GetOutputFileName(name), "Hello World to intermediate!")
                 ),
                 CreateBuildConstants(generatorMode: GeneratorMode.ConsoleApp)
             );

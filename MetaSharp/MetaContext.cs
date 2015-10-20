@@ -9,14 +9,14 @@ namespace MetaSharp {
     public class MetaContext {
         public string Namespace { get; }
         public IEnumerable<string> Usings { get; }
-        readonly Func<string, OutputFileName> getOutputFileName;
+        readonly Func<string, MetaLocation?, OutputFileName> getOutputFileName;
         readonly Func<string, string, MetaError> error;
         readonly Func<IEnumerable<string>, Either<IEnumerable<MetaError>, IEnumerable<string>>> complete;
 
         public MetaContext(
             string @namespace, 
             IEnumerable<string> usings, 
-            Func<string, OutputFileName> getOutputFileName, 
+            Func<string, MetaLocation?, OutputFileName> getOutputFileName, 
             Func<string, string, MetaError> error,
             Func<IEnumerable<string>, Either<IEnumerable<MetaError>, IEnumerable<string>>> complete
         ) {
@@ -26,8 +26,8 @@ namespace MetaSharp {
             this.error = error;
             this.complete = complete;
         }
-        public Output CreateOutput(string text, string fileName) {
-            return new Output(text, getOutputFileName(fileName));
+        public Output CreateOutput(string text, string fileName = null, MetaLocation? location = null) {
+            return new Output(text, getOutputFileName(fileName, location));
         }
         public MetaError Error(string message, string id = MessagesCore.CustomEror_Id) {
             return error(id, message);
