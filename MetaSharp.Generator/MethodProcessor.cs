@@ -61,7 +61,8 @@ namespace MetaSharp {
             var locationAttribute = method.GetCustomAttribute<MetaLocationAttribute>() 
                 ?? method.DeclaringType.GetCustomAttribute<MetaLocationAttribute>();
 
-            var location = locationAttribute?.Location ?? default(MetaLocation);
+            var location = locationAttribute?.Location 
+                ?? (environment.BuildConstants.GeneratorMode == GeneratorMode.ConsoleApp ? MetaLocation.Project : MetaLocation.IntermediateOutput);
             var outputFileName = locationAttribute?.FileName.With(x => string.Format(x, Path.GetFileNameWithoutExtension(fileName))) 
                 ?? GetOutputFileName(location, fileName);
 

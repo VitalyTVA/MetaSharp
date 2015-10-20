@@ -158,7 +158,7 @@ namespace MetaSharp.HelloWorld {
         public static Output SayHelloToIntermediate(MetaContext context) {
             return context.CreateIntermediateOutput(""Hello World to intermediate!"", @""Subfolder2\CustomOutputName.cs"");
         }
-        [MetaLocation(Location = MetaLocation.Project)]
+        [MetaLocation(MetaLocation.Project)]
         public static Either<MetaError, string> SayHelloEither() {
             return ""Hello World from either!"";
         }
@@ -461,13 +461,13 @@ namespace MetaSharp.HelloWorld {
              return ""Hello World!"";
         }
     }
-    [MetaLocation(""{0}.g.cs"", Location = MetaLocation.IntermediateOutput)]
+    [MetaLocation(MetaLocation.IntermediateOutput, ""{0}.g.cs"")]
     public static class HelloWorldGenerator_NoIntellisense {
         public static string SayHelloAgain() {
              return ""I am hidden!"";
         }
     }
-    [MetaLocation(Location = MetaLocation.Project)]
+    [MetaLocation(MetaLocation.Project)]
     public static class HelloWorldGenerator_Designer{
         public static string SayHelloAgain() {
              return ""I am dependent upon!"";
@@ -490,17 +490,17 @@ namespace MetaSharp.HelloWorld {
             var input = @"
 using MetaSharp;
 namespace MetaSharp.HelloWorld {
-    [MetaLocation(Location = MetaLocation.Project)]
+    [MetaLocation(MetaLocation.Project)]
     public static class HelloWorldGenerator {
-        [MetaLocation(Location = MetaLocation.IntermediateOutput)]
+        [MetaLocation(MetaLocation.IntermediateOutput)]
         public static string SayHello() {
              return ""Hello World!"";
         }
-        [MetaLocation(""{0}.g.cs"", Location = MetaLocation.IntermediateOutput)]
+        [MetaLocation(MetaLocation.IntermediateOutput, ""{0}.g.cs"")]
         public static string SayHelloAgain() {
              return ""I am hidden!"";
         }
-        [MetaLocation(Location = MetaLocation.Project)]
+        [MetaLocation(MetaLocation.Project)]
         public static string SayHelloOneMoreTime() {
              return ""I am dependent upon!"";
         }
@@ -520,6 +520,41 @@ namespace MetaSharp.HelloWorld {
                     new TestFile(GetOutputFileNameDesigner(name), "I am dependent upon!", isInFlow: false),
                     new TestFile(Path.Combine(DefaultIntermediateOutputPath, "Custom.cs"), "I am in custom file!")
                 )
+            );
+        }
+        [Fact]
+        public void ConsoleAppMode() {
+            var input = @"
+using MetaSharp;
+namespace MetaSharp.HelloWorld {
+    public static class HelloWorldGenerator {
+        [MetaLocation(MetaLocation.IntermediateOutput)]
+        public static string IntermediateOutput() {
+             return ""IntermediateOutput"";
+        }
+        [MetaLocation(""{0}.g.cs"")]
+        public static string ProjectOutputCustomName() {
+             return ""ProjectOutput custom name"";
+        }
+        [MetaLocation(MetaLocation.Project)]
+        public static string ProjectOutput() {
+             return ""ProjectOutput"";
+        }
+        public static string DefaultOutput() {
+             return ""DefaultOutput"";
+        }
+    }
+}
+";
+            var name = "file.meta.cs";
+            AssertMultipleFilesOutput(
+                new TestFile(name, input).YieldToImmutable(),
+                ImmutableArray.Create(
+                    new TestFile(GetOutputFileName(name), "IntermediateOutput"),
+                    new TestFile("file.meta.g.cs", "ProjectOutput custom name", isInFlow: false),
+                    new TestFile(GetOutputFileNameDesigner(name), "ProjectOutput\r\nDefaultOutput", isInFlow: false)
+                ),
+                CreateBuildConstants(generatorMode: GeneratorMode.ConsoleApp)
             );
         }
         [Fact]

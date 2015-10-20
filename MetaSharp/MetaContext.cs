@@ -106,11 +106,17 @@ $@"namespace {@namespace} {{
     }
     [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method)]
     public sealed class MetaLocationAttribute : Attribute {
-        public MetaLocationAttribute(string fileName = null, MetaLocation location = default(MetaLocation)) {
+        public MetaLocationAttribute(string fileName)
+            : this(fileName, null) {
+        }
+        public MetaLocationAttribute(MetaLocation location, string fileName = null) 
+            : this(fileName, location) {
+        }
+        MetaLocationAttribute(string fileName, MetaLocation? location) {
             FileName = fileName;
             Location = location;
         }
-        public MetaLocation Location { get; set; }
+        public MetaLocation? Location { get; }
         public string FileName { get; }
     }
 
