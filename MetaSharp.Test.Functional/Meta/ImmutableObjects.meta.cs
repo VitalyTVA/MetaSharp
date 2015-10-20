@@ -7,7 +7,7 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace MetaSharp.Test.Meta {
-    [MetaLocation(Location = MetaLocation.Designer)]
+    [MetaLocation(Location = MetaLocation.Project)]
     static class ImmutableObjects {
         public static string Create(MetaContext context) {
             var name = ImmutableArray.Create("B").Single();

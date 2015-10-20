@@ -66,13 +66,13 @@ namespace MetaSharp {
                 ?? GetOutputFileName(location, fileName);
 
             var path = Path.Combine(GetOutputDirectory(location, environment.BuildConstants), outputFileName);
-            return new OutputFileName(path, location != MetaLocation.Designer);
+            return new OutputFileName(path, location != MetaLocation.Project);
         }
         static string GetOutputDirectory(MetaLocation location, BuildConstants buildConstants) {
             switch(location) {
             case MetaLocation.IntermediateOutput:
                 return buildConstants.IntermediateOutputPath;
-            case MetaLocation.Designer:
+            case MetaLocation.Project:
                 return string.Empty;
             default:
                 throw new InvalidOperationException();
@@ -82,8 +82,8 @@ namespace MetaSharp {
             switch(location) {
             case MetaLocation.IntermediateOutput:
                 return fileName.ReplaceEnd(Generator.CShaprFileExtension, Generator.DefaultOutputFileEnd);
-            case MetaLocation.Designer:
-                return fileName.ReplaceEnd(Generator.CShaprFileExtension, Generator.DesignerOutputFileEnd);
+            case MetaLocation.Project:
+                return fileName.ReplaceEnd(Generator.CShaprFileExtension, Generator.ProjectOutputFileEnd);
             default:
                 throw new InvalidOperationException();
             }

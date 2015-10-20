@@ -102,7 +102,7 @@ $@"namespace {@namespace} {{
     }
     public enum MetaLocation {
         IntermediateOutput,
-        Designer,
+        Project,
     }
     [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method)]
     public sealed class MetaLocationAttribute : Attribute {

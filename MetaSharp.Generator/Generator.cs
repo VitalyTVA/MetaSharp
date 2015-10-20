@@ -80,7 +80,7 @@ namespace MetaSharp {
         public const string DefaultInputFileEnd = DefaultSuffix + CShaprFileExtension;
         public const string DefaultOutputFileEnd = ".g.i" + CShaprFileExtension;
         public const string DefaultOutputFileEnd_IntellisenseInvisible = ".g" + CShaprFileExtension;
-        public const string DesignerOutputFileEnd = ".designer" + CShaprFileExtension;
+        public const string ProjectOutputFileEnd = ".designer" + CShaprFileExtension;
 
         const string DefaultAssemblyName = "meta.dll";
         const string NewLine = "\r\n";
