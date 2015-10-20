@@ -33,7 +33,8 @@ namespace MetaSharp.Tasks {
                 .ToImmutableArray();
             var buildConstants = new BuildConstants(
                 intermediateOutputPath: IntermediateOutputPath, 
-                targetPath: OutDir
+                targetPath: OutDir,
+                generatorMode: GeneratorMode.MsBuild
             );
             var code = RealEnvironmentGenerator.Generate(
                 files,

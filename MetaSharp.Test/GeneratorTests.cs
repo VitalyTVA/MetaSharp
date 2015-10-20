@@ -701,10 +701,11 @@ namespace MetaSharp.HelloWorld {
         protected static string GetOutputFileNameDesigner(string input)
             => GetOutputFileNameCore(input, string.Empty, "designer.cs");
 
-        protected static BuildConstants CreateBuildConstants(string intermediateOutputPath = DefaultIntermediateOutputPath, string targetPath = DefaultTargetPath)
+        protected static BuildConstants CreateBuildConstants(string intermediateOutputPath = DefaultIntermediateOutputPath, string targetPath = DefaultTargetPath, GeneratorMode generatorMode = GeneratorMode.MsBuild)
             => new BuildConstants(
                 intermediateOutputPath: intermediateOutputPath, 
-                targetPath: targetPath
+                targetPath: targetPath,
+                generatorMode: generatorMode
             );
 
         static string GetOutputFileNameCore(string input, string intermediateOutputPath, string suffix)

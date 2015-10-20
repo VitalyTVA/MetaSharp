@@ -46,7 +46,8 @@ namespace MetaSharp.Console {
                 .ToImmutableArray();
             var buildConstants = new BuildConstants(
                 intermediateOutputPath: null,
-                targetPath: parser.Object.TargetPath
+                targetPath: parser.Object.TargetPath,
+                generatorMode: GeneratorMode.ConsoleApp
             );
 
             var code = RealEnvironmentGenerator.Generate(
