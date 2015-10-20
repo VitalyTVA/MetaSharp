@@ -13,6 +13,7 @@ using System.Text;
 using GeneratorResult = MetaSharp.Either<System.Collections.Immutable.ImmutableArray<MetaSharp.MetaError>, System.Collections.Immutable.ImmutableArray<string>>;
 
 namespace MetaSharp {
+    //TODO CLSCompliant
     //TODO different exception messages for console and task mode (no need to format task message at all - simply use to string)
     //TODO wrap output classes into regions
     //TODO show verbose error in correct location when reference or include file or etc. is not found + (incorrect enum type name in MetaReference)
