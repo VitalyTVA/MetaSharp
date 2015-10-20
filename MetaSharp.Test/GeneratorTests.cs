@@ -182,6 +182,33 @@ namespace MetaSharp.HelloWorld {
             );
         }
         [Fact]
+        public void CustomOutput_ConsoleMode() {
+            var input = @"
+using System;
+using System.Collections.Generic;
+using MetaSharp;
+namespace MetaSharp.HelloWorld {
+    public static class HelloWorldGenerator {
+        public static Output SayHello() {
+            return new Output(""Hello World!"", @""Subfolder\CustomOutputName.cs"");
+        }
+        public static Output SayHelloToProject(MetaContext context) {
+            return context.CreateOutput(""Hello World to project!"", @""Subfolder2\CustomOutputName.cs"");
+        }
+    }
+}
+";
+            var name = "file.meta.cs";
+            AssertMultipleFilesOutput(
+                ImmutableArray.Create(new TestFile(name, input)),
+                ImmutableArray.Create(
+                    new TestFile(@"Subfolder\CustomOutputName.cs", "Hello World!", isInFlow: false),
+                    new TestFile(@"Subfolder2\CustomOutputName.cs", "Hello World to project!", isInFlow: false)
+                ),
+                CreateBuildConstants(generatorMode: GeneratorMode.ConsoleApp)
+            );
+        }
+        [Fact]
         public void CustomErrors() {
             var input = @"
 using System;

@@ -14,11 +14,15 @@ using GeneratorResult = MetaSharp.Either<System.Collections.Immutable.ImmutableA
 
 namespace MetaSharp {
     public static class MethodProcessor {
-        public static Either<ImmutableArray<MetaError>, ImmutableArray<Output>> GetMethodOutput(MethodContext methodContext, Environment environment) {
+        public static Either<ImmutableArray<MetaError>, ImmutableArray<Output>> GetMethodOutput(MethodInfo methodInfo, Location location, Environment environment, string fileName, CSharpCompilation compilation) {
             //TODO use user-friendly types to return errors instead of Either
             //TODO check args
             //TODO check return value type
             //TODO check return error type
+
+            var context = location.CreateContext(methodInfo.DeclaringType.Namespace, environment, fileName, compilation);
+            var methodContext = new MethodContext(methodInfo, context, location.GetLineSpan(), fileName);
+
             var parameters = methodContext.Method.GetParameters().Length == 1
                 ? methodContext.Context.YieldToArray()
                 : null;
@@ -35,6 +39,15 @@ namespace MetaSharp {
                 var error = Generator.CreateError(Messages.Exception_Id, methodContext.FileName, string.Format(Messages.Exception_Message, e.InnerException.Message, e.InnerException), methodContext.MethodSpan);
                 return error.YieldToImmutable();
             }
+        }
+        static MetaContext CreateContext(this Location location, string @namespace, Environment environment, string fileName, CSharpCompilation compilation) {
+            string[] usings = location.GetUsings();
+            return new MetaContext(
+                @namespace,
+                usings,
+                x => GetOutputFileName(default(MetaLocation?), null, x, environment),
+                (id, message) => Generator.CreateError(id, Path.GetFullPath(fileName), message, location.GetLineSpan()),
+                files => Completer.GetCompletions(compilation, environment, files).Transform(x => (IEnumerable<MetaError>)x, x => (IEnumerable<string>)x));
         }
         static Either<ImmutableArray<MetaError>, ImmutableArray<Output>> ToMethodOutput<TLeft, TRight>(Either<TLeft, TRight> value, Func<string, ImmutableArray<Output>> getDefaultOutput) {
             return value.Transform(
@@ -60,14 +73,20 @@ namespace MetaSharp {
         static OutputFileName GetOutputFileName(MethodInfo method, string fileName, Environment environment) {
             var methodAttribute = method.GetCustomAttribute<MetaLocationAttribute>();
             var typeAttribute = method.DeclaringType.GetCustomAttribute<MetaLocationAttribute>();
+            return GetOutputFileName(methodAttribute?.Location ?? typeAttribute?.Location, fileName, methodAttribute?.FileName ?? typeAttribute?.FileName, environment);
+        }
+        static OutputFileName GetOutputFileName(MetaLocation? location, string fileName, string outputFileName, Environment environment) {
 
-            var location = methodAttribute?.Location ?? typeAttribute?.Location
-                ?? (environment.BuildConstants.GeneratorMode == GeneratorMode.ConsoleApp ? MetaLocation.Project : MetaLocation.IntermediateOutput);
-            var outputFileName = (methodAttribute?.FileName ?? typeAttribute?.FileName).With(x => string.Format(x, Path.GetFileNameWithoutExtension(fileName))) 
-                ?? GetOutputFileName(location, fileName);
+            var actualTocation = location
+                ?? (environment.BuildConstants.GeneratorMode == GeneratorMode.ConsoleApp 
+                    ? MetaLocation.Project 
+                    : MetaLocation.IntermediateOutput
+                );
+            outputFileName = outputFileName.With(x => string.Format(x, Path.GetFileNameWithoutExtension(fileName)))
+                ?? GetOutputFileNameCore(actualTocation, fileName);
 
-            var path = Path.Combine(GetOutputDirectory(location, environment.BuildConstants), outputFileName);
-            return new OutputFileName(path, location != MetaLocation.Project);
+            var path = Path.Combine(GetOutputDirectory(actualTocation, environment.BuildConstants), outputFileName);
+            return new OutputFileName(path, actualTocation != MetaLocation.Project);
         }
         static string GetOutputDirectory(MetaLocation location, BuildConstants buildConstants) {
             switch(location) {
@@ -79,7 +98,7 @@ namespace MetaSharp {
                 throw new InvalidOperationException();
             }
         }
-        static string GetOutputFileName(MetaLocation location, string fileName) {
+        static string GetOutputFileNameCore(MetaLocation location, string fileName) {
             switch(location) {
             case MetaLocation.IntermediateOutput:
                 return fileName.ReplaceEnd(Generator.CShaprFileExtension, Generator.DefaultOutputFileEnd);

@@ -175,10 +175,7 @@ namespace MetaSharp {
                     .Select(method => { 
                         var location = methodsMap[GetMethodId(method)].Location(); //TODO use main location
                         var tree = methodsMap[GetMethodId(method)].Location().SourceTree;
-                        var fileName = trees[tree];
-                        var context = location.CreateContext(method.DeclaringType.Namespace, environment, fileName, compilation);
-                        var methodContext = new MethodContext(method, context, location.GetLineSpan(), fileName);
-                        return MethodProcessor.GetMethodOutput(methodContext, environment);
+                        return MethodProcessor.GetMethodOutput(method, location, environment, trees[tree], compilation);
                     })
                     .AggregateEither(
                         e => e.SelectMany(x => x).ToImmutableArray(),
@@ -204,15 +201,6 @@ namespace MetaSharp {
             } finally {
                 AppDomain.CurrentDomain.AssemblyResolve -= resolveHandler;
             }
-        }
-        static MetaContext CreateContext(this Location location, string @namespace, Environment environment, string fileName, CSharpCompilation compilation) {
-            string[] usings = location.GetUsings();
-            return new MetaContext(
-                @namespace,
-                usings,
-                x => Path.Combine(environment.BuildConstants.IntermediateOutputPath, x),
-                (id, message) => CreateError(id, Path.GetFullPath(fileName), message, location.GetLineSpan()),
-                files => Completer.GetCompletions(compilation, environment, files).Transform(x => (IEnumerable<MetaError>)x, x => (IEnumerable<string>)x));
         }
         static ImmutableDictionary<string, string> GetMetaReferences(this CSharpCompilation compilation, BuildConstants buildConsants) {
             return compilation
