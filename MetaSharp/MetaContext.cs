@@ -102,7 +102,6 @@ $@"namespace {@namespace} {{
     }
     public enum MetaLocationKind {
         IntermediateOutput,
-        IntermediateOutputNoIntellisense,
         Designer,
     }
     [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method)]

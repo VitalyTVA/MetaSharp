@@ -62,7 +62,8 @@ namespace MetaSharp {
                 ?? method.DeclaringType.GetCustomAttribute<MetaLocationAttribute>();
 
             var location = locationAttribute?.Location ?? default(MetaLocationKind);
-            var outputFileName = locationAttribute?.FileName ?? GetOutputFileName(location, fileName);
+            var outputFileName = locationAttribute?.FileName.With(x => string.Format(x, Path.GetFileNameWithoutExtension(fileName))) 
+                ?? GetOutputFileName(location, fileName);
 
             var path = Path.Combine(GetOutputDirectory(location, environment.BuildConstants), outputFileName);
             return new OutputFileName(path, location != MetaLocationKind.Designer);
@@ -70,8 +71,6 @@ namespace MetaSharp {
         static string GetOutputDirectory(MetaLocationKind location, BuildConstants buildConstants) {
             switch(location) {
             case MetaLocationKind.IntermediateOutput:
-                return buildConstants.IntermediateOutputPath;
-            case MetaLocationKind.IntermediateOutputNoIntellisense:
                 return buildConstants.IntermediateOutputPath;
             case MetaLocationKind.Designer:
                 return string.Empty;
@@ -83,8 +82,6 @@ namespace MetaSharp {
             switch(location) {
             case MetaLocationKind.IntermediateOutput:
                 return fileName.ReplaceEnd(Generator.CShaprFileExtension, Generator.DefaultOutputFileEnd);
-            case MetaLocationKind.IntermediateOutputNoIntellisense:
-                return fileName.ReplaceEnd(Generator.CShaprFileExtension, Generator.DefaultOutputFileEnd_IntellisenseInvisible);
             case MetaLocationKind.Designer:
                 return fileName.ReplaceEnd(Generator.CShaprFileExtension, Generator.DesignerOutputFileEnd);
             default:

@@ -461,7 +461,7 @@ namespace MetaSharp.HelloWorld {
              return ""Hello World!"";
         }
     }
-    [MetaLocation(Location = MetaLocationKind.IntermediateOutputNoIntellisense)]
+    [MetaLocation(""{0}.g.cs"", Location = MetaLocationKind.IntermediateOutput)]
     public static class HelloWorldGenerator_NoIntellisense {
         public static string SayHelloAgain() {
              return ""I am hidden!"";
@@ -496,7 +496,7 @@ namespace MetaSharp.HelloWorld {
         public static string SayHello() {
              return ""Hello World!"";
         }
-        [MetaLocation(Location = MetaLocationKind.IntermediateOutputNoIntellisense)]
+        [MetaLocation(""{0}.g.cs"", Location = MetaLocationKind.IntermediateOutput)]
         public static string SayHelloAgain() {
              return ""I am hidden!"";
         }
