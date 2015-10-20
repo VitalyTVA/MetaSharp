@@ -110,7 +110,7 @@ $@"namespace {@namespace} {{
         public MetaLocationAttribute(MetaLocationKind location) {
             Location = location;
         }
-        public MetaLocationKind Location { get; set; }
+        public MetaLocationKind Location { get; private set; }
     }
 
     [AttributeUsage(AttributeTargets.Assembly, AllowMultiple = true)]
