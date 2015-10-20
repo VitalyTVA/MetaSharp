@@ -188,10 +188,12 @@ using System;
 using System.Collections.Generic;
 using MetaSharp;
 namespace MetaSharp.HelloWorld {
+    [MetaLocation(MetaLocation.IntermediateOutput)]
     public static class HelloWorldGenerator {
         public static Output SayHello() {
             return new Output(""Hello World!"", @""Subfolder\CustomOutputName.cs"");
         }
+        [MetaLocation(MetaLocation.IntermediateOutput, ""x.cs"")]
         public static IEnumerable<Output> SayHelloToProject(MetaContext context) {
             yield return context.CreateOutput(""Hello World to project!"", @""Subfolder2\CustomOutputName.cs"");
             yield return context.CreateOutput(""Hello World to project 2!"", ""{0}.hello.cs"");
