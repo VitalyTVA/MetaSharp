@@ -107,7 +107,7 @@ $@"namespace {@namespace} {{
     }
     [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method)]
     public sealed class MetaLocationAttribute : Attribute {
-        public MetaLocationAttribute(MetaLocationKind location = default(MetaLocationKind)) {
+        public MetaLocationAttribute(MetaLocationKind location) {
             Location = location;
         }
         public MetaLocationKind Location { get; set; }
