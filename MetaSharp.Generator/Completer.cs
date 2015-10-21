@@ -60,11 +60,13 @@ namespace MetaSharp {
                             .Select(x => {
                                 var type = model.GetDeclaredSymbol(x);
                                 //TODO support multiple completers for single file
-                                var completer = type.GetAttributes()
-                                            .Select(attributeData => symbolToTypeMap.GetValueOrDefault(attributeData.AttributeClass))
-                                            .Where(attributeType => attributeType != null)
-                                            .Select(attributeType => Completers[attributeType])
-                                            .SingleOrDefault();
+                                var completer =
+                                    Enumerable.Concat(
+                                        type.GetAttributes().Select(attributeData => symbolToTypeMap.GetValueOrDefault(attributeData.AttributeClass)).Where(attributeType => attributeType != null),
+                                        defaultAttributes.Select(attribute => attribute.GetType())
+                                    )
+                                    .Select(attributeType => Completers[attributeType])
+                                    .SingleOrDefault();
                                 if(completer == null)
                                     return null;
                                 Func<string, string> wrapMembers = val 

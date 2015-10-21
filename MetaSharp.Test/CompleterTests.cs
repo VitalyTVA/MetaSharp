@@ -163,16 +163,14 @@ using System.Collections.Generic;
 namespace MetaSharp.Incomplete {{
     public static class CompleteFiles {{
         public static Either<IEnumerable<MetaError>, IEnumerable<Output>> CompletePOCOModels(MetaContext context) {{
-            return context.Complete(new[] {{ ""Incomplete.cs"" }});
+            return context.Complete(new[] {{ ""Incomplete.cs"" }}, new MetaCompleteClassAttribute());
         }}
     }}
 }}
 ";
             string incomplete =
 @"
-using MetaSharp;
 namespace MetaSharp.Incomplete {
-    [MetaCompleteClass]
     public partial class Foo {
         public int IntProperty { get; }
     }
