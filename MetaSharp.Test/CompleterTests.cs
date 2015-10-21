@@ -155,6 +155,50 @@ namespace FooBoo {
             );
             AssertCompiles(input, incomplete, output, additionalClasses);
         }
+        [Fact]
+        public void CompletePrototypeFiles_DefaultAttributes() {
+            var input = $@"
+using MetaSharp;
+using System.Collections.Generic;
+namespace MetaSharp.Incomplete {{
+    public static class CompleteFiles {{
+        public static Either<IEnumerable<MetaError>, IEnumerable<Output>> CompletePOCOModels(MetaContext context) {{
+            return context.Complete(new[] {{ ""Incomplete.cs"" }});
+        }}
+    }}
+}}
+";
+            string incomplete =
+@"
+using MetaSharp;
+namespace MetaSharp.Incomplete {
+    [MetaCompleteClass]
+    public partial class Foo {
+        public int IntProperty { get; }
+    }
+}";
+
+            string output =
+@"namespace MetaSharp.Incomplete {
+    partial class Foo {
+        public Foo(int intProperty) {
+            IntProperty = intProperty;
+        }
+    }
+}";
+            var name = "Incomplete.cs";
+            AssertMultipleFilesOutput(
+                ImmutableArray.Create(
+                    new TestFile(SingleInputFileName, input),
+                    new TestFile(name, incomplete, isInFlow: false)
+                ),
+                ImmutableArray.Create(
+                    new TestFile(Path.Combine(DefaultIntermediateOutputPath, "Incomplete.g.i.cs"), output)
+                ),
+                ignoreEmptyLines: true
+            );
+            AssertCompiles(input, incomplete, output);
+        }
         #endregion
 
         #region view model

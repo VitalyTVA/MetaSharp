@@ -47,7 +47,7 @@ namespace MetaSharp {
                 usings,
                 (outputFileName, metaLocation) => GetOutputFileName(method, fileName, environment, metaLocation, outputFileName),
                 (id, message) => Generator.CreateError(id, Path.GetFullPath(fileName), message, location.GetLineSpan()),
-                files => Completer.GetCompletions(compilation, environment, files, x => GetOutputFileName(method, x, environment))
+                (files, defaultAttributes) => Completer.GetCompletions(compilation, environment, files, x => GetOutputFileName(method, x, environment), defaultAttributes)
                     .Transform(x => (IEnumerable<MetaError>)x, x => (IEnumerable<Output>)x));
         }
         static Either<ImmutableArray<MetaError>, ImmutableArray<Output>> ToMethodOutput<TLeft, TRight>(Either<TLeft, TRight> value, Func<string, ImmutableArray<Output>> getDefaultOutput) {
