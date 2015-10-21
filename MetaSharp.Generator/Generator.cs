@@ -23,16 +23,11 @@ namespace MetaSharp {
     //TODO non static classes
     //TODO methods with arguments
     //TODO other environment constants (OutDir, etc.) - use in meta context/meta attributes
-    //TODO explicit file name mode
-    //TODO automatically generate namespace and usings based on usings above and under namespace
-    //TODO generate stub types
-    //TODO reference other assemblies from predefined locations
-    //TODO use SourceText with SyntaxFactory
+    //TODO reference more standard assemblies from predefined locations
+    //TODO use SourceText with SyntaxFactory to create syntaxt trees
     //TODO use SourceReferenceResolver?
-    //TODO option to insert delimeters between output from different classes and methods
     //TODO debugging
     //TODO save rewritten files to disk to show errors from them and for debugging
-    //TODO return ClassGenerator and other generators directly from methods
 
     //TODO recursive includes and references
     //TODO duplicate includes and references
