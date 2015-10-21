@@ -37,7 +37,7 @@ namespace MetaSharp {
                 .Add(typeof(MetaCompleteDependencyPropertiesAttribute), DependencyPropertiesCompleter.Generate)
             ;
         }
-        internal static Either<ImmutableArray<MetaError>, ImmutableArray<Output>> GetCompletions(CSharpCompilation compilation, Environment environment, IEnumerable<string> files, Func<string, OutputFileName> createOutputFileName, Attribute[] defaultAttributes) {
+        internal static Either<ImmutableArray<MetaError>, ImmutableArray<Output>> GetCompletions(CSharpCompilation compilation, Environment environment, IEnumerable<string> files, Func<string, OutputFileName> createOutputFileName, IEnumerable<Attribute> defaultAttributes) {
             var trees = files
                 .ToImmutableDictionary(x => x, x => Generator.ParseFile(environment, x));
             var compilationWithPrototypes = compilation.AddSyntaxTrees(trees.Values);

@@ -86,7 +86,7 @@ namespace MetaSharp {
             var argList = (ArgumentListSyntax)node.Parent;
             //TODO check that parameter name preserved if specified, otherwise order can be broken
             var argIndex = argList.Arguments.IndexOf(node);
-            var parameterSymbol = method.Parameters[argIndex];
+            var parameterSymbol = method.Parameters[argIndex]; //TODO when there is params argument in method index may be well out of range
 
             var lambda = node.Expression as LambdaExpressionSyntax;
             if(parameterSymbol.HasAttribute<MetaRewriteLambdaParamAttribute>(model.Compilation) && lambda != null) {

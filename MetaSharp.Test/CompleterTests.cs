@@ -157,7 +157,7 @@ namespace FooBoo {
         }
         [Fact]
         public void CompletePrototypeFiles_DefaultAttributes() {
-            var input = GetInput("Incomplete.cs".Yield(), defaultAttributes: ", new MetaCompleteClassAttribute()");
+            var input = GetInput("Incomplete.cs".Yield(), defaultAttributes: ", new[] { new MetaCompleteClassAttribute() }");
             string incomplete =
 @"
 namespace MetaSharp.Incomplete {
@@ -206,6 +206,50 @@ namespace MetaSharp.Incomplete {
 using MetaSharp;
 namespace MetaSharp.Incomplete {
     [MetaCompleteClass, MetaCompleteDependencyProperties]
+    public partial class Foo {
+        static Foo() {
+            DependencyPropertyRegistrator<Foo>.New()
+                .Register<string>(x => x. Prop1, out Prop1Property, null)
+            ;
+        }
+        public int IntProperty { get; }
+    }
+}";
+            string output =
+@"namespace MetaSharp.Incomplete {
+    partial class Foo {
+        public Foo(int intProperty) {
+            IntProperty = intProperty;
+        }
+    }
+}
+namespace MetaSharp.Incomplete {
+    partial class Foo {
+        public static readonly DependencyProperty Prop1Property;
+        public string Prop1 {
+            get { return (string)GetValue(Prop1Property); }
+            set { SetValue(Prop1Property, value); }
+        }
+    }
+}";
+            var name = "IncompleteClasses.cs";
+            AssertMultipleFilesOutput(
+                ImmutableArray.Create(
+                    new TestFile(SingleInputFileName, input),
+                    new TestFile(name, incomplete, isInFlow: false)
+                ),
+                ImmutableArray.Create(
+                    new TestFile(Path.Combine(DefaultIntermediateOutputPath, "IncompleteClasses.g.i.cs"), output)
+                ),
+                ignoreEmptyLines: true
+            );
+        }
+        [Fact]
+        public void CompletePrototypeFiles_MultipleDefaultAttributes() {
+            var input = GetInput(new[] { @"IncompleteClasses.cs" }, defaultAttributes: ", new Attribute[] { new MetaCompleteClassAttribute(), new MetaCompleteDependencyPropertiesAttribute() }");
+            string incomplete =
+@"
+namespace MetaSharp.Incomplete {
     public partial class Foo {
         static Foo() {
             DependencyPropertyRegistrator<Foo>.New()
@@ -515,6 +559,7 @@ using System;
             var files = protoFiles.Select(x => "@\"" + x + "\"").ConcatStrings(", ");
             return
 $@"
+using System;
 using MetaSharp;
 using System.Collections.Generic;
 namespace MetaSharp.Incomplete {{

@@ -11,14 +11,14 @@ namespace MetaSharp {
         public IEnumerable<string> Usings { get; }
         readonly Func<string, MetaLocation?, OutputFileName> getOutputFileName;
         readonly Func<string, string, MetaError> error;
-        readonly Func<IEnumerable<string>, Attribute[], Either<IEnumerable<MetaError>, IEnumerable<Output>>> complete;
+        readonly Func<IEnumerable<string>, IEnumerable<Attribute>, Either<IEnumerable<MetaError>, IEnumerable<Output>>> complete;
 
         public MetaContext(
             string @namespace, 
             IEnumerable<string> usings, 
             Func<string, MetaLocation?, OutputFileName> getOutputFileName, 
             Func<string, string, MetaError> error,
-            Func<IEnumerable<string>, Attribute[], Either<IEnumerable<MetaError>, IEnumerable<Output>>> complete
+            Func<IEnumerable<string>, IEnumerable<Attribute>, Either<IEnumerable<MetaError>, IEnumerable<Output>>> complete
         ) {
             Namespace = @namespace;
             Usings = usings;
@@ -32,11 +32,8 @@ namespace MetaSharp {
         public MetaError Error(string message, string id = MessagesCore.CustomEror_Id) {
             return error(id, message);
         }
-        public Either<IEnumerable<MetaError>, IEnumerable<Output>> Complete(IEnumerable<string> fileNames, params Attribute[] defaultAttributes) {
-            return complete(fileNames, defaultAttributes);
-        }
-        public Either<IEnumerable<MetaError>, Output> Complete(string fileName) {
-            return Complete(fileName.Yield()).Select(x => x.Single());
+        public Either<IEnumerable<MetaError>, IEnumerable<Output>> Complete(IEnumerable<string> fileNames, IEnumerable<Attribute> defaultAttributes = null) {
+            return complete(fileNames, defaultAttributes ?? Enumerable.Empty<Attribute>());
         }
     }
     public static class MetaContextExtensions {
