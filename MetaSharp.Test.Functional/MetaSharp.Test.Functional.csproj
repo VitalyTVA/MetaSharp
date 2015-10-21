@@ -100,7 +100,8 @@
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PreBuildEvent>..\..\bin\MetaSharp.Console.exe --projectPath "..\Meta"</PreBuildEvent>
+    <PreBuildEvent>del "..\Meta\*.designer.cs"
+..\..\bin\MetaSharp.Console.exe --projectPath "..\Meta"</PreBuildEvent>
   </PropertyGroup>
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
     <PropertyGroup>
