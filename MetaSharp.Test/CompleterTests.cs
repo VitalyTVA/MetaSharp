@@ -174,12 +174,23 @@ namespace MetaSharp.Incomplete {
     public partial class Foo {
         public int IntProperty { get; }
     }
+    [MetaSharp.MetaCompleteClass]
+    public partial class Moo {
+        public int IntProperty { get; }
+    }
 }";
 
             string output =
 @"namespace MetaSharp.Incomplete {
     partial class Foo {
         public Foo(int intProperty) {
+            IntProperty = intProperty;
+        }
+    }
+}
+namespace MetaSharp.Incomplete {
+    partial class Moo {
+        public Moo(int intProperty) {
             IntProperty = intProperty;
         }
     }

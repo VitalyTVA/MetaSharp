@@ -65,6 +65,7 @@ namespace MetaSharp {
                                         type.GetAttributes().Select(attributeData => symbolToTypeMap.GetValueOrDefault(attributeData.AttributeClass)).Where(attributeType => attributeType != null),
                                         defaultAttributes.Select(attribute => attribute.GetType())
                                     )
+                                    .Distinct()
                                     .Select(attributeType => Completers[attributeType])
                                     .SingleOrDefault();
                                 if(completer == null)
