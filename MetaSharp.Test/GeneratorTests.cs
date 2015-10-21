@@ -188,12 +188,10 @@ using System;
 using System.Collections.Generic;
 using MetaSharp;
 namespace MetaSharp.HelloWorld {
-    [MetaLocation(MetaLocation.IntermediateOutput)]
     public static class HelloWorldGenerator {
         public static Output SayHello() {
             return new Output(""Hello World!"", @""Subfolder\CustomOutputName.cs"");
         }
-        [MetaLocation(MetaLocation.IntermediateOutput, ""x.cs"")]
         public static IEnumerable<Output> SayHelloToProject(MetaContext context) {
             yield return context.CreateOutput(""Hello World to project!"", @""Subfolder2\CustomOutputName.cs"");
             yield return context.CreateOutput(""Hello World to project 2!"", ""{0}.hello.cs"");
@@ -212,6 +210,41 @@ namespace MetaSharp.HelloWorld {
                     new TestFile(@"file.meta.hello.cs", "Hello World to project 2!", isInFlow: false),
                     new TestFile(@"file.meta.designer.cs", "Hello World to project 3!", isInFlow: false),
                     new TestFile(GetOutputFileName(name), "Hello World to intermediate!")
+                ),
+                CreateBuildConstants(generatorMode: GeneratorMode.ConsoleApp)
+            );
+        }
+        [Fact]
+        public void CustomOutput_ConsoleMode_OverrideDefaultLocation() {
+            var input = @"
+using System;
+using System.Collections.Generic;
+using MetaSharp;
+namespace MetaSharp.HelloWorld {
+    [MetaLocation(MetaLocation.IntermediateOutput)]
+    public static class HelloWorldGenerator {
+        public static Output SayHello(MetaContext context) {
+            return context.CreateOutput(""Hello World"");
+        }
+        [MetaLocation(""x.cs"")]
+        public static IEnumerable<Output> SayHello2(MetaContext context) {
+            yield return context.CreateOutput(""Hello World 1"", ""{0}.hello.cs"");
+            yield return context.CreateOutput(""Hello World 2"");
+            yield return context.CreateOutput(""Hello World 3"", location: MetaLocation.Project);
+            yield return context.CreateOutput(""Hello World 4"", ""{0}.hello.cs"", location: MetaLocation.Project);
+        }
+    }
+}
+";
+            var name = "file.meta.cs";
+            AssertMultipleFilesOutput(
+                ImmutableArray.Create(new TestFile(name, input)),
+                ImmutableArray.Create(
+                    new TestFile(GetOutputFileName(name), "Hello World"),
+                    new TestFile(Path.Combine(DefaultIntermediateOutputPath, "file.meta.hello.cs"), "Hello World 1"),
+                    new TestFile(Path.Combine(DefaultIntermediateOutputPath, "x.cs"), "Hello World 2"),
+                    new TestFile("x.cs", "Hello World 3", isInFlow : false),
+                    new TestFile("file.meta.hello.cs", "Hello World 4", isInFlow: false)
                 ),
                 CreateBuildConstants(generatorMode: GeneratorMode.ConsoleApp)
             );

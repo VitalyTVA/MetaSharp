@@ -20,7 +20,7 @@ namespace MetaSharp {
             //TODO check return value type
             //TODO check return error type
 
-            var context = location.CreateContext(methodInfo.DeclaringType.Namespace, environment, fileName, compilation);
+            var context = CreateContext(location, methodInfo, environment, fileName, compilation);
             var methodContext = new MethodContext(methodInfo, context, location.GetLineSpan(), fileName);
 
             var parameters = methodContext.Method.GetParameters().Length == 1
@@ -40,12 +40,12 @@ namespace MetaSharp {
                 return error.YieldToImmutable();
             }
         }
-        static MetaContext CreateContext(this Location location, string @namespace, Environment environment, string fileName, CSharpCompilation compilation) {
+        static MetaContext CreateContext(Location location, MethodInfo method, Environment environment, string fileName, CSharpCompilation compilation) {
             string[] usings = location.GetUsings();
             return new MetaContext(
-                @namespace,
+                method.DeclaringType.Namespace,
                 usings,
-                (outputFileName, metaLocation) => GetOutputFileName(metaLocation, fileName, outputFileName, environment),
+                (outputFileName, metaLocation) => GetOutputFileName(method, fileName, environment, metaLocation, outputFileName),
                 (id, message) => Generator.CreateError(id, Path.GetFullPath(fileName), message, location.GetLineSpan()),
                 files => Completer.GetCompletions(compilation, environment, files).Transform(x => (IEnumerable<MetaError>)x, x => (IEnumerable<string>)x));
         }
@@ -70,13 +70,16 @@ namespace MetaSharp {
             else
                 return ((IEnumerable<Output>)value).ToImmutableArray();
         }
-        static OutputFileName GetOutputFileName(MethodInfo method, string fileName, Environment environment) {
+        static OutputFileName GetOutputFileName(MethodInfo method, string fileName, Environment environment, MetaLocation? location = null, string outputFileName = null) {
             var methodAttribute = method.GetCustomAttribute<MetaLocationAttribute>();
             var typeAttribute = method.DeclaringType.GetCustomAttribute<MetaLocationAttribute>();
-            return GetOutputFileName(methodAttribute?.Location ?? typeAttribute?.Location, fileName, methodAttribute?.FileName ?? typeAttribute?.FileName, environment);
+            return GetOutputFileNameCore(
+                location ?? methodAttribute?.Location ?? typeAttribute?.Location, fileName, 
+                outputFileName ?? methodAttribute?.FileName ?? typeAttribute?.FileName, 
+                environment
+            );
         }
-        static OutputFileName GetOutputFileName(MetaLocation? location, string fileName, string outputFileName, Environment environment) {
-
+        static OutputFileName GetOutputFileNameCore(MetaLocation? location, string fileName, string outputFileName, Environment environment) {
             var actualTocation = location
                 ?? (environment.BuildConstants.GeneratorMode == GeneratorMode.ConsoleApp 
                     ? MetaLocation.Project 
