@@ -13,7 +13,7 @@ namespace MetaSharp.Test {
         #region class
         [Fact]
         public void CompletePrototypeFiles() {
-            var input = GetInput(@"IncompleteClasses1.cs", @"IncompleteClasses2.cs") + 
+            var input = GetInput(new[] { @"IncompleteClasses1.cs", @"IncompleteClasses2.cs" }) + 
 @"
 namespace MetaSharp.HelloWorld {
     public partial class NoCompletion {
@@ -106,7 +106,6 @@ namespace FooBoo {
         }
         [Fact]
         public void CompletePrototypeFiles_TypeNameWithNameSpace_ShortName_Alias() {
-            var input = GetInput(@"IncompleteClasses.cs");
             string incomplete =
 @"
 using MetaSharp;
@@ -143,13 +142,14 @@ namespace FooBoo {
     }
 }";
             var name = "IncompleteClasses.cs";
+            var input = GetInput(@"IncompleteClasses.cs".Yield(), "[MetaLocation(MetaLocation.Project)]");
             AssertMultipleFilesOutput(
                 ImmutableArray.Create(
                     new TestFile(SingleInputFileName, input),
                     new TestFile(name, incomplete, isInFlow: false)
                 ),
                 ImmutableArray.Create(
-                    new TestFile(Path.Combine(DefaultIntermediateOutputPath, "IncompleteClasses.g.i.cs"), output)
+                    new TestFile("IncompleteClasses.designer.cs", output, isInFlow: false)
                 ),
                 ignoreEmptyLines: true
             );
@@ -214,7 +214,7 @@ namespace MetaSharp.Incomplete {
     }
 }";
             var name = "IncompleteViewModels.cs";
-            var input = GetInput(@"IncompleteViewModels.cs");
+            var input = GetInput(@"IncompleteViewModels.cs".Yield());
             AssertMultipleFilesOutput(
                 ImmutableArray.Create(
                     new TestFile(SingleInputFileName, input),
@@ -316,7 +316,7 @@ using System;
             var name = "IncompleteDObjects.cs";
             AssertMultipleFilesOutput(
                 ImmutableArray.Create(
-                    new TestFile(SingleInputFileName, GetInput(@"IncompleteDObjects.cs")),
+                    new TestFile(SingleInputFileName, GetInput(@"IncompleteDObjects.cs".Yield())),
                     new TestFile(name, incomplete, isInFlow: false)
                 ),
                 ImmutableArray.Create(
@@ -346,7 +346,7 @@ using System;
             var name = "IncompleteDObjects.cs";
             AssertMultipleFilesErrors(
                 ImmutableArray.Create(
-                    new TestFile(SingleInputFileName, GetInput(@"Some\..\" + name)),
+                    new TestFile(SingleInputFileName, GetInput((@"Some\..\" + name).Yield())),
                     new TestFile(@"Some\..\" + name, incomplete, isInFlow: false)
                 ),
                 errors => Assert.Collection(errors,
@@ -377,7 +377,7 @@ using System;
             var name = "IncompleteDObjects.cs";
             AssertMultipleFilesErrors(
                 ImmutableArray.Create(
-                    new TestFile(SingleInputFileName, GetInput(@"IncompleteDObjects.cs")),
+                    new TestFile(SingleInputFileName, GetInput(@"IncompleteDObjects.cs".Yield())),
                     new TestFile(name, incomplete, isInFlow: false)
                 ),
                 errors => Assert.Collection(errors,
@@ -411,7 +411,7 @@ using System;
             var name = "IncompleteDObjects.cs";
             AssertMultipleFilesErrors(
                 ImmutableArray.Create(
-                    new TestFile(SingleInputFileName, GetInput(@"IncompleteDObjects.cs")),
+                    new TestFile(SingleInputFileName, GetInput(@"IncompleteDObjects.cs".Yield())),
                     new TestFile(name, incomplete, isInFlow: false)
                 ),
                 errors => Assert.Collection(errors,
@@ -422,7 +422,7 @@ using System;
         }
         #endregion
 
-        static string GetInput(params string[] protoFiles) {
+        static string GetInput(IEnumerable<string> protoFiles, string methodAttributes = null) {
             var files = protoFiles.Select(x => "@\"" + x + "\"").ConcatStrings(", ");
             return
 $@"
@@ -430,6 +430,7 @@ using MetaSharp;
 using System.Collections.Generic;
 namespace MetaSharp.Incomplete {{
     public static class CompleteFiles {{
+{methodAttributes}
         public static Either<IEnumerable<MetaError>, IEnumerable<Output>> CompletePOCOModels(MetaContext context) {{
             return context.Complete(new[] {{ {files} }});
         }}
