@@ -157,17 +157,7 @@ namespace FooBoo {
         }
         [Fact]
         public void CompletePrototypeFiles_DefaultAttributes() {
-            var input = $@"
-using MetaSharp;
-using System.Collections.Generic;
-namespace MetaSharp.Incomplete {{
-    public static class CompleteFiles {{
-        public static Either<IEnumerable<MetaError>, IEnumerable<Output>> CompletePOCOModels(MetaContext context) {{
-            return context.Complete(new[] {{ ""Incomplete.cs"" }}, new MetaCompleteClassAttribute());
-        }}
-    }}
-}}
-";
+            var input = GetInput("Incomplete.cs".Yield(), defaultAttributes: ", new MetaCompleteClassAttribute()");
             string incomplete =
 @"
 namespace MetaSharp.Incomplete {
@@ -203,6 +193,39 @@ namespace MetaSharp.Incomplete {
                 ),
                 ImmutableArray.Create(
                     new TestFile(Path.Combine(DefaultIntermediateOutputPath, "Incomplete.g.i.cs"), output)
+                ),
+                ignoreEmptyLines: true
+            );
+            AssertCompiles(input, incomplete, output);
+        }
+        [Fact]
+        public void CompletePrototypeFiles_MultipleAttributes() {
+            var input = GetInput(new[] { @"IncompleteClasses.cs" });
+            string incomplete =
+@"
+using MetaSharp;
+namespace MetaSharp.Incomplete {
+    [MetaCompleteClass]
+    public partial class Foo {
+        public int IntProperty { get; }
+    }
+}";
+            string output =
+@"namespace MetaSharp.Incomplete {
+    partial class Foo {
+        public Foo(int intProperty) {
+            IntProperty = intProperty;
+        }
+    }
+}";
+            var name = "IncompleteClasses.cs";
+            AssertMultipleFilesOutput(
+                ImmutableArray.Create(
+                    new TestFile(SingleInputFileName, input),
+                    new TestFile(name, incomplete, isInFlow: false)
+                ),
+                ImmutableArray.Create(
+                    new TestFile(Path.Combine(DefaultIntermediateOutputPath, "IncompleteClasses.g.i.cs"), output)
                 ),
                 ignoreEmptyLines: true
             );
@@ -475,7 +498,7 @@ using System;
         }
         #endregion
 
-        static string GetInput(IEnumerable<string> protoFiles, string methodAttributes = null) {
+        static string GetInput(IEnumerable<string> protoFiles, string methodAttributes = null, string defaultAttributes = null) {
             var files = protoFiles.Select(x => "@\"" + x + "\"").ConcatStrings(", ");
             return
 $@"
@@ -484,8 +507,8 @@ using System.Collections.Generic;
 namespace MetaSharp.Incomplete {{
     public static class CompleteFiles {{
 {methodAttributes}
-        public static Either<IEnumerable<MetaError>, IEnumerable<Output>> CompletePOCOModels(MetaContext context) {{
-            return context.Complete(new[] {{ {files} }});
+        public static Either<IEnumerable<MetaError>, IEnumerable<Output>> Complete(MetaContext context) {{
+            return context.Complete(new[] {{ {files} }} {defaultAttributes});
         }}
     }}
 }}
