@@ -28,6 +28,7 @@ namespace MetaSharp {
     //TODO use SourceReferenceResolver?
     //TODO debugging
     //TODO save rewritten files to disk to show errors from them and for debugging
+    //TODO include/rewrite/complete files based ion mask (MetaInclude("*.my.cs"))
 
     //TODO recursive includes and references
     //TODO duplicate includes and references
