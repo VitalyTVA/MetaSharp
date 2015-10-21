@@ -7,8 +7,7 @@ using System.Collections.Generic;
 namespace MetaSharp.Test.Meta {
     public static class CompleteFiles {
         public static Either<IEnumerable<MetaError>, Output> CompletePOCOModels(MetaContext context) {
-            return context.Complete("POCOViewModels.cs")
-            .Select(text => new Output(text, "POCOViewModels.designer.cs"));
+            return context.Complete("POCOViewModels.cs");
         }
     }
 }

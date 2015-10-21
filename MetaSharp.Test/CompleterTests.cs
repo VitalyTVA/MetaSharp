@@ -51,7 +51,7 @@ using FooBoo;
     }
 }";
 
-            string output =
+            string output1 =
 @"namespace MetaSharp.Incomplete {
 using FooBoo;
     partial class Foo {
@@ -69,8 +69,9 @@ using FooBoo;
             BooProperty = booProperty;
         }
     }
-}
-namespace MetaSharp.Incomplete {
+}";
+            string output2 =
+@"namespace MetaSharp.Incomplete {
 using FooBoo;
     partial class Foo3 {
         public Foo3(Boo booProperty) {
@@ -96,11 +97,12 @@ namespace FooBoo {
                     new TestFile(name2, incomplete2, isInFlow: false)
                 ),
                 ImmutableArray.Create(
-                    new TestFile(GetOutputFileName(SingleInputFileName), output)
+                    new TestFile(Path.Combine(DefaultIntermediateOutputPath, "IncompleteClasses1.g.i.cs"), output1),
+                    new TestFile(Path.Combine(DefaultIntermediateOutputPath, "IncompleteClasses2.g.i.cs"), output2)
                 ),
                 ignoreEmptyLines: true
             );
-            AssertCompiles(input, incomplete1, incomplete2, output, additionalClasses);
+            AssertCompiles(input, incomplete1, incomplete2, output1, output2, additionalClasses);
         }
         [Fact]
         public void CompletePrototypeFiles_TypeNameWithNameSpace_ShortName_Alias() {
@@ -147,7 +149,7 @@ namespace FooBoo {
                     new TestFile(name, incomplete, isInFlow: false)
                 ),
                 ImmutableArray.Create(
-                    new TestFile(GetOutputFileName(SingleInputFileName), output)
+                    new TestFile(Path.Combine(DefaultIntermediateOutputPath, "IncompleteClasses.g.i.cs"), output)
                 ),
                 ignoreEmptyLines: true
             );
@@ -219,7 +221,7 @@ namespace MetaSharp.Incomplete {
                     new TestFile(name, incomplete, isInFlow: false)
                 ),
                 ImmutableArray.Create(
-                    new TestFile(GetOutputFileName(SingleInputFileName), output)
+                    new TestFile(Path.Combine(DefaultIntermediateOutputPath, "IncompleteViewModels.g.i.cs"), output)
                 ),
                 ignoreEmptyLines: true
             );
@@ -318,7 +320,7 @@ using System;
                     new TestFile(name, incomplete, isInFlow: false)
                 ),
                 ImmutableArray.Create(
-                    new TestFile(GetOutputFileName(SingleInputFileName), output)
+                    new TestFile(Path.Combine(DefaultIntermediateOutputPath, "IncompleteDObjects.g.i.cs"), output)
                 ),
                 ignoreEmptyLines: true
             );
@@ -428,7 +430,7 @@ using MetaSharp;
 using System.Collections.Generic;
 namespace MetaSharp.Incomplete {{
     public static class CompleteFiles {{
-        public static Either<IEnumerable<MetaError>, IEnumerable<string>> CompletePOCOModels(MetaContext context) {{
+        public static Either<IEnumerable<MetaError>, IEnumerable<Output>> CompletePOCOModels(MetaContext context) {{
             return context.Complete(new[] {{ {files} }});
         }}
     }}

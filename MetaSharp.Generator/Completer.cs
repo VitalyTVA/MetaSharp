@@ -37,7 +37,7 @@ namespace MetaSharp {
                 .Add(typeof(MetaCompleteDependencyPropertiesAttribute), DependencyPropertiesCompleter.Generate)
             ;
         }
-        internal static Either<ImmutableArray<MetaError>, ImmutableArray<string>> GetCompletions(CSharpCompilation compilation, Environment environment, IEnumerable<string> files) {
+        internal static Either<ImmutableArray<MetaError>, ImmutableArray<Output>> GetCompletions(CSharpCompilation compilation, Environment environment, IEnumerable<string> files, Func<string, OutputFileName> createOutputFileName) {
             var trees = files
                 .ToImmutableDictionary(x => x, x => Generator.ParseFile(environment, x));
             var compilationWithPrototypes = compilation.AddSyntaxTrees(trees.Values);
@@ -79,7 +79,7 @@ namespace MetaSharp {
                         return treeResults
                             .AggregateEither(
                                 left => left.SelectMany(x => x),
-                                right => right.ConcatStringsWithNewLines()
+                                right => new Output(right.ConcatStringsWithNewLines(), createOutputFileName(file))
                             );
                     });
             return results
