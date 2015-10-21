@@ -205,8 +205,13 @@ namespace MetaSharp.Incomplete {
 @"
 using MetaSharp;
 namespace MetaSharp.Incomplete {
-    [MetaCompleteClass]
+    [MetaCompleteClass, MetaCompleteDependencyProperties]
     public partial class Foo {
+        static Foo() {
+            DependencyPropertyRegistrator<Foo>.New()
+                .Register<string>(x => x. Prop1, out Prop1Property, null)
+            ;
+        }
         public int IntProperty { get; }
     }
 }";
@@ -215,6 +220,15 @@ namespace MetaSharp.Incomplete {
     partial class Foo {
         public Foo(int intProperty) {
             IntProperty = intProperty;
+        }
+    }
+}
+namespace MetaSharp.Incomplete {
+    partial class Foo {
+        public static readonly DependencyProperty Prop1Property;
+        public string Prop1 {
+            get { return (string)GetValue(Prop1Property); }
+            set { SetValue(Prop1Property, value); }
         }
     }
 }";
@@ -229,7 +243,6 @@ namespace MetaSharp.Incomplete {
                 ),
                 ignoreEmptyLines: true
             );
-            AssertCompiles(input, incomplete, output);
         }
         #endregion
 

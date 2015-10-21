@@ -49,7 +49,6 @@ namespace MetaSharp {
             //TODO check syntax errors first
             //TODO use rewriters/rewriting rules from already compiled meta assembly
             //TODO generate errors if class is not partial
-            //TODO allow to specify default complete attributes in MetaProto attribute??
 
             var results = files
                     .Select(file => {
@@ -57,22 +56,25 @@ namespace MetaSharp {
                         var model = compilationWithPrototypes.GetSemanticModel(tree);
                         var classSyntaxes = tree.GetRoot().DescendantNodes(x => !(x is ClassDeclarationSyntax)).OfType<ClassDeclarationSyntax>();
                         var treeResults = classSyntaxes
-                            .Select(x => {
-                                var type = model.GetDeclaredSymbol(x);
-                                //TODO support multiple completers for single file
-                                var completer =
-                                    Enumerable.Concat(
-                                        type.GetAttributes().Select(attributeData => symbolToTypeMap.GetValueOrDefault(attributeData.AttributeClass)).Where(attributeType => attributeType != null),
+                            .SelectMany(classDeclaration => {
+                                var type = model.GetDeclaredSymbol(classDeclaration);
+                                return Enumerable.Concat(
+                                        model.GetDeclaredSymbol(classDeclaration)
+                                            .GetAttributes()
+                                            .Select(attributeData => symbolToTypeMap.GetValueOrDefault(attributeData.AttributeClass))
+                                            .Where(attributeType => attributeType != null),
                                         defaultAttributes.Select(attribute => attribute.GetType())
                                     )
                                     .Distinct()
-                                    .Select(attributeType => Completers[attributeType])
-                                    .SingleOrDefault();
-                                if(completer == null)
+                                    .Select(attributeType => Completers[attributeType]);
+                            }, (classDeclaration, completer) => new { classDeclaration, completer })
+                            .Select(x => {
+                                var type = model.GetDeclaredSymbol(x.classDeclaration);
+                                if(x.completer == null)
                                     return null;
                                 Func<string, string> wrapMembers = val 
                                     => MetaContextExtensions.WrapMembers(val.Yield(), type.Namespace(), type.Location().GetUsings());
-                                var completion = completer(model, type);
+                                var completion = x.completer(model, type);
                                 return completion.Transform(
                                     errors => errors.Select(e => Generator.CreateError(id: e.Id, file: Path.GetFullPath(file), message: e.Message, span: e.Span)),
                                     value => wrapMembers(value)
