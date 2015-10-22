@@ -7,7 +7,6 @@ namespace MetaSharp.Test.Meta.POCO {
     using DevExpress.Mvvm.DataAnnotations;
     using System;
 
-    [MetaCompleteViewModel]
     public partial class POCOViewModel {
         internal string NotPublicProperty { get; set; }
         public string NotVirtualProperty { get; set; }
@@ -35,7 +34,6 @@ namespace MetaSharp.Test.Meta.POCO {
         public virtual bool SealedProperty { get; set; }
     }
 
-    [MetaCompleteViewModel]
     public partial class POCOViewModel_PropertyChanged : POCOViewModel_PropertyChangedBase {
         public string ProtectedChangedMethodWithParamOldValue;
         public bool OnProtectedChangedMethodWithParamChangedCalled;
@@ -72,7 +70,6 @@ namespace MetaSharp.Test.Meta.POCO {
         }
     }
 
-    [MetaCompleteViewModel]
     public partial class POCOViewModel_SubscribeInCtor {
         public POCOViewModel_SubscribeInCtor() {
             ((INotifyPropertyChanged)this).PropertyChanged += POCOViewModel_SubscribeInCtor_PropertyChanged;
@@ -85,7 +82,6 @@ namespace MetaSharp.Test.Meta.POCO {
         public virtual string Property { get; set; }
     }
 
-    [MetaCompleteViewModel]
     public partial class POCOViewModel_PropertyChanging {
         public virtual string Property1 { get; set; }
         public string Property1NewValue;
@@ -106,6 +102,30 @@ namespace MetaSharp.Test.Meta.POCO {
         public virtual string Property3 { get { return property3; } set { property3 = value; } }
         protected void OnProperty3Changing() {
             throw new NotImplementedException();
+        }
+    }
+    public partial class POCOViewModel_WithMetadata {
+        [BindableProperty(false)]
+        public virtual string NotBindableProperty { get; set; }
+
+        string notAutoImplementedProperty;
+        [BindableProperty]
+        public virtual string NotAutoImplementedProperty { get { return notAutoImplementedProperty; } set { notAutoImplementedProperty = value; } }
+
+        public string CustomProperytChangedOldValue;
+        string customProperytChanged;
+        [BindableProperty(OnPropertyChangedMethodName = "OnCustomProperytChanged")]
+        public virtual string CustomProperytChanged { get { return customProperytChanged; } set { customProperytChanged = value; } }
+        protected void OnCustomProperytChanged(string oldValue) {
+            CustomProperytChangedOldValue = oldValue;
+        }
+
+        [BindableProperty(OnPropertyChangingMethodName = "MyPropertyChanging")]
+        public virtual string PropertyChanging { get; set; }
+        public string PropertyChangingNewValue;
+        protected void MyPropertyChanging(string newValue) {
+            Assert.NotEqual(newValue, PropertyChanging);
+            PropertyChangingNewValue = newValue;
         }
     }
 }

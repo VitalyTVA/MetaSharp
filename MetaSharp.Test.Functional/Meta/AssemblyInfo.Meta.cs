@@ -8,7 +8,7 @@ using System.Collections.Generic;
 namespace MetaSharp.Test.Meta {
     public static class CompleteFiles {
         public static Either<IEnumerable<MetaError>, IEnumerable<Output>> CompletePOCOModels(MetaContext context) {
-            return context.Complete("POCOViewModels.cs".Yield());
+            return context.Complete("POCOViewModels.cs".Yield(), new[] { new MetaCompleteViewModelAttribute() });
         }
     }
 }

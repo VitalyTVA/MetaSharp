@@ -78,6 +78,20 @@ namespace MetaSharp.Test.Functional {
         }
         #endregion
 
+        #region metadata
+        [Fact]
+        public void OverridingPropertyTest_Metadata() {
+            var viewModel = POCOViewModel_WithMetadata.Create();
+            //CheckNotBindableProperty(viewModel, x => x.NotBindableProperty, (vm, x) => vm.NotBindableProperty = x, "x", "y");
+            //CheckBindableProperty(viewModel, x => x.NotAutoImplementedProperty, (vm, x) => vm.NotAutoImplementedProperty = x, "x", "y");
+            //CheckBindableProperty(viewModel, x => x.CustomProperytChanged, (vm, x) => vm.CustomProperytChanged = x, "x", "y", (x, val) => Assert.Equal(val, x.CustomProperytChangedOldValue));
+
+            //viewModel.PropertyChanging = null;
+            //viewModel.PropertyChanging = "x";
+            //Assert.Equal("x", viewModel.PropertyChangingNewValue);
+        }
+        #endregion
+
         void CheckBindableProperty<T, TProperty>(T viewModel, Expression<Func<T, TProperty>> propertyExpression, Action<T, TProperty> setValueAction, TProperty value1, TProperty value2, Action<T, TProperty> checkOnPropertyChangedResult = null) {
             CheckBindablePropertyCore(viewModel, propertyExpression, setValueAction, value1, value2, true, checkOnPropertyChangedResult);
         }
