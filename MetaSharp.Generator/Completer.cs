@@ -73,7 +73,7 @@ namespace MetaSharp {
                                 if(x.completer == null)
                                     return null;
                                 Func<string, string> wrapMembers = val 
-                                    => MetaContextExtensions.WrapMembers(val.Yield(), type.Namespace(), type.Location().GetUsings());
+                                    => val.With(s => MetaContextExtensions.WrapMembers(s.Yield(), type.Namespace(), type.Location().GetUsings()));
                                 var completion = x.completer(model, type);
                                 return completion.Transform(
                                     errors => errors.Select(e => Generator.CreateError(id: e.Id, file: Path.GetFullPath(file), message: e.Message, span: e.Span)),

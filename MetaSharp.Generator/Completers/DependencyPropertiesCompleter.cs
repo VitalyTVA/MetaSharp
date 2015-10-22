@@ -18,6 +18,8 @@ namespace MetaSharp {
         public static CompleterResult Generate(SemanticModel model, INamedTypeSymbol type) {
             //TODO error or skip if null
             var cctor = type.StaticConstructor();
+            if(cctor == null)
+                return default(string);
             var syntax = (ConstructorDeclarationSyntax)cctor.Node();
             var properties = syntax.Body.Statements
                 .Select(statement => {
@@ -39,11 +41,15 @@ namespace MetaSharp {
             return properties
                 .AggregateEither(
                     errors => errors.SelectMany(x => x).ToImmutableArray(),
-                    values => values.ConcatStringsWithNewLines())
-                .Select(values =>
+                    values => {
+                        var conctenated = values.ConcatStringsWithNewLines();
+                        if(string.IsNullOrEmpty(conctenated))
+                            return null;
+                        return
 $@"partial class {type.Name} {{
-{values.AddTabs(1)}
-}}");
+{conctenated.AddTabs(1)}
+}}";
+                    });
         }
 
         static CompleterResult GenerateProperties(SemanticModel model, INamedTypeSymbol type, InvocationExpressionSyntax[] chain) {

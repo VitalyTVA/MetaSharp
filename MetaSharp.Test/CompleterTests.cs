@@ -402,6 +402,22 @@ using System;
             ;
         }
     }
+    [MetaCompleteDependencyProperties]
+    public class NoStaticCtor { 
+    }
+    [MetaCompleteDependencyProperties]
+    public class NoRegistratorInStaticCtor { 
+        static NoRegistratorInStaticCtor() {
+        }
+    }
+    [MetaCompleteDependencyProperties]
+    public class NoPropertiesGenerated { 
+        static NoPropertiesGenerated() {
+            DependencyPropertyRegistrator<NoPropertiesGenerated>.New()
+                .BlaBla()
+            ;
+        }
+    }
 }";
 
             string output =
