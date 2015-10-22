@@ -29,10 +29,6 @@ namespace MetaSharp.Test.Meta.POCO {
             ProtectedSetterProperty = value;
         }
     }
-    public partial class POCOViewModel_PropertyChangedBase {
-        protected virtual void OnProtectedChangedMethodWithParamChanged(string oldValue) { }
-        public virtual bool SealedProperty { get; set; }
-    }
 
     public partial class POCOViewModel_PropertyChanged : POCOViewModel_PropertyChangedBase {
         public string ProtectedChangedMethodWithParamOldValue;

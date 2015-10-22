@@ -78,6 +78,7 @@
     <Compile Include="Meta\POCOViewModels.designer.cs">
       <DependentUpon>POCOViewModels.cs</DependentUpon>
     </Compile>
+    <Compile Include="Meta\POCOViewModels.helpers.cs" />
     <Compile Include="Meta\RemoteGeneration.Meta.cs" />
     <Compile Include="Meta\RemoteGeneration.Meta.designer.cs">
       <DependentUpon>RemoteGeneration.Meta.cs</DependentUpon>

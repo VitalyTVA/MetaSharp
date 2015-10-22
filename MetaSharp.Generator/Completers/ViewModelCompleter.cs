@@ -23,6 +23,16 @@ namespace MetaSharp {
         //    readonly string OnPropertyChangedPropertyName;
         //}
 
+        class BindableInfo { //TODO make struct, auto-completed (self-hosting)
+            public readonly bool IsBindable;
+            public readonly string OnPropertyChangedMethodName, OnPropertyChangingMethodName;
+            public BindableInfo(bool isBindable, string onPropertyChangedMethodName, string onPropertyChangingMethodName) {
+                IsBindable = isBindable;
+                OnPropertyChangedMethodName = onPropertyChangedMethodName;
+                OnPropertyChangingMethodName = onPropertyChangingMethodName;
+            }
+        }
+
         public static CompleterResult Generate(SemanticModel model, INamedTypeSymbol type) {
             return GenerateCore(model, type);
         }
@@ -31,35 +41,45 @@ namespace MetaSharp {
             var methods = type.Methods()
                 .ToImmutableDictionary(x => x.Name, x => x);
             var properties = type.Properties()
-                .Where(p => p.IsVirtual
-                    && p.DeclaredAccessibility == Accessibility.Public
-                    && p.GetMethod.DeclaredAccessibility == Accessibility.Public
-                    && p.IsAutoImplemented()
-                )
-                .Select(p => {
-                    var setterModifier = p.SetMethod.DeclaredAccessibility.ToAccessibilityModifier(p.DeclaredAccessibility);
+                .Select(property => {
+                    var bindablePropertyAttributeType = model.Compilation.GetTypeByMetadataName("DevExpress.Mvvm.DataAnnotations.BindablePropertyAttribute");
+                    var bindableInfo = property.GetAttributes()
+                        .FirstOrDefault(x => x.AttributeClass == bindablePropertyAttributeType) //TODO rewrite without need to reference MVVM to meta assembly
+                        .With(x => x.ConstructorArguments.Select(arg => arg.Value).ToArray())
+                        .With(x => x.Length > 0 ? new BindableInfo((bool)x[0], null, null) : null);
+                    return new { property, bindableInfo };
+                })
+                .Where(x => {
+                    return (x.property.IsVirtual && x.bindableInfo.Return(bi => bi.IsBindable, () => true))
+                        && x.property.DeclaredAccessibility == Accessibility.Public
+                        && x.property.GetMethod.DeclaredAccessibility == Accessibility.Public
+                        && x.property.IsAutoImplemented();
+                })
+                .Select(info => {
+                    var property = info.property;
+                    var setterModifier = property.SetMethod.DeclaredAccessibility.ToAccessibilityModifier(property.DeclaredAccessibility);
 
-                    var onChangedMethod = methods.GetValueOrDefault($"On{p.Name}Changed");
+                    var onChangedMethod = methods.GetValueOrDefault($"On{property.Name}Changed");
                     var needOldValue = onChangedMethod.Return(x => x.Parameters.Length == 1, () => false);
-                    var oldValueStorage = needOldValue ? $"var oldValue = base.{p.Name};".AddTabs(2) : null;
+                    var oldValueStorage = needOldValue ? $"var oldValue = base.{property.Name};".AddTabs(2) : null;
                     var oldValueName = needOldValue ? "oldValue" : null;
                     var onChangedMethodCall = onChangedMethod.With(x => $"{x.Name}({oldValueName});".AddTabs(2));
 
-                    var onChangingMethod = methods.GetValueOrDefault($"On{p.Name}Changing");
+                    var onChangingMethod = methods.GetValueOrDefault($"On{property.Name}Changing");
                     var needNewValue = onChangingMethod.Return(x => x.Parameters.Length == 1, () => false);
                     var newValueName = needNewValue ? "value" : null;
                     var onChangingMethodCall = onChangingMethod.With(x => $"{x.Name}({newValueName});".AddTabs(2));
 
                     return
-$@"public override {p.TypeDisplayString(model)} {p.Name} {{
-    get {{ return base.{p.Name}; }}
+$@"public override {property.TypeDisplayString(model)} {property.Name} {{
+    get {{ return base.{property.Name}; }}
     {setterModifier}set {{
-        if(base.{p.Name} == value)
+        if(base.{property.Name} == value)
             return;
 {onChangingMethodCall}
 {oldValueStorage}
-        base.{p.Name} = value;
-        RaisePropertyChanged(""{p.Name}"");
+        base.{property.Name} = value;
+        RaisePropertyChanged(""{property.Name}"");
 {onChangedMethodCall}
     }}
 }}";
