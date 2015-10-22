@@ -44,28 +44,28 @@ namespace MetaSharp {
                 .Select(property => {
                     var bindablePropertyAttributeType = model.Compilation.GetTypeByMetadataName("DevExpress.Mvvm.DataAnnotations.BindablePropertyAttribute");
                     var bindableInfo = property.GetAttributes()
-                        .FirstOrDefault(x => x.AttributeClass == bindablePropertyAttributeType) //TODO rewrite without need to reference MVVM to meta assembly
+                        .FirstOrDefault(x => x.AttributeClass == bindablePropertyAttributeType) //TODO rewrite without need to reference MVVM to meta assembly???
                         .With(x => x.ConstructorArguments.Select(arg => arg.Value).ToArray())
-                        .With(x => x.Length > 0 ? new BindableInfo((bool)x[0], null, null) : null);
+                        .With(x => new BindableInfo(x.Length > 0 ? (bool)x[0] : true, null, null));
                     return new { property, bindableInfo };
                 })
                 .Where(x => {
                     return (x.property.IsVirtual && x.bindableInfo.Return(bi => bi.IsBindable, () => true))
                         && x.property.DeclaredAccessibility == Accessibility.Public
                         && x.property.GetMethod.DeclaredAccessibility == Accessibility.Public
-                        && x.property.IsAutoImplemented();
+                        && (x.property.IsAutoImplemented() || x.bindableInfo.Return(bi => bi.IsBindable, () => false));
                 })
                 .Select(info => {
                     var property = info.property;
                     var setterModifier = property.SetMethod.DeclaredAccessibility.ToAccessibilityModifier(property.DeclaredAccessibility);
 
-                    var onChangedMethod = methods.GetValueOrDefault($"On{property.Name}Changed");
+                    var onChangedMethod = methods.GetValueOrDefault($"On{property.Name}Changed").If(x => property.IsAutoImplemented());
                     var needOldValue = onChangedMethod.Return(x => x.Parameters.Length == 1, () => false);
                     var oldValueStorage = needOldValue ? $"var oldValue = base.{property.Name};".AddTabs(2) : null;
                     var oldValueName = needOldValue ? "oldValue" : null;
                     var onChangedMethodCall = onChangedMethod.With(x => $"{x.Name}({oldValueName});".AddTabs(2));
 
-                    var onChangingMethod = methods.GetValueOrDefault($"On{property.Name}Changing");
+                    var onChangingMethod = methods.GetValueOrDefault($"On{property.Name}Changing").If(x => property.IsAutoImplemented());
                     var needNewValue = onChangingMethod.Return(x => x.Parameters.Length == 1, () => false);
                     var newValueName = needNewValue ? "value" : null;
                     var onChangingMethodCall = onChangingMethod.With(x => $"{x.Name}({newValueName});".AddTabs(2));

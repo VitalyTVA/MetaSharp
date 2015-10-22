@@ -88,7 +88,7 @@ namespace MetaSharp.Test.Meta.POCO {
 
         public virtual string Property2 { get; set; }
         public int Property2ChangingCallCount;
-        protected void OnProperty2Changing() {
+        void OnProperty2Changing() {
             Assert.Equal(null, Property2);
             Property2ChangingCallCount++;
         }
@@ -97,6 +97,9 @@ namespace MetaSharp.Test.Meta.POCO {
         [BindableProperty]
         public virtual string Property3 { get { return property3; } set { property3 = value; } }
         protected void OnProperty3Changing() {
+            throw new NotImplementedException();
+        }
+        void OnProperty3Changed() {
             throw new NotImplementedException();
         }
     }
