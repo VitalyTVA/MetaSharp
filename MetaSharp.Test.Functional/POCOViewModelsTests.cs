@@ -1,4 +1,5 @@
 ﻿using DevExpress.Mvvm;
+using DevExpress.Mvvm.Native;
 using DevExpress.Mvvm.POCO;
 using MetaSharp.Native;
 using MetaSharp.Test.Meta.POCO;
@@ -7,9 +8,12 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Reflection;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
+using System.Windows.Input;
 using Xunit;
 
 namespace MetaSharp.Test.Functional {
@@ -127,6 +131,34 @@ namespace MetaSharp.Test.Functional {
         }
         #endregion
 
+        #region commands
+        [Fact]
+        public void CommandsGeneration() {
+            POCOCommandsViewModel viewModel = POCOCommandsViewModel.Create();
+            //CheckCommand(viewModel, x => x.Show(), x => Assert.Equal(1, x.ShowCallCount));
+            //CheckCommand(viewModel, x => x.ShowAsync(), x => Assert.Equal(1, x.ShowAsyncCallCount), true);
+            //CheckCommand(viewModel, x => x.Save(), x => Assert.Equal(1, x.SaveCallCount));
+            //CheckCommand(viewModel, x => x.Close(null), x => Assert.Equal(1, x.CloseCallCount));
+            //CheckNoCommand(viewModel, "InternalMethod");
+            //CheckNoCommand(viewModel, "ToString");
+            //CheckNoCommand(viewModel, "GetHashCode");
+            //CheckNoCommand(viewModel, "Equals");
+            //CheckNoCommand(viewModel, "ProtectedAsyncMethod");
+            //CheckNoCommand(viewModel, "ProtectedMethod");
+            //CheckNoCommand(viewModel, "get_Property1");
+            //CheckNoCommand(viewModel, "set_Property1");
+            //CheckNoCommand(viewModel, "StaticMethod");
+            //CheckNoCommand(viewModel, "OutParameter");
+            //CheckNoCommand(viewModel, "RefParameter");
+            //CheckNoCommand(viewModel, "MethodWithReturnValue");
+
+            //Assert.Equal(typeof(ICommand), viewModel.GetType().GetProperty("ShowCommand").PropertyType);
+            //Assert.Equal(typeof(DelegateCommand<string>), viewModel.GetType().GetProperty("CloseCommand").PropertyType);
+            //Assert.Equal(typeof(AsyncCommand), viewModel.GetType().GetProperty("ShowAsyncCommand").PropertyType);
+        }
+
+        #endregion
+
         void CheckBindableProperty<T, TProperty>(T viewModel, Expression<Func<T, TProperty>> propertyExpression, Action<T, TProperty> setValueAction, TProperty value1, TProperty value2, Action<T, TProperty> checkOnPropertyChangedResult = null) {
             CheckBindablePropertyCore(viewModel, propertyExpression, setValueAction, value1, value2, true, checkOnPropertyChangedResult);
         }
@@ -168,5 +200,65 @@ namespace MetaSharp.Test.Functional {
             }
         }
 
+        ICommand CheckCommand<T>(T viewModel, Expression<Action<T>> methodExpression, Action<T> checkExecuteResult, bool isAsyncCommand = false) {
+            string commandName = GetCommandName<T>(methodExpression);
+            ICommand command = (ICommand)TypeHelper.GetPropertyValue(viewModel, commandName);
+            Assert.NotNull(command);
+            Assert.Same(command, TypeHelper.GetPropertyValue(viewModel, commandName));
+            Assert.True(command.CanExecute(null));
+            command.Execute(null);
+            if(isAsyncCommand)
+                Thread.Sleep(400);
+            checkExecuteResult(viewModel);
+            return command;
+        }
+        void CheckNoCommand<T>(T viewModel, string methodName) {
+            Assert.NotNull(typeof(T).GetMethod(methodName, BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static | BindingFlags.Instance));
+            string commandName = methodName + "Command";
+            Assert.Null(TypeHelper.GetProperty(viewModel, commandName));
+        }
+        static string GetCommandName<T>(Expression<Action<T>> methodExpression) {
+            return ((MethodCallExpression)methodExpression.Body).Method.Name + "Command";
+        }
+    }
+    public static class TypeHelper {
+        public static PropertyInfo GetProperty(object obj, string propertyName) {
+            Type type = obj.GetType();
+            PropertyInfo res = null;
+            foreach(PropertyInfo info in type.GetProperties())
+                if(info.Name == propertyName) {
+                    res = info;
+                    break;
+                }
+            return res;
+        }
+        public static object GetPropertyValue(object obj, string propertyName) {
+            Type type = obj.GetType();
+            PropertyInfo pInfo = GetProperty(obj, propertyName);
+            return pInfo != null ? pInfo.GetValue(obj, null) : null;
+        }
+        public static AttributeType GetPropertyAttribute<AttributeType>(object obj, string propertyName) where AttributeType : Attribute {
+            Type type = obj.GetType();
+            PropertyInfo property = GetProperty(obj, propertyName);
+            Type attributeType = typeof(AttributeType);
+
+            List<object> result = new List<object>();
+            do {
+                result.AddRange(property.GetCustomAttributes(true));
+                MethodInfo getMethod = property.GetGetMethod();
+                if(getMethod == null)
+                    break;
+                MethodInfo baseMethod = getMethod.GetBaseDefinition();
+                if(baseMethod == getMethod)
+                    break;
+                property = baseMethod.DeclaringType.GetProperty(property.Name);
+            } while(property != null);
+
+            foreach(Attribute attribute in result) {
+                if(attributeType.IsAssignableFrom(attribute.GetType()))
+                    return (AttributeType)attribute;
+            }
+            return null;
+        }
     }
 }
