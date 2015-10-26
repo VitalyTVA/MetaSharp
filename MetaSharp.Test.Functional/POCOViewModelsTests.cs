@@ -86,9 +86,9 @@ namespace MetaSharp.Test.Functional {
             CheckBindableProperty(viewModel, x => x.NotAutoImplementedProperty, (vm, x) => vm.NotAutoImplementedProperty = x, "x", "y");
             CheckBindableProperty(viewModel, x => x.CustomProperytChanged, (vm, x) => vm.CustomProperytChanged = x, "x", "y", (x, val) => Assert.Equal(val, x.CustomProperytChangedOldValue));
 
-            //viewModel.PropertyChanging = null;
-            //viewModel.PropertyChanging = "x";
-            //Assert.Equal("x", viewModel.PropertyChangingNewValue);
+            viewModel.PropertyChanging = null;
+            viewModel.PropertyChanging = "x";
+            Assert.Equal("x", viewModel.PropertyChangingNewValue);
         }
         #endregion
 

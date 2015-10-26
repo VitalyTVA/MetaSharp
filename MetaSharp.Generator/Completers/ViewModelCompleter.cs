@@ -89,7 +89,8 @@ namespace DevExpress.Mvvm.DataAnnotations {
                     var oldValueName = needOldValue ? "oldValue" : null;
                     var onChangedMethodCall = onChangedMethod.With(x => $"{x.Name}({oldValueName});".AddTabs(2));
 
-                    var onChangingMethod = methods.GetValueOrDefault($"On{property.Name}Changing").If(x => property.IsAutoImplemented());
+                    var onChangingMethodName = info.bindableInfo?.OnPropertyChangingMethodName ?? $"On{property.Name}Changing".If(x => property.IsAutoImplemented());
+                    var onChangingMethod = onChangingMethodName.With(x => methods.GetValueOrDefault(x));
                     var needNewValue = onChangingMethod.Return(x => x.Parameters.Length == 1, () => false);
                     var newValueName = needNewValue ? "value" : null;
                     var onChangingMethodCall = onChangingMethod.With(x => $"{x.Name}({newValueName});".AddTabs(2));
