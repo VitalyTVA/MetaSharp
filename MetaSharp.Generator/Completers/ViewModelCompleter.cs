@@ -11,8 +11,16 @@ using System.Threading.Tasks;
 using CompleterResult = MetaSharp.Either<System.Collections.Immutable.ImmutableArray<MetaSharp.CompleterError>, string>;
 
 namespace MetaSharp {
-    static class ViewModelCompleter {
-        public static string Attrubutes = //TODO do not add this stub if Mvvm is already referenced via MetaReference?? (can't find how to write test for it)
+    public static class ViewModelCompleter {
+        public static readonly string Implemetations =
+@"public event PropertyChangedEventHandler PropertyChanged;
+void RaisePropertyChanged(string property) {{
+    var handler = PropertyChanged;
+    if(handler != null)
+        handler(this, new PropertyChangedEventArgs(property));
+}}".AddTabs(1);
+
+        public static readonly string Attrubutes = //TODO do not add this stub if Mvvm is already referenced via MetaReference?? (can't find how to write test for it)
 @"
 using System;
 namespace DevExpress.Mvvm.DataAnnotations {
@@ -114,18 +122,13 @@ $@"public override {property.TypeDisplayString(model)} {property.Name} {{
             return
 //TODO what if System.ComponentModel is already in context?
 $@"using System.ComponentModel;
-partial class {type.Name} {{
+partial class {type.Name} : INotifyPropertyChanged {{
     public static {type.Name} Create() {{
         return new {type.Name}Implementation();
     }}
-    class {type.Name}Implementation : {type.Name}, INotifyPropertyChanged {{
+{Implemetations}
+    class {type.Name}Implementation : {type.Name} {{
 {properties.AddTabs(2)}
-        public event PropertyChangedEventHandler PropertyChanged;
-        void RaisePropertyChanged(string property) {{
-            var handler = PropertyChanged;
-            if(handler != null)
-                handler(this, new PropertyChangedEventArgs(property));
-        }}
     }}
 }}";
         }

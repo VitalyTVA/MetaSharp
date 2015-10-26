@@ -15,6 +15,7 @@ namespace MetaSharp.Test.Functional {
         #region property changed
         [Fact]
         public void OverridingPropertyTest() {
+            Assert.True(typeof(INotifyPropertyChanged).IsAssignableFrom(typeof(POCOViewModel)));
             var viewModel = POCOViewModel.Create();
             Assert.Equal(viewModel.GetType(), viewModel.GetType().GetProperty("Property1").DeclaringType);
 

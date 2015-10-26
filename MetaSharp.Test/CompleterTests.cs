@@ -306,41 +306,36 @@ using System;
 }";
 
             string output =
-@"namespace MetaSharp.Incomplete {
+$@"namespace MetaSharp.Incomplete {{
 using System;
     using System.ComponentModel;
-    partial class ViewModel {
-        public static ViewModel Create() {
+    partial class ViewModel : INotifyPropertyChanged {{
+        public static ViewModel Create() {{
             return new ViewModelImplementation();
-        }
-        class ViewModelImplementation : ViewModel, INotifyPropertyChanged {
-            public override Boo BooProperty {
-                get { return base.BooProperty; }
-                set {
+        }}
+{ViewModelCompleter.Implemetations.AddTabs(1)}
+        class ViewModelImplementation : ViewModel {{
+            public override Boo BooProperty {{
+                get {{ return base.BooProperty; }}
+                set {{
                     if(base.BooProperty == value)
                         return;
                     base.BooProperty = value;
                     RaisePropertyChanged(""BooProperty"");
-                }
-            }
-            public override int IntProperty {
-                get { return base.IntProperty; }
-                set {
+                }}
+            }}
+            public override int IntProperty {{
+                get {{ return base.IntProperty; }}
+                set {{
                     if(base.IntProperty == value)
                         return;
                     base.IntProperty = value;
                     RaisePropertyChanged(""IntProperty"");
-                }
-            }
-            public event PropertyChangedEventHandler PropertyChanged;
-            void RaisePropertyChanged(string property) {
-                var handler = PropertyChanged;
-                if(handler != null)
-                    handler(this, new PropertyChangedEventArgs(property));
-            }
-        }
-    }
-}";
+                }}
+            }}
+        }}
+    }}
+}}";
             string additionalClasses = @"
 namespace MetaSharp.Incomplete {
     public class Boo {
@@ -376,23 +371,18 @@ using System;
 }";
 
             string output =
-@"namespace MetaSharp.Incomplete {
+$@"namespace MetaSharp.Incomplete {{
 using System;
     using System.ComponentModel;
-    partial class ViewModel {
-        public static ViewModel Create() {
+    partial class ViewModel : INotifyPropertyChanged {{
+        public static ViewModel Create() {{
             return new ViewModelImplementation();
-        }
-        class ViewModelImplementation : ViewModel, INotifyPropertyChanged {
-            public event PropertyChangedEventHandler PropertyChanged;
-            void RaisePropertyChanged(string property) {
-                var handler = PropertyChanged;
-                if(handler != null)
-                    handler(this, new PropertyChangedEventArgs(property));
-            }
-        }
-    }
-}";
+        }}
+{ViewModelCompleter.Implemetations.AddTabs(1)}
+        class ViewModelImplementation : ViewModel {{
+        }}
+    }}
+}}";
             var name = "IncompleteViewModels.cs";
             var mvvmDirName = Directory.GetDirectories(@"..\..\packages\", "DevExpressMvvm.*").Single();
             var input = GetInput(@"IncompleteViewModels.cs".Yield(), 
