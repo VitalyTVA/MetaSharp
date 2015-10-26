@@ -81,10 +81,25 @@ namespace DevExpress.Mvvm.DataAnnotations {
         }
 
         static string GenerateCore(SemanticModel model, INamedTypeSymbol type) {
-            var bindablePropertyAttributeType = model.Compilation.GetTypeByMetadataName("DevExpress.Mvvm.DataAnnotations.BindablePropertyAttribute");
-            var methods = type.Methods()
-                .ToImmutableDictionary(x => x.Name, x => x);
-            var commands = type.Methods()
+            var commands = GenerateCommands(type);
+            var properties = GenerateProperties(model, type);
+            return
+//TODO what if System.ComponentModel is already in context?
+$@"using System.ComponentModel;
+partial class {type.Name} : INotifyPropertyChanged, ISupportParentViewModel {{
+    public static {type.Name} Create() {{
+        return new {type.Name}Implementation();
+    }}
+{commands.AddTabs(1)}
+{Implemetations(type.Name)}
+    class {type.Name}Implementation : {type.Name} {{
+{properties.AddTabs(2)}
+    }}
+}}";
+        }
+
+        private static string GenerateCommands(INamedTypeSymbol type) {
+            return type.Methods()
                 .Select(method => new { method })
                 .Where(info => info.method.DeclaredAccessibility == Accessibility.Public && info.method.MethodKind == MethodKind.Ordinary)
                 .Select(info => {
@@ -95,16 +110,22 @@ $@"ICommand _{commandName};
 public ICommand {commandName} {{ get {{ return _{commandName} ?? (_{commandName} = new DelegateCommand({methodName})); }} }}";
                 })
                 .ConcatStringsWithNewLines();
+        }
+
+        static string GenerateProperties(SemanticModel model, INamedTypeSymbol type) {
+            var bindablePropertyAttributeType = model.Compilation.GetTypeByMetadataName("DevExpress.Mvvm.DataAnnotations.BindablePropertyAttribute");
+            var methods = type.Methods()
+                .ToImmutableDictionary(x => x.Name, x => x);
             var properties = type.Properties()
                 .Select(property => {
                     var bindableInfo = property.GetAttributes()
-                        .FirstOrDefault(x => x.AttributeClass == bindablePropertyAttributeType) 
+                        .FirstOrDefault(x => x.AttributeClass == bindablePropertyAttributeType)
                         .With(x => {
                             var args = x.ConstructorArguments.Select(arg => arg.Value).ToArray();
                             var namedArgs = x.NamedArguments.ToImmutableDictionary(p => p.Key, p => (string)p.Value.Value); //TODO error if names are not recognizable
-                            return new BindableInfo(args.Length > 0 ? (bool)args[0] : true, 
+                            return new BindableInfo(args.Length > 0 ? (bool)args[0] : true,
                                 namedArgs.GetValueOrDefault("OnPropertyChangedMethodName"),
-                                namedArgs.GetValueOrDefault("OnPropertyChangingMethodName")); 
+                                namedArgs.GetValueOrDefault("OnPropertyChangingMethodName"));
                         });
                     return new { property, bindableInfo };
                 })
@@ -147,19 +168,7 @@ $@"public override {property.TypeDisplayString(model)} {property.Name} {{
 }}";
                 })
                 .ConcatStringsWithNewLines();
-            return
-//TODO what if System.ComponentModel is already in context?
-$@"using System.ComponentModel;
-partial class {type.Name} : INotifyPropertyChanged, ISupportParentViewModel {{
-    public static {type.Name} Create() {{
-        return new {type.Name}Implementation();
-    }}
-{commands.AddTabs(1)}
-{Implemetations(type.Name)}
-    class {type.Name}Implementation : {type.Name} {{
-{properties.AddTabs(2)}
-    }}
-}}";
+            return properties;
         }
     }
 }
