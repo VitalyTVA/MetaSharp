@@ -23,7 +23,7 @@ void RaisePropertyChanged<T>(Expression<Func<{typeName}, T>> property) {{
     RaisePropertyChanged(DevExpress.Mvvm.Native.ExpressionHelper.GetPropertyName(property));
 }}
 object parentViewModel;
-object DevExpress.Mvvm.ISupportParentViewModel.ParentViewModel {{
+object ISupportParentViewModel.ParentViewModel {{
     get {{ return parentViewModel; }}
     set {{
         if(parentViewModel == value)
@@ -52,7 +52,7 @@ namespace DevExpress.Mvvm.DataAnnotations {
     }
 }
 ";
-        public static readonly ImmutableArray<string> Usings = ImmutableArray.Create("System.Linq.Expressions");
+        public static readonly ImmutableArray<string> Usings = ImmutableArray.Create("System.Linq.Expressions", "DevExpress.Mvvm");
 
         //TODO generate typed parent viewmode if view model has TParent view model parameter
         //TODO auto calc dependent properties
@@ -139,7 +139,7 @@ $@"public override {property.TypeDisplayString(model)} {property.Name} {{
             return
 //TODO what if System.ComponentModel is already in context?
 $@"using System.ComponentModel;
-partial class {type.Name} : INotifyPropertyChanged, DevExpress.Mvvm.ISupportParentViewModel {{
+partial class {type.Name} : INotifyPropertyChanged, ISupportParentViewModel {{
     public static {type.Name} Create() {{
         return new {type.Name}Implementation();
     }}

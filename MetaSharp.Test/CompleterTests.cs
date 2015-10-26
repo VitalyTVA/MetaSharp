@@ -309,8 +309,9 @@ using System;
 $@"namespace MetaSharp.Incomplete {{
 using System;
 using System.Linq.Expressions;
+using DevExpress.Mvvm;
     using System.ComponentModel;
-    partial class ViewModel : INotifyPropertyChanged, DevExpress.Mvvm.ISupportParentViewModel {{
+    partial class ViewModel : INotifyPropertyChanged, ISupportParentViewModel {{
         public static ViewModel Create() {{
             return new ViewModelImplementation();
         }}
@@ -375,8 +376,9 @@ using System;
 $@"namespace MetaSharp.Incomplete {{
 using System;
 using System.Linq.Expressions;
+using DevExpress.Mvvm;
     using System.ComponentModel;
-    partial class ViewModel : INotifyPropertyChanged, DevExpress.Mvvm.ISupportParentViewModel {{
+    partial class ViewModel : INotifyPropertyChanged, ISupportParentViewModel {{
         public static ViewModel Create() {{
             return new ViewModelImplementation();
         }}
