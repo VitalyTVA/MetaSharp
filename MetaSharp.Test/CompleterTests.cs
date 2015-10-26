@@ -394,8 +394,9 @@ using System;
     }
 }";
             var name = "IncompleteViewModels.cs";
+            var mvvmDirName = Directory.GetDirectories(@"..\..\packages\", "DevExpressMvvm.*").Single();
             var input = GetInput(@"IncompleteViewModels.cs".Yield(), 
-                assemblyAttributes: @"[assembly: MetaSharp.MetaReference(@""..\..\packages\DevExpressMvvm.15.1.4.0\lib\net40-client\DevExpress.Mvvm.dll"")]");
+                assemblyAttributes: $@"[assembly: MetaSharp.MetaReference(@""{mvvmDirName}\lib\net40-client\DevExpress.Mvvm.dll"")]");
             AssertMultipleFilesOutput(
                 ImmutableArray.Create(
                     new TestFile(SingleInputFileName, input),
