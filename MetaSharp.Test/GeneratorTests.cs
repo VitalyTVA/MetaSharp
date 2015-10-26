@@ -859,11 +859,12 @@ namespace MetaSharp.HelloWorld {
             return new TestEnvironment(files, environment);
         }
 
-        protected static void AssertCompiles(params string[] files) {
+        protected static void AssertCompiles(IEnumerable<string> files, IEnumerable<string> references = null) {
             var trees = files.Select(x => SyntaxFactory.ParseSyntaxTree(x));
             var compilation = CSharpCompilation.Create(
                 "temp",
-                references: Generator.DefaultReferences,
+                references: Generator.DefaultReferences
+                    .Concat((references ?? new string[0]).Select(x => MetadataReference.CreateFromFile(x))),
                 options: new CSharpCompilationOptions(
                     OutputKind.DynamicallyLinkedLibrary,
                     assemblyIdentityComparer: DesktopAssemblyIdentityComparer.Default

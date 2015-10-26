@@ -102,7 +102,7 @@ namespace FooBoo {
                 ),
                 ignoreEmptyLines: true
             );
-            AssertCompiles(input, incomplete1, incomplete2, output1, output2, additionalClasses);
+            AssertCompiles(new[] { input, incomplete1, incomplete2, output1, output2, additionalClasses });
         }
         [Fact]
         public void CompletePrototypeFiles_TypeNameWithNameSpace_ShortName_Alias() {
@@ -153,7 +153,7 @@ namespace FooBoo {
                 ),
                 ignoreEmptyLines: true
             );
-            AssertCompiles(input, incomplete, output, additionalClasses);
+            AssertCompiles(new[] { input, incomplete, output, additionalClasses });
         }
         [Fact]
         public void CompletePrototypeFiles_DefaultAttributes() {
@@ -196,7 +196,7 @@ namespace MetaSharp.Incomplete {
                 ),
                 ignoreEmptyLines: true
             );
-            AssertCompiles(input, incomplete, output);
+            AssertCompiles(new[] { input, incomplete, output });
         }
         [Fact]
         public void CompletePrototypeFiles_MultipleAttributes() {
@@ -313,7 +313,7 @@ using System;
         public static ViewModel Create() {{
             return new ViewModelImplementation();
         }}
-{ViewModelCompleter.Implemetations.AddTabs(1)}
+{ViewModelCompleter.Implemetations("ViewModel").AddTabs(1)}
         class ViewModelImplementation : ViewModel {{
             public override Boo BooProperty {{
                 get {{ return base.BooProperty; }}
@@ -353,7 +353,7 @@ namespace MetaSharp.Incomplete {
                 ),
                 ignoreEmptyLines: true
             );
-            AssertCompiles(input, incomplete, output, additionalClasses);
+            AssertCompiles(new[] { input, incomplete, output, additionalClasses }, MvvmDllPath.Yield());
         }
         [Fact]
         public void CompleteViewModel_ExplicitMvvmMetaReference() {
@@ -378,7 +378,7 @@ using System;
         public static ViewModel Create() {{
             return new ViewModelImplementation();
         }}
-{ViewModelCompleter.Implemetations.AddTabs(1)}
+{ViewModelCompleter.Implemetations("ViewModel").AddTabs(1)}
         class ViewModelImplementation : ViewModel {{
         }}
     }}
@@ -386,7 +386,7 @@ using System;
             var name = "IncompleteViewModels.cs";
             var mvvmDirName = Directory.GetDirectories(@"..\..\packages\", "DevExpressMvvm.*").Single();
             var input = GetInput(@"IncompleteViewModels.cs".Yield(), 
-                assemblyAttributes: $@"[assembly: MetaSharp.MetaReference(@""{mvvmDirName}\lib\net40-client\DevExpress.Mvvm.dll"")]");
+                assemblyAttributes: $@"[assembly: MetaSharp.MetaReference(@""{MvvmDllPath}"")]");
             AssertMultipleFilesOutput(
                 ImmutableArray.Create(
                     new TestFile(SingleInputFileName, input),
@@ -398,6 +398,7 @@ using System;
                 ignoreEmptyLines: true
             );
         }
+        readonly static string MvvmDllPath = Directory.GetDirectories(@"..\..\packages\", "DevExpressMvvm.*").Single() + @"\lib\net40-client\DevExpress.Mvvm.dll";
         #endregion
 
         #region dependency properties

@@ -66,7 +66,7 @@ namespace MetaSharp.HelloWorld {
                 ),
                 ignoreEmptyLines: true
             );
-            AssertCompiles(input1, input2, output1, output2);
+            AssertCompiles(new[] { input1, input2, output1, output2 });
         }
         [Fact]
         public void RewriteProperties() {
@@ -107,7 +107,7 @@ namespace MetaSharp.HelloWorld {
     public class Moo { }
 }";
             AssertSingleFileOutput(input, output, ignoreEmptyLines: true);
-            AssertCompiles(input, output, additionalClasses);
+            AssertCompiles(new[] { input, output, additionalClasses });
         }
         [Fact]
         public void RewriteOnlyMethodsWithAttributes_RewriteMultypleTypeArgs() {
@@ -160,7 +160,7 @@ namespace MetaSharp.HelloWorld {
 }";
             string output = "I am not rewritten! Boo Moo BooProp x => x.MooProp 42 x => x.Length";
             AssertSingleFileOutput(input, output);
-            AssertCompiles(input, additionalClasses);
+            AssertCompiles(new[] { input, additionalClasses });
         }
         [Fact]
         public void MissingTypeArguments_TooManyTypeArguments() {

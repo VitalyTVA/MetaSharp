@@ -12,12 +12,15 @@ using CompleterResult = MetaSharp.Either<System.Collections.Immutable.ImmutableA
 
 namespace MetaSharp {
     public static class ViewModelCompleter {
-        public static readonly string Implemetations =
-@"public event PropertyChangedEventHandler PropertyChanged;
+        public static readonly Func<string, string> Implemetations = typeName =>
+$@"public event PropertyChangedEventHandler PropertyChanged;
 void RaisePropertyChanged(string property) {{
     var handler = PropertyChanged;
     if(handler != null)
         handler(this, new PropertyChangedEventArgs(property));
+}}
+void RaisePropertyChanged<T>(System.Linq.Expressions.Expression<Func<{typeName}, T>> property) {{
+    RaisePropertyChanged(DevExpress.Mvvm.Native.ExpressionHelper.GetPropertyName(property));
 }}".AddTabs(1);
 
         public static readonly string Attrubutes = //TODO do not add this stub if Mvvm is already referenced via MetaReference?? (can't find how to write test for it)
@@ -126,7 +129,7 @@ partial class {type.Name} : INotifyPropertyChanged {{
     public static {type.Name} Create() {{
         return new {type.Name}Implementation();
     }}
-{Implemetations}
+{Implemetations(type.Name)}
     class {type.Name}Implementation : {type.Name} {{
 {properties.AddTabs(2)}
     }}
