@@ -1,4 +1,5 @@
-﻿using DevExpress.Mvvm.POCO;
+﻿using DevExpress.Mvvm;
+using DevExpress.Mvvm.POCO;
 using MetaSharp.Native;
 using MetaSharp.Test.Meta.POCO;
 using System;
@@ -17,6 +18,7 @@ namespace MetaSharp.Test.Functional {
         [Fact]
         public void OverridingPropertyTest() {
             Assert.True(typeof(INotifyPropertyChanged).IsAssignableFrom(typeof(POCOViewModel)));
+            Assert.True(typeof(ISupportParentViewModel).IsAssignableFrom(typeof(POCOViewModel)));
             Assert.False(typeof(IPOCOViewModel).IsAssignableFrom(typeof(POCOViewModel)));
             var viewModel = POCOViewModel.Create();
             Assert.Equal(viewModel.GetType(), viewModel.GetType().GetProperty("Property1").DeclaringType);
@@ -109,6 +111,14 @@ namespace MetaSharp.Test.Functional {
 
             viewModel.RaisePropertiesChanged();
             Assert.Equal(string.Empty, propertyName);
+        }
+        [Fact]
+        public void GetSetParentViewModel() {
+            var viewModel = POCOViewModel.Create();
+            Assert.Null(viewModel.GetParentViewModel<Type>());
+            var type = GetType();
+            Assert.Same(viewModel, viewModel.SetParentViewModel(type));
+            Assert.Equal(type, viewModel.GetParentViewModel<Type>());
         }
         #endregion
 

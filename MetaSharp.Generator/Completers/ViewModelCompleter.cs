@@ -21,6 +21,16 @@ void RaisePropertyChanged(string property) {{
 }}
 void RaisePropertyChanged<T>(System.Linq.Expressions.Expression<Func<{typeName}, T>> property) {{
     RaisePropertyChanged(DevExpress.Mvvm.Native.ExpressionHelper.GetPropertyName(property));
+}}
+object parentViewModel;
+object DevExpress.Mvvm.ISupportParentViewModel.ParentViewModel {{
+    get {{ return parentViewModel; }}
+    set {{
+        if(parentViewModel == value)
+            return;
+        parentViewModel = value;
+        //OnParentViewModelChanged(parentViewModel);
+    }}
 }}".AddTabs(1);
 
         public static readonly string Attrubutes = //TODO do not add this stub if Mvvm is already referenced via MetaReference?? (can't find how to write test for it)
@@ -125,7 +135,7 @@ $@"public override {property.TypeDisplayString(model)} {property.Name} {{
             return
 //TODO what if System.ComponentModel is already in context?
 $@"using System.ComponentModel;
-partial class {type.Name} : INotifyPropertyChanged {{
+partial class {type.Name} : INotifyPropertyChanged, DevExpress.Mvvm.ISupportParentViewModel {{
     public static {type.Name} Create() {{
         return new {type.Name}Implementation();
     }}
