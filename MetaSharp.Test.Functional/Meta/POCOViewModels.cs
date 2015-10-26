@@ -6,6 +6,7 @@ namespace MetaSharp.Test.Meta.POCO {
     using Xunit;
     using DevExpress.Mvvm.DataAnnotations;
     using System;
+    using System.Linq.Expressions;
 
     public partial class POCOViewModel {
         internal string NotPublicProperty { get; set; }
@@ -27,6 +28,13 @@ namespace MetaSharp.Test.Meta.POCO {
 
         internal void SetProtectedSetterProperty(string value) {
             ProtectedSetterProperty = value;
+        }
+
+        internal void RaisePropertyChangedInternal<T>(Expression<Func<POCOViewModel, T>> property) {
+            RaisePropertyChanged(property);
+        }
+        internal void RaisePropertiesChanged() {
+            RaisePropertyChanged(string.Empty);
         }
     }
 

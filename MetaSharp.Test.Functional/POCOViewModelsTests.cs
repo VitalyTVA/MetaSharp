@@ -1,4 +1,5 @@
-﻿using MetaSharp.Native;
+﻿using DevExpress.Mvvm.POCO;
+using MetaSharp.Native;
 using MetaSharp.Test.Meta.POCO;
 using System;
 using System.Collections.Generic;
@@ -16,6 +17,7 @@ namespace MetaSharp.Test.Functional {
         [Fact]
         public void OverridingPropertyTest() {
             Assert.True(typeof(INotifyPropertyChanged).IsAssignableFrom(typeof(POCOViewModel)));
+            Assert.False(typeof(IPOCOViewModel).IsAssignableFrom(typeof(POCOViewModel)));
             var viewModel = POCOViewModel.Create();
             Assert.Equal(viewModel.GetType(), viewModel.GetType().GetProperty("Property1").DeclaringType);
 
@@ -96,17 +98,17 @@ namespace MetaSharp.Test.Functional {
         #region RaisePropertyChanged implementation
         [Fact]
         public void RaisePropertyChangedImplementation() {
-            //var viewModel = POCOViewModel.Create();
-            //string propertyName = null;
-            //((INotifyPropertyChanged)viewModel).PropertyChanged += (o, e) => propertyName = e.PropertyName;
-            //((IPOCOViewModel)viewModel).RaisePropertyChanged("Property1");
-            //Assert.AreEqual("Property1", propertyName);
+            var viewModel = POCOViewModel.Create();
+            string propertyName = null;
+            ((INotifyPropertyChanged)viewModel).PropertyChanged += (o, e) => propertyName = e.PropertyName;
+            viewModel.RaisePropertyChangedInternal(x => x.Property1);
+            Assert.Equal("Property1", propertyName);
 
-            //viewModel.RaisePropertyChanged(x => x.Property5);
-            //Assert.AreEqual("Property5", propertyName);
+            viewModel.RaisePropertyChangedInternal(x => x.Property5);
+            Assert.Equal("Property5", propertyName);
 
-            //viewModel.RaisePropertiesChanged();
-            //Assert.AreEqual(string.Empty, propertyName);
+            viewModel.RaisePropertiesChanged();
+            Assert.Equal(string.Empty, propertyName);
         }
         #endregion
 
