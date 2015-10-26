@@ -360,6 +360,53 @@ namespace MetaSharp.Incomplete {
             );
             AssertCompiles(input, incomplete, output, additionalClasses);
         }
+        [Fact]
+        public void CompleteViewModel_ExplicitMvvmMetaReference() {
+            string incomplete =
+@"
+using MetaSharp;
+using DevExpress.Mvvm.DataAnnotations;
+namespace MetaSharp.Incomplete {
+using System;
+    [MetaCompleteViewModel]
+    public partial class ViewModel {
+        [BindableProperty(false)]
+        public virtual int BooProperty { get; set; }
+    }
+}";
+
+            string output =
+@"namespace MetaSharp.Incomplete {
+using System;
+    using System.ComponentModel;
+    partial class ViewModel {
+        public static ViewModel Create() {
+            return new ViewModelImplementation();
+        }
+        class ViewModelImplementation : ViewModel, INotifyPropertyChanged {
+            public event PropertyChangedEventHandler PropertyChanged;
+            void RaisePropertyChanged(string property) {
+                var handler = PropertyChanged;
+                if(handler != null)
+                    handler(this, new PropertyChangedEventArgs(property));
+            }
+        }
+    }
+}";
+            var name = "IncompleteViewModels.cs";
+            var input = GetInput(@"IncompleteViewModels.cs".Yield(), 
+                assemblyAttributes: @"[assembly: MetaSharp.MetaReference(@""..\..\packages\DevExpressMvvm.15.1.4.0\lib\net40-client\DevExpress.Mvvm.dll"")]");
+            AssertMultipleFilesOutput(
+                ImmutableArray.Create(
+                    new TestFile(SingleInputFileName, input),
+                    new TestFile(name, incomplete, isInFlow: false)
+                ),
+                ImmutableArray.Create(
+                    new TestFile(Path.Combine(DefaultIntermediateOutputPath, "IncompleteViewModels.g.i.cs"), output)
+                ),
+                ignoreEmptyLines: true
+            );
+        }
         #endregion
 
         #region dependency properties
@@ -571,13 +618,14 @@ using System;
         }
         #endregion
 
-        static string GetInput(IEnumerable<string> protoFiles, string methodAttributes = null, string defaultAttributes = null) {
+        static string GetInput(IEnumerable<string> protoFiles, string methodAttributes = null, string defaultAttributes = null, string assemblyAttributes = null) {
             var files = protoFiles.Select(x => "@\"" + x + "\"").ConcatStrings(", ");
             return
 $@"
 using System;
 using MetaSharp;
 using System.Collections.Generic;
+{assemblyAttributes}
 namespace MetaSharp.Incomplete {{
     public static class CompleteFiles {{
 {methodAttributes}

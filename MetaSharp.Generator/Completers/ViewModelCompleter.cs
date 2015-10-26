@@ -12,7 +12,7 @@ using CompleterResult = MetaSharp.Either<System.Collections.Immutable.ImmutableA
 
 namespace MetaSharp {
     static class ViewModelCompleter {
-        public static string Attrubutes =
+        public static string Attrubutes = //TODO do not add this stub if Mvvm is already referenced via MetaReference?? (can't find how to write test for it)
 @"
 using System;
 namespace DevExpress.Mvvm.DataAnnotations {
