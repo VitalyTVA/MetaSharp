@@ -92,7 +92,7 @@ namespace DevExpress.Mvvm.DataAnnotations {
                     var methodName = info.method.Name;
                     return
 $@"ICommand _{commandName};
-public ICommand {commandName} {{ get {{ return _{commandName} ?? (_{commandName} = DevExpress.Mvvm.Native.DelegateCommandFactory.Create({methodName})); }} }}";
+public ICommand {commandName} {{ get {{ return _{commandName} ?? (_{commandName} = new DelegateCommand({methodName})); }} }}";
                 })
                 .ConcatStringsWithNewLines();
             var properties = type.Properties()
