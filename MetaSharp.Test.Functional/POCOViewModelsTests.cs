@@ -119,6 +119,11 @@ namespace MetaSharp.Test.Functional {
             var type = GetType();
             Assert.Same(viewModel, viewModel.SetParentViewModel(type));
             Assert.Equal(type, viewModel.GetParentViewModel<Type>());
+            Assert.Null(viewModel.OldParentViewModel);
+            type = typeof(object);
+            Assert.Same(viewModel, viewModel.SetParentViewModel(type));
+            Assert.Equal(type, viewModel.GetParentViewModel<Type>());
+            Assert.Same(GetType(), viewModel.OldParentViewModel);
         }
         #endregion
 

@@ -28,10 +28,12 @@ object DevExpress.Mvvm.ISupportParentViewModel.ParentViewModel {{
     set {{
         if(parentViewModel == value)
             return;
+        var oldParentViewModel = parentViewModel;
         parentViewModel = value;
-        //OnParentViewModelChanged(parentViewModel);
+        OnParentViewModelChanged(oldParentViewModel);
     }}
-}}".AddTabs(1);
+}}
+partial void OnParentViewModelChanged(object oldParentViewModel);".AddTabs(1);
 
         public static readonly string Attrubutes = //TODO do not add this stub if Mvvm is already referenced via MetaReference?? (can't find how to write test for it)
 @"
@@ -50,7 +52,7 @@ namespace DevExpress.Mvvm.DataAnnotations {
     }
 }
 ";
-
+        //TODO generate typed parent viewmode if view model has TParent view model parameter
         //TODO auto calc dependent properties
         //TODO auto generate default private ctor if none, use explicit factory methods directly
         //TODO error if base class ctor is used

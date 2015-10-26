@@ -36,6 +36,10 @@ namespace MetaSharp.Test.Meta.POCO {
         internal void RaisePropertiesChanged() {
             RaisePropertyChanged(string.Empty);
         }
+        internal object OldParentViewModel;
+        partial void OnParentViewModelChanged(object oldParentViewModel) {
+            OldParentViewModel = oldParentViewModel;
+        }
     }
 
     public partial class POCOViewModel_PropertyChanged : POCOViewModel_PropertyChangedBase {
