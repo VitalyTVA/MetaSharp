@@ -16,9 +16,11 @@ namespace MetaSharp {
     public struct TypeCompleter {
         public readonly Func<SemanticModel, INamedTypeSymbol, CompleterResult> Complete;
         public readonly Func<Compilation, string> GetStubs;
-        public TypeCompleter(Func<SemanticModel, INamedTypeSymbol, CompleterResult> complete, Func<Compilation, string> getStubs = null) {
+        public readonly ImmutableArray<string> Usings;
+        public TypeCompleter(Func<SemanticModel, INamedTypeSymbol, CompleterResult> complete, Func<Compilation, string> getStubs = null, ImmutableArray<string>? usings = null) {
             Complete = complete;
             GetStubs = getStubs ?? (x => null);
+            Usings = usings ?? ImmutableArray<string>.Empty;
         }
     }
     public class CompleterError {
@@ -40,7 +42,7 @@ namespace MetaSharp {
         static Completer() {
             Completers = ImmutableDictionary<Type, TypeCompleter>.Empty
                 .Add(typeof(MetaCompleteClassAttribute), new TypeCompleter(ClassCompleter.Generate))
-                .Add(typeof(MetaCompleteViewModelAttribute), new TypeCompleter(ViewModelCompleter.Generate, x => ViewModelCompleter.Attrubutes))
+                .Add(typeof(MetaCompleteViewModelAttribute), new TypeCompleter(ViewModelCompleter.Generate, x => ViewModelCompleter.Attrubutes, ViewModelCompleter.Usings))
                 .Add(typeof(MetaCompleteDependencyPropertiesAttribute), new TypeCompleter(DependencyPropertiesCompleter.Generate))
             ;
         }
@@ -80,10 +82,11 @@ namespace MetaSharp {
                             }, (classDeclaration, completer) => new { classDeclaration, completer })
                             .Select(x => {
                                 var type = model.GetDeclaredSymbol(x.classDeclaration);
-                                //if(x.completer == null)
-                                //    return null;
-                                Func<string, string> wrapMembers = val 
-                                    => val.With(s => MetaContextExtensions.WrapMembers(s.Yield(), type.Namespace(), type.Location().GetUsings()));
+                            //if(x.completer == null)
+                            //    return null;
+                            var additionalUsings = x.completer.Usings.Select(@using => $"using {@using};"); //TODO use real usings, not string representation, otherwize using X  .  A; causes warning
+                            Func<string, string> wrapMembers = val
+                                => val.With(s => MetaContextExtensions.WrapMembers(s.Yield(), type.Namespace(), type.Location().GetUsings().Concat(additionalUsings).Distinct()));
                                 var completion = x.completer.Complete(model, type);
                                 return completion.Transform(
                                     errors => errors.Select(e => Generator.CreateError(id: e.Id, file: Path.GetFullPath(file), message: e.Message, span: e.Span)),

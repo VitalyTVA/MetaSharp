@@ -19,7 +19,7 @@ void RaisePropertyChanged(string property) {{
     if(handler != null)
         handler(this, new PropertyChangedEventArgs(property));
 }}
-void RaisePropertyChanged<T>(System.Linq.Expressions.Expression<Func<{typeName}, T>> property) {{
+void RaisePropertyChanged<T>(Expression<Func<{typeName}, T>> property) {{
     RaisePropertyChanged(DevExpress.Mvvm.Native.ExpressionHelper.GetPropertyName(property));
 }}
 object parentViewModel;
@@ -52,6 +52,8 @@ namespace DevExpress.Mvvm.DataAnnotations {
     }
 }
 ";
+        public static readonly ImmutableArray<string> Usings = ImmutableArray.Create("System.Linq.Expressions");
+
         //TODO generate typed parent viewmode if view model has TParent view model parameter
         //TODO auto calc dependent properties
         //TODO auto generate default private ctor if none, use explicit factory methods directly
