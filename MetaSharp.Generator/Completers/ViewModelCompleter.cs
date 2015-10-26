@@ -98,7 +98,7 @@ partial class {type.Name} : INotifyPropertyChanged, ISupportParentViewModel {{
 }}";
         }
 
-        private static string GenerateCommands(INamedTypeSymbol type) {
+        static string GenerateCommands(INamedTypeSymbol type) {
             return type.Methods()
                 .Select(method => new { method })
                 .Where(info => info.method.DeclaredAccessibility == Accessibility.Public && info.method.MethodKind == MethodKind.Ordinary)
