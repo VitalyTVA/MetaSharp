@@ -56,15 +56,20 @@ namespace DevExpress.Mvvm.DataAnnotations {
         }
 
         static string GenerateCore(SemanticModel model, INamedTypeSymbol type) {
+            var bindablePropertyAttributeType = model.Compilation.GetTypeByMetadataName("DevExpress.Mvvm.DataAnnotations.BindablePropertyAttribute");
             var methods = type.Methods()
                 .ToImmutableDictionary(x => x.Name, x => x);
             var properties = type.Properties()
                 .Select(property => {
-                    var bindablePropertyAttributeType = model.Compilation.GetTypeByMetadataName("DevExpress.Mvvm.DataAnnotations.BindablePropertyAttribute");
                     var bindableInfo = property.GetAttributes()
                         .FirstOrDefault(x => x.AttributeClass == bindablePropertyAttributeType) 
-                        .With(x => x.ConstructorArguments.Select(arg => arg.Value).ToArray())
-                        .With(x => new BindableInfo(x.Length > 0 ? (bool)x[0] : true, null, null));
+                        .With(x => {
+                            var args = x.ConstructorArguments.Select(arg => arg.Value).ToArray();
+                            var namedArgs = x.NamedArguments.ToImmutableDictionary(p => p.Key, p => (string)p.Value.Value); //TODO error if names are not recognizable
+                            return new BindableInfo(args.Length > 0 ? (bool)args[0] : true, 
+                                namedArgs.GetValueOrDefault("OnPropertyChangedMethodName"),
+                                namedArgs.GetValueOrDefault("OnPropertyChangingMethodName")); 
+                        });
                     return new { property, bindableInfo };
                 })
                 .Where(x => {
@@ -77,7 +82,8 @@ namespace DevExpress.Mvvm.DataAnnotations {
                     var property = info.property;
                     var setterModifier = property.SetMethod.DeclaredAccessibility.ToAccessibilityModifier(property.DeclaredAccessibility);
 
-                    var onChangedMethod = methods.GetValueOrDefault($"On{property.Name}Changed").If(x => property.IsAutoImplemented());
+                    var onChangedMethodName = info.bindableInfo?.OnPropertyChangedMethodName ?? $"On{property.Name}Changed".If(x => property.IsAutoImplemented());
+                    var onChangedMethod = onChangedMethodName.With(x => methods.GetValueOrDefault(x));
                     var needOldValue = onChangedMethod.Return(x => x.Parameters.Length == 1, () => false);
                     var oldValueStorage = needOldValue ? $"var oldValue = base.{property.Name};".AddTabs(2) : null;
                     var oldValueName = needOldValue ? "oldValue" : null;
