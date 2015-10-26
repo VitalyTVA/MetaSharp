@@ -82,6 +82,7 @@ namespace DevExpress.Mvvm.DataAnnotations {
                     var property = info.property;
                     var setterModifier = property.SetMethod.DeclaredAccessibility.ToAccessibilityModifier(property.DeclaredAccessibility);
 
+                    //TODO diplicated code
                     var onChangedMethodName = info.bindableInfo?.OnPropertyChangedMethodName ?? $"On{property.Name}Changed".If(x => property.IsAutoImplemented());
                     var onChangedMethod = onChangedMethodName.With(x => methods.GetValueOrDefault(x));
                     var needOldValue = onChangedMethod.Return(x => x.Parameters.Length == 1, () => false);
