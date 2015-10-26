@@ -52,7 +52,7 @@ namespace DevExpress.Mvvm.DataAnnotations {
     }
 }
 ";
-        public static readonly ImmutableArray<string> Usings = ImmutableArray.Create("System.Linq.Expressions", "DevExpress.Mvvm");
+        public static readonly ImmutableArray<string> Usings = ImmutableArray.Create("System.Linq.Expressions", "System.Windows.Input", "DevExpress.Mvvm");
 
         //TODO generate typed parent viewmode if view model has TParent view model parameter
         //TODO auto calc dependent properties
@@ -84,6 +84,17 @@ namespace DevExpress.Mvvm.DataAnnotations {
             var bindablePropertyAttributeType = model.Compilation.GetTypeByMetadataName("DevExpress.Mvvm.DataAnnotations.BindablePropertyAttribute");
             var methods = type.Methods()
                 .ToImmutableDictionary(x => x.Name, x => x);
+            var commands = type.Methods()
+                .Select(method => new { method })
+                .Where(info => info.method.DeclaredAccessibility == Accessibility.Public && info.method.MethodKind == MethodKind.Ordinary)
+                .Select(info => {
+                    var commandName = info.method.Name + "Command";
+                    var methodName = info.method.Name;
+                    return
+$@"DelegateCommand _{commandName};
+public DelegateCommand {commandName} {{ get {{ return _{commandName} ?? (_{commandName} = DevExpress.Mvvm.Native.DelegateCommandFactory.Create({methodName})); }} }}";
+                })
+                .ConcatStringsWithNewLines();
             var properties = type.Properties()
                 .Select(property => {
                     var bindableInfo = property.GetAttributes()
@@ -143,6 +154,7 @@ partial class {type.Name} : INotifyPropertyChanged, ISupportParentViewModel {{
     public static {type.Name} Create() {{
         return new {type.Name}Implementation();
     }}
+{commands.AddTabs(1)}
 {Implemetations(type.Name)}
     class {type.Name}Implementation : {type.Name} {{
 {properties.AddTabs(2)}

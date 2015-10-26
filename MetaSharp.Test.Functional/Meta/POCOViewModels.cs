@@ -144,34 +144,34 @@ namespace MetaSharp.Test.Meta.POCO {
     public partial class POCOCommandsViewModel {
         public virtual string Property1 { get; set; }
 
-        protected int _ShowCommand;
+        //protected int _ShowCommand; //TODO how to handle it?
         public int ShowCallCount;
         public void Show() {
             ShowCallCount++;
         }
-        public int ShowAsyncCallCount;
+        //public int ShowAsyncCallCount;
 
-        public Task ShowAsync() {
-            return Task.Factory.StartNew(() =>
-                ShowAsyncCallCount++
-            );
-        }
+        //public Task ShowAsync() {
+        //    return Task.Factory.StartNew(() =>
+        //        ShowAsyncCallCount++
+        //    );
+        //}
 
-        public int SaveCallCount;
-        public void Save() {
-            SaveCallCount++;
-        }
-        public int CloseCallCount;
-        public void Close(string param) {
-            CloseCallCount++;
-        }
+        //public int SaveCallCount;
+        //public void Save() {
+        //    SaveCallCount++;
+        //}
+        //public int CloseCallCount;
+        //public void Close(string param) {
+        //    CloseCallCount++;
+        //}
 
-        public static void StaticMethod() { }
-        internal void InternalMethod() { }
-        protected Task ProtectedAsyncMethod() { return null; }
-        protected void ProtectedMethod() { }
-        public void OutParameter(out int x) { x = 0; }
-        public void RefParameter(ref int x) { x = 0; }
-        public int MethodWithReturnValue() { return 0; }
+        //public static void StaticMethod() { }
+        //internal void InternalMethod() { }
+        //protected Task ProtectedAsyncMethod() { return null; }
+        //protected void ProtectedMethod() { }
+        //public void OutParameter(out int x) { x = 0; }
+        //public void RefParameter(ref int x) { x = 0; }
+        //public int MethodWithReturnValue() { return 0; }
     }
 }

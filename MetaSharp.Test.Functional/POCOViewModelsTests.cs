@@ -135,7 +135,7 @@ namespace MetaSharp.Test.Functional {
         [Fact]
         public void CommandsGeneration() {
             POCOCommandsViewModel viewModel = POCOCommandsViewModel.Create();
-            //CheckCommand(viewModel, x => x.Show(), x => Assert.Equal(1, x.ShowCallCount));
+            CheckCommand(viewModel, x => x.Show(), x => Assert.Equal(1, x.ShowCallCount));
             //CheckCommand(viewModel, x => x.ShowAsync(), x => Assert.Equal(1, x.ShowAsyncCallCount), true);
             //CheckCommand(viewModel, x => x.Save(), x => Assert.Equal(1, x.SaveCallCount));
             //CheckCommand(viewModel, x => x.Close(null), x => Assert.Equal(1, x.CloseCallCount));

@@ -309,6 +309,7 @@ using System;
 $@"namespace MetaSharp.Incomplete {{
 using System;
 using System.Linq.Expressions;
+using System.Windows.Input;
 using DevExpress.Mvvm;
     using System.ComponentModel;
     partial class ViewModel : INotifyPropertyChanged, ISupportParentViewModel {{
@@ -376,6 +377,7 @@ using System;
 $@"namespace MetaSharp.Incomplete {{
 using System;
 using System.Linq.Expressions;
+using System.Windows.Input;
 using DevExpress.Mvvm;
     using System.ComponentModel;
     partial class ViewModel : INotifyPropertyChanged, ISupportParentViewModel {{
