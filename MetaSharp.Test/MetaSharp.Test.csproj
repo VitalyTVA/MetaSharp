@@ -72,6 +72,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AttributeParserTests.cs" />
     <Compile Include="RemoteClassGenerator.cs" />
     <Compile Include="CompleterTests.cs" />
     <Compile Include="GeneratorTests.cs" />

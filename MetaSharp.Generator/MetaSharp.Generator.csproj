@@ -36,6 +36,7 @@
     <AssemblyOriginatorKeyFile>..\Key\StrongKey.snk</AssemblyOriginatorKeyFile>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="AttributeParser.cs" />
     <Compile Include="Completer.cs" />
     <Compile Include="Completers\ClassCompleter.cs" />
     <Compile Include="Completers\DependencyPropertiesCompleter.cs" />
