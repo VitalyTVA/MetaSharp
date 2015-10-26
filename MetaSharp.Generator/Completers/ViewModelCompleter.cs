@@ -12,6 +12,24 @@ using CompleterResult = MetaSharp.Either<System.Collections.Immutable.ImmutableA
 
 namespace MetaSharp {
     static class ViewModelCompleter {
+        public static string Attrubutes =
+@"
+using System;
+namespace DevExpress.Mvvm.DataAnnotations {
+    public class BindablePropertyAttribute : Attribute {
+        public BindablePropertyAttribute()
+            : this(true) {
+        }
+        public BindablePropertyAttribute(bool isBindable) {
+            this.IsBindable = isBindable;
+        }
+        public bool IsBindable { get; private set; }
+        public string OnPropertyChangedMethodName { get; set; }
+        public string OnPropertyChangingMethodName { get; set; }
+    }
+}
+";
+
         //TODO auto calc dependent properties
         //TODO auto generate default private ctor if none, use explicit factory methods directly
         //TODO error if base class ctor is used
@@ -44,7 +62,7 @@ namespace MetaSharp {
                 .Select(property => {
                     var bindablePropertyAttributeType = model.Compilation.GetTypeByMetadataName("DevExpress.Mvvm.DataAnnotations.BindablePropertyAttribute");
                     var bindableInfo = property.GetAttributes()
-                        .FirstOrDefault(x => x.AttributeClass == bindablePropertyAttributeType) //TODO rewrite without need to reference MVVM to meta assembly???
+                        .FirstOrDefault(x => x.AttributeClass == bindablePropertyAttributeType) 
                         .With(x => x.ConstructorArguments.Select(arg => arg.Value).ToArray())
                         .With(x => new BindableInfo(x.Length > 0 ? (bool)x[0] : true, null, null));
                     return new { property, bindableInfo };

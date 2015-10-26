@@ -13,7 +13,14 @@ using System.Threading.Tasks;
 using CompleterResult = MetaSharp.Either<System.Collections.Immutable.ImmutableArray<MetaSharp.CompleterError>, string>;
 
 namespace MetaSharp {
-    delegate CompleterResult TypeCompleter(SemanticModel model, INamedTypeSymbol type);
+    public struct TypeCompleter {
+        public readonly Func<SemanticModel, INamedTypeSymbol, CompleterResult> Complete;
+        public readonly Func<Compilation, string> GetStubs;
+        public TypeCompleter(Func<SemanticModel, INamedTypeSymbol, CompleterResult> complete, Func<Compilation, string> getStubs = null) {
+            Complete = complete;
+            GetStubs = getStubs ?? (x => null);
+        }
+    }
     public class CompleterError {
         public readonly SyntaxTree Tree;
         public readonly string Id, Message;
@@ -32,15 +39,18 @@ namespace MetaSharp {
         static ImmutableDictionary<Type, TypeCompleter> Completers;
         static Completer() {
             Completers = ImmutableDictionary<Type, TypeCompleter>.Empty
-                .Add(typeof(MetaCompleteClassAttribute), ClassCompleter.Generate)
-                .Add(typeof(MetaCompleteViewModelAttribute), ViewModelCompleter.Generate)
-                .Add(typeof(MetaCompleteDependencyPropertiesAttribute), DependencyPropertiesCompleter.Generate)
+                .Add(typeof(MetaCompleteClassAttribute), new TypeCompleter(ClassCompleter.Generate))
+                .Add(typeof(MetaCompleteViewModelAttribute), new TypeCompleter(ViewModelCompleter.Generate, x => ViewModelCompleter.Attrubutes))
+                .Add(typeof(MetaCompleteDependencyPropertiesAttribute), new TypeCompleter(DependencyPropertiesCompleter.Generate))
             ;
         }
         internal static Either<ImmutableArray<MetaError>, ImmutableArray<Output>> GetCompletions(CSharpCompilation compilation, Environment environment, IEnumerable<string> files, Func<string, OutputFileName> createOutputFileName, IEnumerable<Attribute> defaultAttributes) {
             var trees = files
                 .ToImmutableDictionary(x => x, x => Generator.ParseFile(environment, x));
-            var compilationWithPrototypes = compilation.AddSyntaxTrees(trees.Values);
+            var stubTrees = Completers.Values
+                .Select(x => x.GetStubs(compilation).With(s => SyntaxFactory.ParseSyntaxTree(s)))
+                .Where(x => x != null);
+            var compilationWithPrototypes = compilation.AddSyntaxTrees(trees.Values.Concat(stubTrees));
             var symbolToTypeMap = Completers.Keys.ToImmutableDictionary(
                 type => compilationWithPrototypes.GetTypeByMetadataName(type.FullName),
                 type => type
@@ -70,11 +80,11 @@ namespace MetaSharp {
                             }, (classDeclaration, completer) => new { classDeclaration, completer })
                             .Select(x => {
                                 var type = model.GetDeclaredSymbol(x.classDeclaration);
-                                if(x.completer == null)
-                                    return null;
+                                //if(x.completer == null)
+                                //    return null;
                                 Func<string, string> wrapMembers = val 
                                     => val.With(s => MetaContextExtensions.WrapMembers(s.Yield(), type.Namespace(), type.Location().GetUsings()));
-                                var completion = x.completer(model, type);
+                                var completion = x.completer.Complete(model, type);
                                 return completion.Transform(
                                     errors => errors.Select(e => Generator.CreateError(id: e.Id, file: Path.GetFullPath(file), message: e.Message, span: e.Span)),
                                     value => wrapMembers(value)
