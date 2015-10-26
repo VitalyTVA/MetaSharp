@@ -91,8 +91,8 @@ namespace DevExpress.Mvvm.DataAnnotations {
                     var commandName = info.method.Name + "Command";
                     var methodName = info.method.Name;
                     return
-$@"DelegateCommand _{commandName};
-public DelegateCommand {commandName} {{ get {{ return _{commandName} ?? (_{commandName} = DevExpress.Mvvm.Native.DelegateCommandFactory.Create({methodName})); }} }}";
+$@"ICommand _{commandName};
+public ICommand {commandName} {{ get {{ return _{commandName} ?? (_{commandName} = DevExpress.Mvvm.Native.DelegateCommandFactory.Create({methodName})); }} }}";
                 })
                 .ConcatStringsWithNewLines();
             var properties = type.Properties()
