@@ -145,12 +145,12 @@ namespace MetaSharp.Test.Functional {
             CheckNoCommand(viewModel, "Equals");
             CheckNoCommand(viewModel, "ProtectedAsyncMethod");
             CheckNoCommand(viewModel, "ProtectedMethod");
-            //CheckNoCommand(viewModel, "get_Property1");
-            //CheckNoCommand(viewModel, "set_Property1");
+            CheckNoCommand(viewModel, "get_Property1");
+            CheckNoCommand(viewModel, "set_Property1");
             CheckNoCommand(viewModel, "StaticMethod");
-            //CheckNoCommand(viewModel, "OutParameter");
-            //CheckNoCommand(viewModel, "RefParameter");
-            //CheckNoCommand(viewModel, "MethodWithReturnValue");
+            CheckNoCommand(viewModel, "OutParameter");
+            CheckNoCommand(viewModel, "RefParameter");
+            CheckNoCommand(viewModel, "MethodWithReturnValue");
 
             Assert.Equal(typeof(ICommand), viewModel.GetType().GetProperty("ShowCommand").PropertyType);
             Assert.Equal(typeof(DelegateCommand<string>), viewModel.GetType().GetProperty("CloseCommand").PropertyType);

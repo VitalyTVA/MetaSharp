@@ -170,8 +170,8 @@ namespace MetaSharp.Test.Meta.POCO {
         internal void InternalMethod() { }
         protected Task ProtectedAsyncMethod() { return null; }
         protected void ProtectedMethod() { }
-        //public void OutParameter(out int x) { x = 0; }
-        //public void RefParameter(ref int x) { x = 0; }
-        //public int MethodWithReturnValue() { return 0; }
+        public void OutParameter(out int x) { x = 0; }
+        public void RefParameter(ref int x) { x = 0; }
+        public int MethodWithReturnValue() { return 0; }
     }
 }
