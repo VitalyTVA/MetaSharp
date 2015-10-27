@@ -221,7 +221,9 @@ namespace MetaSharp.Test.Functional {
             AsyncCommand<string> asyncCommand2 = viewModel.OpenCommand;
             Assert.True(asyncCommand2.AllowMultipleExecution);
         }
+        #endregion
 
+        #region errors
         [Fact]
         public void CallRaiseCommandChangedMethodExtensionMethodForNotPOCOViewModelTest() {
             Assert.Throws<ViewModelSourceException>(() => {
