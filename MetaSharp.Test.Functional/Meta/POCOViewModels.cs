@@ -157,14 +157,14 @@ namespace MetaSharp.Test.Meta.POCO {
             );
         }
 
-        //public int SaveCallCount;
-        //public void Save() {
-        //    SaveCallCount++;
-        //}
-        //public int CloseCallCount;
-        //public void Close(string param) {
-        //    CloseCallCount++;
-        //}
+        public int SaveCallCount;
+        public void Save() {
+            SaveCallCount++;
+        }
+        public int CloseCallCount;
+        public void Close(string param) {
+            CloseCallCount++;
+        }
 
         //public static void StaticMethod() { }
         //internal void InternalMethod() { }

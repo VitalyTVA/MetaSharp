@@ -107,7 +107,9 @@ partial class {type.Name} : INotifyPropertyChanged, ISupportParentViewModel {{
                     var isAsync = info.method.ReturnType == taskType;
                     var commandName = info.method.Name + "Command";
                     var methodName = info.method.Name;
-                    var commandTypeName = isAsync ? "AsyncCommand" : "DelegateCommand";
+                    var genericParameter = info.method.Parameters.SingleOrDefault()
+                        .With(x => "<" + x.Type.Name + ">");
+                    var commandTypeName = isAsync ? "AsyncCommand" : "DelegateCommand" + genericParameter;
                     var propertyType = isAsync ? "AsyncCommand" : "ICommand";
                     return
 $@"{commandTypeName} _{commandName};
