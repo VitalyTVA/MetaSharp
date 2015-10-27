@@ -176,12 +176,12 @@ namespace MetaSharp.Test.Functional {
         [Fact]
         public void CommandsCanExecute() {
             var viewModel = POCOCommandsCanExecute.Create();
-            var command = (ICommand)TypeHelper.GetPropertyValue(viewModel, "ShowCommand");
+            var command = viewModel.ShowCommand;
             Assert.False(command.CanExecute(null));
             viewModel.CanShowValue = true;
             Assert.True(command.CanExecute(null));
 
-            command = (ICommand)TypeHelper.GetPropertyValue(viewModel, "OpenCommand");
+            command = viewModel.OpenCommand;
             Assert.True(command.CanExecute("y"));
             Assert.False(command.CanExecute("x"));
             Assert.Equal(0, viewModel.OpenCallCount);
@@ -189,7 +189,7 @@ namespace MetaSharp.Test.Functional {
             Assert.Equal("z", viewModel.OpenLastParameter);
             Assert.Equal(1, viewModel.OpenCallCount);
 
-            command = (ICommand)TypeHelper.GetPropertyValue(viewModel, "CloseCommand");
+            command = viewModel.CloseCommand;
             Assert.False(command.CanExecute(9));
             Assert.True(command.CanExecute(13));
             Assert.False(command.CanExecute("9"));
@@ -203,12 +203,12 @@ namespace MetaSharp.Test.Functional {
         [Fact]
         public void AsyncCommandsCanExecute() {
             POCOAsyncCommands viewModel = POCOAsyncCommands.Create();
-            IAsyncCommand asyncCommand = (IAsyncCommand)TypeHelper.GetPropertyValue(viewModel, "ShowCommand");
+            IAsyncCommand asyncCommand = viewModel.ShowCommand;
             Assert.False(asyncCommand.CanExecute(null));
             viewModel.CanShowValue = true;
             Assert.True(asyncCommand.CanExecute(null));
 
-            asyncCommand = (IAsyncCommand)TypeHelper.GetPropertyValue(viewModel, "OpenCommand");
+            asyncCommand = viewModel.OpenCommand;
             Assert.True(asyncCommand.CanExecute("y"));
             Assert.False(asyncCommand.CanExecute("x"));
         }
