@@ -112,7 +112,7 @@ partial class {type.Name} : INotifyPropertyChanged, ISupportParentViewModel {{
                     var commandName = info.method.Name + "Command";
                     var methodName = info.method.Name;
                     var genericParameter = info.method.Parameters.SingleOrDefault()
-                        .With(x => "<" + x.Type.Name + ">");
+                        .With(x => "<" + x.Type.DisplayString(model, x.Location()) + ">");
                     var commandTypeName = isAsync ? "AsyncCommand" : "DelegateCommand" + genericParameter;
                     var propertyType = isAsync 
                         ? "AsyncCommand" 

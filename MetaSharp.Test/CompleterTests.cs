@@ -302,6 +302,7 @@ using System;
     public partial class ViewModel {
         public virtual Boo BooProperty { get; set; }
         public virtual int IntProperty { get; set; }
+        public void Do(string x) { }
     }
 }";
 
@@ -316,6 +317,8 @@ using DevExpress.Mvvm;
         public static ViewModel Create() {{
             return new ViewModelImplementation();
         }}
+        DelegateCommand<string> _DoCommand;
+        public DelegateCommand<string> DoCommand {{ get {{ return _DoCommand ?? (_DoCommand = new DelegateCommand<string>(Do)); }} }}
 {ViewModelCompleter.Implemetations("ViewModel").AddTabs(1)}
         class ViewModelImplementation : ViewModel {{
             public override Boo BooProperty {{
