@@ -172,6 +172,33 @@ namespace MetaSharp.Test.Functional {
             viewModel.IsMethod3Enabled = true;
             Assert.True(viewModel.Method3Command.CanExecute(null));
         }
+
+        [Fact]
+        public void CommandsCanExecute() {
+            var viewModel = POCOCommandsCanExecute.Create();
+            var command = (ICommand)TypeHelper.GetPropertyValue(viewModel, "ShowCommand");
+            Assert.False(command.CanExecute(null));
+            viewModel.CanShowValue = true;
+            Assert.True(command.CanExecute(null));
+
+            command = (ICommand)TypeHelper.GetPropertyValue(viewModel, "OpenCommand");
+            Assert.True(command.CanExecute("y"));
+            Assert.False(command.CanExecute("x"));
+            Assert.Equal(0, viewModel.OpenCallCount);
+            command.Execute("z");
+            Assert.Equal("z", viewModel.OpenLastParameter);
+            Assert.Equal(1, viewModel.OpenCallCount);
+
+            command = (ICommand)TypeHelper.GetPropertyValue(viewModel, "CloseCommand");
+            Assert.False(command.CanExecute(9));
+            Assert.True(command.CanExecute(13));
+            Assert.False(command.CanExecute("9"));
+            Assert.True(command.CanExecute("13"));
+            Assert.Equal(0, viewModel.CloseCallCount);
+            command.Execute("117");
+            Assert.Equal(117, viewModel.CloseLastParameter);
+            Assert.Equal(1, viewModel.CloseCallCount);
+        }
         #endregion
 
         void CheckBindableProperty<T, TProperty>(T viewModel, Expression<Func<T, TProperty>> propertyExpression, Action<T, TProperty> setValueAction, TProperty value1, TProperty value2, Action<T, TProperty> checkOnPropertyChangedResult = null) {

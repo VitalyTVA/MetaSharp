@@ -200,4 +200,35 @@ namespace MetaSharp.Test.Meta.POCO {
             return IsMethod3Enabled;
         }
     }
+
+    public partial class POCOCommandsCanExecute {
+        public int ShowCallCount;
+        public void Show() {
+            ShowCallCount++;
+        }
+        public bool CanShowValue;
+        public bool CanShow() {
+            return CanShowValue;
+        }
+
+        public int OpenCallCount;
+        public string OpenLastParameter;
+        public void Open(string parameter) {
+            OpenCallCount++;
+            OpenLastParameter = parameter;
+        }
+        public bool CanOpen(string parameter) {
+            return parameter != "x";
+        }
+
+        public int CloseCallCount;
+        public int CloseLastParameter;
+        public void Close(int parameter) {
+            CloseCallCount++;
+            CloseLastParameter = parameter;
+        }
+        public bool CanClose(int parameter) {
+            return parameter != 9;
+        }
+    }
 }
