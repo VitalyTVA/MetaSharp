@@ -50,6 +50,25 @@ namespace DevExpress.Mvvm.DataAnnotations {
         public string OnPropertyChangedMethodName { get; set; }
         public string OnPropertyChangingMethodName { get; set; }
     }
+    [AttributeUsage(AttributeTargets.Method, AllowMultiple = false)]
+    public class CommandAttribute : Attribute {
+        public CommandAttribute(bool isCommand) {
+            this.IsCommand = isCommand;
+        }
+        public CommandAttribute()
+            : this(true) {
+        }
+        public string Name { get; set; }
+        public string CanExecuteMethodName { get; set; }
+        public bool? UseCommandManager { get; set; }
+    }
+    public class AsyncCommandAttribute : CommandAttribute {
+        public AsyncCommandAttribute(bool isAsincCommand)
+            : base(isAsincCommand) { }
+        public AsyncCommandAttribute()
+            : base() { }
+        public bool AllowMultipleExecution { get; set; }
+    }
 }
 ";
         public static readonly ImmutableArray<string> Usings = ImmutableArray.Create(
