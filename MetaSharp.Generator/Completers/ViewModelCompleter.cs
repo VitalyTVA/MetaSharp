@@ -102,7 +102,9 @@ partial class {type.Name} : INotifyPropertyChanged, ISupportParentViewModel {{
             var taskType = model.Compilation.GetTypeByMetadataName(typeof(Task).FullName);
             return type.Methods()
                 .Select(method => new { method })
-                .Where(info => info.method.DeclaredAccessibility == Accessibility.Public && info.method.MethodKind == MethodKind.Ordinary)
+                .Where(info => info.method.DeclaredAccessibility == Accessibility.Public 
+                    && info.method.MethodKind == MethodKind.Ordinary
+                    && !info.method.IsStatic)
                 .Select(info => {
                     var isAsync = info.method.ReturnType == taskType;
                     var commandName = info.method.Name + "Command";

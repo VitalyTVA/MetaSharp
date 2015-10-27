@@ -166,8 +166,8 @@ namespace MetaSharp.Test.Meta.POCO {
             CloseCallCount++;
         }
 
-        //public static void StaticMethod() { }
-        //internal void InternalMethod() { }
+        public static void StaticMethod() { }
+        internal void InternalMethod() { }
         //protected Task ProtectedAsyncMethod() { return null; }
         //protected void ProtectedMethod() { }
         //public void OutParameter(out int x) { x = 0; }
