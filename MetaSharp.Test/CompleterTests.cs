@@ -319,7 +319,7 @@ using DevExpress.Mvvm;
             return new ViewModelImplementation();
         }}
         DelegateCommand<string> _DoCommand;
-        public DelegateCommand<string> DoCommand {{ get {{ return _DoCommand ?? (_DoCommand = new DelegateCommand<string>(Do)); }} }}
+        public DelegateCommand<string> DoCommand {{ get {{ return _DoCommand ?? (_DoCommand = new DelegateCommand<string>(Do, null)); }} }}
 {ViewModelCompleter.Implemetations("ViewModel").AddTabs(1)}
         class ViewModelImplementation : ViewModel {{
             public override Boo BooProperty {{

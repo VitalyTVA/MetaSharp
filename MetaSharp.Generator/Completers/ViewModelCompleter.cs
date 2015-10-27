@@ -127,11 +127,23 @@ $@"partial class {type.Name} : INotifyPropertyChanged, ISupportParentViewModel {
         }
 
         static string GenerateCommands(SemanticModel model, INamedTypeSymbol type) {
+            var asyncCommandAttributeType = model.Compilation.GetTypeByMetadataName("DevExpress.Mvvm.DataAnnotations.AsyncCommandAttribute");
+            //var commandAttributeType = model.Compilation.GetTypeByMetadataName("DevExpress.Mvvm.DataAnnotations.CommandAttribute");
             var taskType = model.Compilation.GetTypeByMetadataName(typeof(Task).FullName);
             var methodsMap = type.Methods()
                 .ToImmutableDictionary(x => x.Name, x => x);
             return type.Methods()
-                .Select(method => new { method })
+                .Select(method => {
+                    var asyncCommandInfo = method.GetAttributes()
+                        .FirstOrDefault(x => x.AttributeClass == asyncCommandAttributeType)
+                        .With(x => {
+                            var args = x.ConstructorArguments.Select(arg => arg.Value).ToArray();
+                            var namedArgs = x.NamedArguments.ToImmutableDictionary(p => p.Key, p => (bool)p.Value.Value); //TODO error if names are not recognizable
+                            return new AsyncCommandInfo(args.Length > 0 ? (bool)args[0] : true,
+                                namedArgs.GetValueOrDefault("AllowMultipleExecution"));
+                        });
+                    return new { method, asyncCommandInfo };
+                })
                 .Where(info => info.method.DeclaredAccessibility == Accessibility.Public
                     && info.method.MethodKind == MethodKind.Ordinary
                     && !info.method.IsStatic
@@ -147,11 +159,11 @@ $@"partial class {type.Name} : INotifyPropertyChanged, ISupportParentViewModel {
                     var propertyType = isAsync 
                         ? "AsyncCommand" + genericParameter
                         : (genericParameter.With(x => $"DelegateCommand{x}") ?? "ICommand");
-                    var canExecuteMethodName = methodsMap.GetValueOrDefault("Can" + methodName)
-                        .With(x => ", " + x.Name);
+                    var canExecuteMethodName = ", " + (methodsMap.GetValueOrDefault("Can" + methodName)?.Name ?? "null");
+                    var allowMultipleExecution = (info.asyncCommandInfo?.AllowMultipleExecution ?? false) ? ", allowMultipleExecution: true" : null;
                     return
 $@"{commandTypeName} _{commandName};
-public {propertyType} {commandName} {{ get {{ return _{commandName} ?? (_{commandName} = new {commandTypeName}({methodName}{canExecuteMethodName})); }} }}";
+public {propertyType} {commandName} {{ get {{ return _{commandName} ?? (_{commandName} = new {commandTypeName}({methodName}{canExecuteMethodName}{allowMultipleExecution})); }} }}";
                 })
                 .ConcatStringsWithNewLines();
         }

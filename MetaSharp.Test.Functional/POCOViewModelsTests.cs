@@ -219,7 +219,7 @@ namespace MetaSharp.Test.Functional {
             AsyncCommand asyncCommand1 = viewModel.ShowCommand;
             Assert.False(asyncCommand1.AllowMultipleExecution);
             AsyncCommand<string> asyncCommand2 = viewModel.OpenCommand;
-            //Assert.True(asyncCommand2.AllowMultipleExecution);
+            Assert.True(asyncCommand2.AllowMultipleExecution);
         }
         #endregion
 
