@@ -231,4 +231,21 @@ namespace MetaSharp.Test.Meta.POCO {
             return parameter != 9;
         }
     }
+
+    public partial class POCOAsyncCommands {
+        public Task Show() {
+            return null;
+        }
+        public bool CanShowValue;
+        public bool CanShow() {
+            return CanShowValue;
+        }
+        [AsyncCommand(AllowMultipleExecution = true)]
+        public Task Open(string parameter) {
+            return null;
+        }
+        public bool CanOpen(string parameter) {
+            return parameter != "x";
+        }
+    }
 }

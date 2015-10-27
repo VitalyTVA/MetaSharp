@@ -199,6 +199,19 @@ namespace MetaSharp.Test.Functional {
             Assert.Equal(117, viewModel.CloseLastParameter);
             Assert.Equal(1, viewModel.CloseCallCount);
         }
+
+        [Fact]
+        public void AsyncCommandsCanExecute() {
+            POCOAsyncCommands viewModel = POCOAsyncCommands.Create();
+            IAsyncCommand asyncCommand = (IAsyncCommand)TypeHelper.GetPropertyValue(viewModel, "ShowCommand");
+            Assert.False(asyncCommand.CanExecute(null));
+            viewModel.CanShowValue = true;
+            Assert.True(asyncCommand.CanExecute(null));
+
+            asyncCommand = (IAsyncCommand)TypeHelper.GetPropertyValue(viewModel, "OpenCommand");
+            Assert.True(asyncCommand.CanExecute("y"));
+            Assert.False(asyncCommand.CanExecute("x"));
+        }
         #endregion
 
         void CheckBindableProperty<T, TProperty>(T viewModel, Expression<Func<T, TProperty>> propertyExpression, Action<T, TProperty> setValueAction, TProperty value1, TProperty value2, Action<T, TProperty> checkOnPropertyChangedResult = null) {
