@@ -174,4 +174,30 @@ namespace MetaSharp.Test.Meta.POCO {
         public void RefParameter(ref int x) { x = 0; }
         public int MethodWithReturnValue() { return 0; }
     }
+
+    public partial class ProtectedAndPrivateCanExecuteMethods {
+        public bool IsMethod1Enabled;
+        public void Method1() {
+            throw new NotImplementedException();
+        }
+        protected bool CanMethod1() {
+            return IsMethod1Enabled;
+        }
+
+        public bool IsMethod2Enabled;
+        public void Method2() {
+            throw new NotImplementedException();
+        }
+        protected internal bool CanMethod2() {
+            return IsMethod2Enabled;
+        }
+
+        public bool IsMethod3Enabled;
+        public void Method3() {
+            throw new NotImplementedException();
+        }
+        bool CanMethod3() {
+            return IsMethod3Enabled;
+        }
+    }
 }

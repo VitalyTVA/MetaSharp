@@ -157,6 +157,21 @@ namespace MetaSharp.Test.Functional {
             Assert.Equal(typeof(AsyncCommand), viewModel.GetType().GetProperty("ShowAsyncCommand").PropertyType);
         }
 
+        [Fact]
+        public void ProtectedCanExecuteMethod() {
+            var viewModel = ProtectedAndPrivateCanExecuteMethods.Create();
+            Assert.False(viewModel.Method1Command.CanExecute(null));
+            viewModel.IsMethod1Enabled = true;
+            Assert.True(viewModel.Method1Command.CanExecute(null));
+
+            Assert.False(viewModel.Method2Command.CanExecute(null));
+            viewModel.IsMethod2Enabled = true;
+            Assert.True(viewModel.Method2Command.CanExecute(null));
+
+            Assert.False(viewModel.Method3Command.CanExecute(null));
+            viewModel.IsMethod3Enabled = true;
+            Assert.True(viewModel.Method3Command.CanExecute(null));
+        }
         #endregion
 
         void CheckBindableProperty<T, TProperty>(T viewModel, Expression<Func<T, TProperty>> propertyExpression, Action<T, TProperty> setValueAction, TProperty value1, TProperty value2, Action<T, TProperty> checkOnPropertyChangedResult = null) {

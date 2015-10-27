@@ -100,6 +100,8 @@ partial class {type.Name} : INotifyPropertyChanged, ISupportParentViewModel {{
 
         static string GenerateCommands(SemanticModel model, INamedTypeSymbol type) {
             var taskType = model.Compilation.GetTypeByMetadataName(typeof(Task).FullName);
+            var methodsMap = type.Methods()
+                .ToImmutableDictionary(x => x.Name, x => x);
             return type.Methods()
                 .Select(method => new { method })
                 .Where(info => info.method.DeclaredAccessibility == Accessibility.Public
@@ -117,9 +119,11 @@ partial class {type.Name} : INotifyPropertyChanged, ISupportParentViewModel {{
                     var propertyType = isAsync 
                         ? "AsyncCommand" 
                         : (genericParameter.With(x => $"DelegateCommand{x}") ?? "ICommand");
+                    var canExecuteMethodName = methodsMap.GetValueOrDefault("Can" + methodName)
+                        .With(x => ", " + x.Name);
                     return
 $@"{commandTypeName} _{commandName};
-public {propertyType} {commandName} {{ get {{ return _{commandName} ?? (_{commandName} = new {commandTypeName}({methodName})); }} }}";
+public {propertyType} {commandName} {{ get {{ return _{commandName} ?? (_{commandName} = new {commandTypeName}({methodName}{canExecuteMethodName})); }} }}";
                 })
                 .ConcatStringsWithNewLines();
         }
