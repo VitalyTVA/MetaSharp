@@ -149,13 +149,13 @@ namespace MetaSharp.Test.Meta.POCO {
         public void Show() {
             ShowCallCount++;
         }
-        //public int ShowAsyncCallCount;
+        public int ShowAsyncCallCount;
 
-        //public Task ShowAsync() {
-        //    return Task.Factory.StartNew(() =>
-        //        ShowAsyncCallCount++
-        //    );
-        //}
+        public Task ShowAsync() {
+            return Task.Factory.StartNew(() =>
+                ShowAsyncCallCount++
+            );
+        }
 
         //public int SaveCallCount;
         //public void Save() {

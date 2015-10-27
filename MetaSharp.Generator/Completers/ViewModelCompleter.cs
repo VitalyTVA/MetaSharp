@@ -81,7 +81,7 @@ namespace DevExpress.Mvvm.DataAnnotations {
         }
 
         static string GenerateCore(SemanticModel model, INamedTypeSymbol type) {
-            var commands = GenerateCommands(type);
+            var commands = GenerateCommands(model, type);
             var properties = GenerateProperties(model, type);
             return
 //TODO what if System.ComponentModel is already in context?
@@ -98,16 +98,20 @@ partial class {type.Name} : INotifyPropertyChanged, ISupportParentViewModel {{
 }}";
         }
 
-        static string GenerateCommands(INamedTypeSymbol type) {
+        static string GenerateCommands(SemanticModel model, INamedTypeSymbol type) {
+            var taskType = model.Compilation.GetTypeByMetadataName(typeof(Task).FullName);
             return type.Methods()
                 .Select(method => new { method })
                 .Where(info => info.method.DeclaredAccessibility == Accessibility.Public && info.method.MethodKind == MethodKind.Ordinary)
                 .Select(info => {
+                    var isAsync = info.method.ReturnType == taskType;
                     var commandName = info.method.Name + "Command";
                     var methodName = info.method.Name;
+                    var commandTypeName = isAsync ? "AsyncCommand" : "DelegateCommand";
+                    var propertyType = isAsync ? "AsyncCommand" : "ICommand";
                     return
-$@"ICommand _{commandName};
-public ICommand {commandName} {{ get {{ return _{commandName} ?? (_{commandName} = new DelegateCommand({methodName})); }} }}";
+$@"{commandTypeName} _{commandName};
+public {propertyType} {commandName} {{ get {{ return _{commandName} ?? (_{commandName} = new {commandTypeName}({methodName})); }} }}";
                 })
                 .ConcatStringsWithNewLines();
         }

@@ -136,7 +136,7 @@ namespace MetaSharp.Test.Functional {
         public void CommandsGeneration() {
             POCOCommandsViewModel viewModel = POCOCommandsViewModel.Create();
             CheckCommand(viewModel, x => x.Show(), x => Assert.Equal(1, x.ShowCallCount));
-            //CheckCommand(viewModel, x => x.ShowAsync(), x => Assert.Equal(1, x.ShowAsyncCallCount), true);
+            CheckCommand(viewModel, x => x.ShowAsync(), x => Assert.Equal(1, x.ShowAsyncCallCount), true);
             //CheckCommand(viewModel, x => x.Save(), x => Assert.Equal(1, x.SaveCallCount));
             //CheckCommand(viewModel, x => x.Close(null), x => Assert.Equal(1, x.CloseCallCount));
             //CheckNoCommand(viewModel, "InternalMethod");
@@ -152,9 +152,9 @@ namespace MetaSharp.Test.Functional {
             //CheckNoCommand(viewModel, "RefParameter");
             //CheckNoCommand(viewModel, "MethodWithReturnValue");
 
-            //Assert.Equal(typeof(ICommand), viewModel.GetType().GetProperty("ShowCommand").PropertyType);
+            Assert.Equal(typeof(ICommand), viewModel.GetType().GetProperty("ShowCommand").PropertyType);
             //Assert.Equal(typeof(DelegateCommand<string>), viewModel.GetType().GetProperty("CloseCommand").PropertyType);
-            //Assert.Equal(typeof(AsyncCommand), viewModel.GetType().GetProperty("ShowAsyncCommand").PropertyType);
+            Assert.Equal(typeof(AsyncCommand), viewModel.GetType().GetProperty("ShowAsyncCommand").PropertyType);
         }
 
         #endregion
