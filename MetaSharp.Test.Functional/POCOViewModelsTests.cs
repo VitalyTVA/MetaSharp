@@ -212,6 +212,15 @@ namespace MetaSharp.Test.Functional {
             Assert.True(asyncCommand.CanExecute("y"));
             Assert.False(asyncCommand.CanExecute("x"));
         }
+
+        [Fact]
+        public void AsyncCommandAllowMultipleExecutionAttributeTest() {
+            POCOAsyncCommands viewModel = POCOAsyncCommands.Create();
+            AsyncCommand asyncCommand1 = viewModel.ShowCommand;
+            Assert.False(asyncCommand1.AllowMultipleExecution);
+            AsyncCommand<string> asyncCommand2 = viewModel.OpenCommand;
+            //Assert.True(asyncCommand2.AllowMultipleExecution);
+        }
         #endregion
 
         void CheckBindableProperty<T, TProperty>(T viewModel, Expression<Func<T, TProperty>> propertyExpression, Action<T, TProperty> setValueAction, TProperty value1, TProperty value2, Action<T, TProperty> checkOnPropertyChangedResult = null) {
