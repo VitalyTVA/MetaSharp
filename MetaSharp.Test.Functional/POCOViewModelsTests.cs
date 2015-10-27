@@ -153,7 +153,7 @@ namespace MetaSharp.Test.Functional {
             //CheckNoCommand(viewModel, "MethodWithReturnValue");
 
             Assert.Equal(typeof(ICommand), viewModel.GetType().GetProperty("ShowCommand").PropertyType);
-            //Assert.Equal(typeof(DelegateCommand<string>), viewModel.GetType().GetProperty("CloseCommand").PropertyType);
+            Assert.Equal(typeof(DelegateCommand<string>), viewModel.GetType().GetProperty("CloseCommand").PropertyType);
             Assert.Equal(typeof(AsyncCommand), viewModel.GetType().GetProperty("ShowAsyncCommand").PropertyType);
         }
 
