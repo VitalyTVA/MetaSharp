@@ -52,7 +52,11 @@ namespace DevExpress.Mvvm.DataAnnotations {
     }
 }
 ";
-        public static readonly ImmutableArray<string> Usings = ImmutableArray.Create("System.Linq.Expressions", "System.Windows.Input", "DevExpress.Mvvm");
+        public static readonly ImmutableArray<string> Usings = ImmutableArray.Create(
+            "System.ComponentModel",
+            "System.Linq.Expressions", 
+            "System.Windows.Input", 
+            "DevExpress.Mvvm");
 
         //TODO generate typed parent viewmode if view model has TParent view model parameter
         //TODO auto calc dependent properties
@@ -75,6 +79,13 @@ namespace DevExpress.Mvvm.DataAnnotations {
                 OnPropertyChangingMethodName = onPropertyChangingMethodName;
             }
         }
+        class AsyncCommandInfo { //TODO make struct, auto-completed (self-hosting)
+            public readonly bool IsAsyncCommand, AllowMultipleExecution;
+            public AsyncCommandInfo(bool isAsyncCommand, bool allowMultipleExecution) {
+                IsAsyncCommand = isAsyncCommand;
+                AllowMultipleExecution = allowMultipleExecution;
+            }
+        }
 
         public static CompleterResult Generate(SemanticModel model, INamedTypeSymbol type) {
             return GenerateCore(model, type);
@@ -84,9 +95,7 @@ namespace DevExpress.Mvvm.DataAnnotations {
             var commands = GenerateCommands(model, type);
             var properties = GenerateProperties(model, type);
             return
-//TODO what if System.ComponentModel is already in context?
-$@"using System.ComponentModel;
-partial class {type.Name} : INotifyPropertyChanged, ISupportParentViewModel {{
+$@"partial class {type.Name} : INotifyPropertyChanged, ISupportParentViewModel {{
     public static {type.Name} Create() {{
         return new {type.Name}Implementation();
     }}

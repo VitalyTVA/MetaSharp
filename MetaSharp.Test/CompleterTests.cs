@@ -298,6 +298,7 @@ namespace MetaSharp.Incomplete {
 using MetaSharp;
 namespace MetaSharp.Incomplete {
 using System;
+using System.ComponentModel;
     [MetaCompleteViewModel]
     public partial class ViewModel {
         public virtual Boo BooProperty { get; set; }
@@ -309,10 +310,10 @@ using System;
             string output =
 $@"namespace MetaSharp.Incomplete {{
 using System;
+using System.ComponentModel;
 using System.Linq.Expressions;
 using System.Windows.Input;
 using DevExpress.Mvvm;
-    using System.ComponentModel;
     partial class ViewModel : INotifyPropertyChanged, ISupportParentViewModel {{
         public static ViewModel Create() {{
             return new ViewModelImplementation();
@@ -379,10 +380,10 @@ using System;
             string output =
 $@"namespace MetaSharp.Incomplete {{
 using System;
+using System.ComponentModel;
 using System.Linq.Expressions;
 using System.Windows.Input;
 using DevExpress.Mvvm;
-    using System.ComponentModel;
     partial class ViewModel : INotifyPropertyChanged, ISupportParentViewModel {{
         public static ViewModel Create() {{
             return new ViewModelImplementation();
