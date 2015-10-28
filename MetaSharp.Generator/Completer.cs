@@ -42,7 +42,7 @@ namespace MetaSharp {
         static Completer() {
             Completers = ImmutableDictionary<Type, TypeCompleter>.Empty
                 .Add(typeof(MetaCompleteClassAttribute), new TypeCompleter(ClassCompleter.Generate))
-                .Add(typeof(MetaCompleteViewModelAttribute), new TypeCompleter(ViewModelCompleter.Generate, x => ViewModelCompleter.Attrubutes, ViewModelCompleter.Usings))
+                .Add(typeof(MetaCompleteViewModelAttribute), new TypeCompleter(ViewModelCompleter.Generate, x => ViewModelCompleter.KnownTypes, ViewModelCompleter.Usings))
                 .Add(typeof(MetaCompleteDependencyPropertiesAttribute), new TypeCompleter(DependencyPropertiesCompleter.Generate))
             ;
         }

@@ -48,11 +48,13 @@ object ISupportParentViewModel.ParentViewModel {{
 }}
 partial void OnParentViewModelChanged(object oldParentViewModel);".AddTabs(1);
 
-        public static readonly string Attrubutes = //TODO do not add this stub if Mvvm is already referenced via MetaReference?? (can't find how to write test for it)
+        public static readonly string KnownTypes = //TODO do not add this stub if Mvvm is already referenced via MetaReference?? (can't find how to write test for it)
 @"
 using System;
+using System.ComponentModel;
 namespace DevExpress.Mvvm {
     public interface ISupportParentViewModel { }
+    public class BindableBase : INotifyPropertyChanged { }
 }
 namespace DevExpress.Mvvm.DataAnnotations {
     public class BindablePropertyAttribute : Attribute {
@@ -122,11 +124,16 @@ namespace DevExpress.Mvvm.DataAnnotations {
         static string GenerateCore(SemanticModel model, INamedTypeSymbol type) {
             var commands = GenerateCommands(model, type);
             var properties = GenerateProperties(model, type);
-
+            
             var iSupportParentViewModelType = model.Compilation.GetTypeByMetadataName("DevExpress.Mvvm.ISupportParentViewModel");
             var parentViewModelImplementation = type.AllInterfaces.Contains(iSupportParentViewModelType)
                 ? string.Empty
                 : ParentViewModelImplementation(type.Name);
+
+            var iNPCType= model.Compilation.GetTypeByMetadataName("System.ComponentModel.INotifyPropertyChanged");
+            var inpcImplementation = type.AllInterfaces.Contains(iNPCType)
+                ? string.Empty
+                : INPCImplemetation(type.Name); //TODO dup code
 
             return
 $@"partial class {type.Name} : INotifyPropertyChanged, ISupportParentViewModel {{
@@ -134,7 +141,7 @@ $@"partial class {type.Name} : INotifyPropertyChanged, ISupportParentViewModel {
         return new {type.Name}Implementation();
     }}
 {commands.AddTabs(1)}
-{INPCImplemetation(type.Name)}
+{inpcImplementation}
 {parentViewModelImplementation}
     class {type.Name}Implementation : {type.Name} {{
 {properties.AddTabs(2)}

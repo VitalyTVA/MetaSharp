@@ -139,6 +139,13 @@ namespace MetaSharp.Test.Functional {
             ((ISupportParentViewModel)model).ParentViewModel = "x";
             Assert.Equal("x", ((ISupportParentViewModel)model).ParentViewModel);
         }
+        [Fact]
+        public void BindableBaseDescendantTest() {
+            var model = BindableBaseDescendant.Create();
+            CheckBindableProperty(model, x => x.Property, (vm, x) => vm.Property = x, "x", "y");
+            ((ISupportParentViewModel)model).ParentViewModel = "x";
+            Assert.Equal("x", ((ISupportParentViewModel)model).ParentViewModel);
+        }
         #endregion
 
         #region commands

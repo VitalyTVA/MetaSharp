@@ -320,4 +320,8 @@ namespace MetaSharp.Test.Meta.POCO {
             throw new InvalidOperationException();
         }
     }
+
+    public partial class BindableBaseDescendant : BindableBase {
+        public virtual string Property { get; set; }
+    }
 }
