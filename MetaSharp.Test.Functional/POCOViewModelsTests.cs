@@ -234,12 +234,13 @@ namespace MetaSharp.Test.Functional {
             viewModel.SimpleCommand.Execute(null);
             Assert.Equal(0, viewModel.SimpleMethodCallCount);
             WaitFor(() => 1 == viewModel.SimpleMethodCallCount);
+
             CheckNoCommand(viewModel, "NoAttribute");
 
-            //                button.SetBinding(Button.CommandProperty, new Binding("MethodWithCommand"));
-            //                button.Command.Execute(null);
-            //            });
-            //            EnqueueWait(() => viewModel.MethodWithCommandCallCount == 1);
+            viewModel.MethodWithCommand.Execute(null);
+            Assert.Equal(0, viewModel.MethodWithCommandCallCount);
+            WaitFor(() => 1 == viewModel.MethodWithCommandCallCount);
+
             //            EnqueueCallback(() => {
             //                button.SetBinding(Button.CommandProperty, new Binding("MyCommand"));
             //                button.Command.Execute(null);
