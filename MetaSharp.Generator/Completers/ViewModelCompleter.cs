@@ -55,6 +55,7 @@ using System.ComponentModel;
 namespace DevExpress.Mvvm {
     public interface ISupportParentViewModel { }
     public class BindableBase : INotifyPropertyChanged { }
+    public class ViewModelBase : BindableBase, ISupportParentViewModel { }
 }
 namespace DevExpress.Mvvm.DataAnnotations {
     public class BindablePropertyAttribute : Attribute {
@@ -93,7 +94,8 @@ namespace DevExpress.Mvvm.DataAnnotations {
             "System.ComponentModel",
             "System.Linq.Expressions", 
             "System.Windows.Input", 
-            "DevExpress.Mvvm");
+            "DevExpress.Mvvm",
+            "DevExpress.Mvvm.POCO");
 
         class BindableInfo { //TODO make struct, auto-completed (self-hosting)
             public readonly bool IsBindable;
@@ -143,8 +145,11 @@ $@"partial class {type.Name} : INotifyPropertyChanged, ISupportParentViewModel {
 {commands.AddTabs(1)}
 {inpcImplementation}
 {parentViewModelImplementation}
-    class {type.Name}Implementation : {type.Name} {{
+    class {type.Name}Implementation : {type.Name}, IPOCOViewModel {{
 {properties.AddTabs(2)}
+        void IPOCOViewModel.RaisePropertyChanged(string propertyName) {{
+            RaisePropertyChanged(propertyName);
+        }}
     }}
 }}";
         }

@@ -324,4 +324,14 @@ namespace MetaSharp.Test.Meta.POCO {
     public partial class BindableBaseDescendant : BindableBase {
         public virtual string Property { get; set; }
     }
+
+    public partial class POCOViewModel_CommandsInViewModelBaseDescendant : ViewModelBase {
+        [Command]
+        public void Save() { SaveCallCount++; }
+        public int SaveCallCount;
+
+        public void RaiseCanExecuteChangedPublic(Expression<Action> commandMethodExpression) {
+            RaiseCanExecuteChanged(commandMethodExpression);
+        }
+    }
 }

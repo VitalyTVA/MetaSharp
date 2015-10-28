@@ -317,6 +317,7 @@ using System.ComponentModel;
 using System.Linq.Expressions;
 using System.Windows.Input;
 using DevExpress.Mvvm;
+using DevExpress.Mvvm.POCO;
     partial class ViewModel : INotifyPropertyChanged, ISupportParentViewModel {{
         public static ViewModel Create() {{
             return new ViewModelImplementation();
@@ -324,7 +325,7 @@ using DevExpress.Mvvm;
         DelegateCommand<string> _DoCommand;
         public DelegateCommand<string> DoCommand {{ get {{ return _DoCommand ?? (_DoCommand = new DelegateCommand<string>(Do, null)); }} }}
 {GetPOCOImplementations("ViewModel").AddTabs(1)}
-        class ViewModelImplementation : ViewModel {{
+        class ViewModelImplementation : ViewModel, IPOCOViewModel {{
             public override Boo BooProperty {{
                 get {{ return base.BooProperty; }}
                 set {{
@@ -342,6 +343,9 @@ using DevExpress.Mvvm;
                     base.IntProperty = value;
                     RaisePropertyChanged(""IntProperty"");
                 }}
+            }}
+            void IPOCOViewModel.RaisePropertyChanged(string propertyName) {{
+                RaisePropertyChanged(propertyName);
             }}
         }}
     }}
@@ -387,12 +391,16 @@ using System.ComponentModel;
 using System.Linq.Expressions;
 using System.Windows.Input;
 using DevExpress.Mvvm;
+using DevExpress.Mvvm.POCO;
     partial class ViewModel : INotifyPropertyChanged, ISupportParentViewModel {{
         public static ViewModel Create() {{
             return new ViewModelImplementation();
         }}
 {GetPOCOImplementations("ViewModel").AddTabs(1)}
-        class ViewModelImplementation : ViewModel {{
+        class ViewModelImplementation : ViewModel, IPOCOViewModel {{
+            void IPOCOViewModel.RaisePropertyChanged(string propertyName) {{
+                RaisePropertyChanged(propertyName);
+            }}
         }}
     }}
 }}";

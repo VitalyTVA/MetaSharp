@@ -118,6 +118,9 @@ namespace MetaSharp.Test.Functional {
 
             viewModel.RaisePropertiesChanged();
             Assert.Equal(string.Empty, propertyName);
+
+            viewModel.RaisePropertyChanged(x => x.Property1);
+            Assert.Equal("Property1", propertyName);
         }
         [Fact]
         public void GetSetParentViewModel() {
@@ -354,6 +357,18 @@ namespace MetaSharp.Test.Functional {
             };
             CommandManager.InvalidateRequerySuggested();
             DispatcherHelper.DoEvents();
+        }
+
+        [Fact]
+        public void CommandsInViewModelBaseDescendant() {
+            var viewModel = POCOViewModel_CommandsInViewModelBaseDescendant.Create();
+            var command = CheckCommand(viewModel, x => x.Save(), x => Assert.Equal(1, x.SaveCallCount));
+            Assert.NotNull(viewModel.SaveCommand);
+            int canExecuteChangedCount = 0;
+            command.CanExecuteChanged += (x, e) => canExecuteChangedCount++;
+            viewModel.RaiseCanExecuteChangedPublic(() => viewModel.Save());
+            DispatcherHelper.DoEvents();
+            Assert.Equal(1, canExecuteChangedCount);
         }
         #endregion
 
