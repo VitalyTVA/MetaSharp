@@ -334,4 +334,14 @@ namespace MetaSharp.Test.Meta.POCO {
             RaiseCanExecuteChanged(commandMethodExpression);
         }
     }
+
+    public partial class POCOViewModel_AsyncCommandsInViewModelBaseDescendant : ViewModelBase {
+        public Task Save() {
+            return Task.Factory.StartNew(() => SaveCallCount++);
+        }
+        public int SaveCallCount;
+        public void RaiseCanExecuteChangedPublic(Expression<Action> commandMethodExpression) {
+            RaiseCanExecuteChanged(commandMethodExpression);
+        }
+    }
 }

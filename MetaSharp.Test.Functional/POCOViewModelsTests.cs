@@ -369,6 +369,22 @@ namespace MetaSharp.Test.Functional {
             viewModel.RaiseCanExecuteChangedPublic(() => viewModel.Save());
             DispatcherHelper.DoEvents();
             Assert.Equal(1, canExecuteChangedCount);
+
+            viewModel.RaiseCanExecuteChanged(x => x.Save());
+            DispatcherHelper.DoEvents();
+            Assert.Equal(2, canExecuteChangedCount);
+        }
+
+        [Fact]
+        public void AsyncCommandsInViewModelBaseDescendant() {
+            var viewModel = ViewModelSource.Create<POCOViewModel_AsyncCommandsInViewModelBaseDescendant>();
+            var command = CheckCommand(viewModel, x => x.Save(), x => Assert.Equal(1, x.SaveCallCount), true);
+            Assert.NotNull(viewModel.SaveCommand);
+            int canExecuteChangedCount = 0;
+            command.CanExecuteChanged += (x, e) => canExecuteChangedCount++;
+            viewModel.RaiseCanExecuteChangedPublic(() => viewModel.Save());
+            DispatcherHelper.DoEvents();
+            Assert.Equal(1, canExecuteChangedCount);
         }
         #endregion
 
