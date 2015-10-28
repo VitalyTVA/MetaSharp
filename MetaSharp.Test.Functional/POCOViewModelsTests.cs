@@ -245,42 +245,26 @@ namespace MetaSharp.Test.Functional {
             WaitFor(() => 1 == viewModel.CustomNameCommandCallCount);
 
             CheckNoCommand(viewModel, "BaseClass");
-            //                button.SetBinding(Button.CommandProperty, new Binding("MethodWithCanExecuteCommand"));
-            //                Assert.IsFalse(button.IsEnabled, "0");
-            //                viewModel.MethodWithCanExecuteCanExcute = true;
-            //            });
-            //#if !SILVERLIGHT
-            //            EnqueueWindowUpdateLayout(DispatcherPriority.Normal);
-            //#endif
-            //            EnqueueCallback(() => {
-            //                Assert.IsFalse(button.IsEnabled, "1");
-            //                viewModel.RaiseCanExecuteChanged(methodWithCanExecuteExpression);
-            //                Assert.AreEqual(button.Command, viewModel.GetCommand(methodWithCanExecuteExpression));
-            //#if !SILVERLIGHT
-            //                Assert.IsFalse(button.IsEnabled, "2");
-            //#endif
-            //            });
-            //            EnqueueWindowUpdateLayout();
-            //            EnqueueCallback(() => {
-            //                Assert.IsTrue(button.IsEnabled);
-            //                if(!IsAsyncCommand) {
-            //                    button.SetBinding(Button.CommandProperty, new Binding("MethodWithReturnTypeCommand"));
-            //                    button.Command.Execute(null);
-            //                    Assert.AreEqual(1, viewModel.MethodWithReturnTypeCallCount);
 
-            //                    button.SetBinding(Button.CommandProperty, new Binding("MethodWithReturnTypeAndParameterCommand"));
-            //                    button.Command.Execute("x");
-            //                    Assert.AreEqual(1, viewModel.MethodWithReturnTypeAndParameterCallCount);
-            //                }
+            Assert.False(viewModel.MethodWithCanExecuteCommand.CanExecute(null));
+            viewModel.MethodWithCanExecuteCanExcute = true;
+            Assert.True(viewModel.MethodWithCanExecuteCommand.CanExecute(null));
+            //if(!IsAsyncCommand) {
+            //    viewModel.MethodWithReturnTypeCommand.Execute(null);
+            //    button.SetBinding(Button.CommandProperty, new Binding("MethodWithReturnTypeCommand"));
+            ////                    button.Command.Execute(null);
+            ////                    Assert.AreEqual(1, viewModel.MethodWithReturnTypeCallCount);
 
-            //                button.SetBinding(Button.CommandProperty, new Binding("MethodWithParameterCommand"));
-            //                button.Command.Execute(9);
-            //            });
-            //            EnqueueWait(() => viewModel.MethodWithParameterCallCount == 1);
-            //            EnqueueCallback(() => {
-            //                if(button.Command is IAsyncCommand)
-            //                    EnqueueWait(() => ((IAsyncCommand)button.Command).IsExecuting == false);
-            //            });
+            ////                    button.SetBinding(Button.CommandProperty, new Binding("MethodWithReturnTypeAndParameterCommand"));
+            ////                    button.Command.Execute("x");
+            ////                    Assert.AreEqual(1, viewModel.MethodWithReturnTypeAndParameterCallCount);
+            //}
+
+            viewModel.MethodWithParameterCommand.Execute(9);
+            Assert.True(viewModel.MethodWithParameterCommand.IsExecuting);
+            WaitFor(() => 1 == viewModel.MethodWithParameterCallCount);
+            WaitFor(() => !viewModel.MethodWithParameterCommand.IsExecuting);
+
             //            EnqueueCallback(() => {
             //                Assert.AreEqual(9, viewModel.MethodWithParameterLastParameter);
             //                Assert.IsTrue(button.Command.CanExecute(9));

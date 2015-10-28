@@ -269,13 +269,13 @@ namespace MetaSharp.Test.Meta.POCO {
         public Task MethodWithCanExecute() { return null; }
         public bool CanMethodWithCanExecute() { return MethodWithCanExecuteCanExcute; }
 
-        //public Task MethodWithParameter(int parameter) {
-        //    return Task.Factory.StartNew(() => {
-        //        MethodWithParameterCallCount++;
-        //        MethodWithParameterLastParameter = parameter;
-        //    });
-        //}
-        //public bool CanMethodWithParameter(int parameter) { return parameter != 13; }
+        public Task MethodWithParameter(int parameter) {
+            return Task.Factory.StartNew(() => {
+                MethodWithParameterCallCount++;
+                MethodWithParameterLastParameter = parameter;
+            });
+        }
+        public bool CanMethodWithParameter(int parameter) { return parameter != 13; }
 
         //[Command(CanExecuteMethodName = "CanMethodWithCustomCanExecute_", UseCommandManager = false)]
         public Task MethodWithCustomCanExecute() { return null; }
