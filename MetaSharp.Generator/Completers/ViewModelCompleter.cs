@@ -11,6 +11,8 @@ using System.Threading.Tasks;
 using CompleterResult = MetaSharp.Either<System.Collections.Immutable.ImmutableArray<MetaSharp.CompleterError>, string>;
 
 namespace MetaSharp {
+    //TODO do not generate command for method from base class if there is already one
+    //TODO do generate command for method from base class if there no one and this method is accessible from completer
     public static class ViewModelCompleter {
         public static readonly Func<string, string> Implemetations = typeName =>
 $@"public event PropertyChangedEventHandler PropertyChanged;
