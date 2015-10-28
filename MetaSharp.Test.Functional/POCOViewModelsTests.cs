@@ -15,6 +15,7 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
 using Xunit;
+using System.Windows.Data;
 
 namespace MetaSharp.Test.Functional {
     public class POCOViewModelsTests {
@@ -220,6 +221,92 @@ namespace MetaSharp.Test.Functional {
             Assert.False(asyncCommand1.AllowMultipleExecution);
             AsyncCommand<string> asyncCommand2 = viewModel.OpenCommand;
             Assert.True(asyncCommand2.AllowMultipleExecution);
+        }
+
+        [Fact]
+        public void AsyncCommandAttribute_ViewModelTest() {
+            var viewModel = AsyncCommandAttributeViewModel.Create();
+            CommandAttribute_ViewModelTestCore(viewModel, x => viewModel.MethodWithCanExecute(), x => viewModel.MethodWithCustomCanExecute(), true);
+        }
+
+        void CommandAttribute_ViewModelTestCore(AsyncCommandAttributeViewModel viewModel, Expression<Action<CommandAttributeViewModelBaseCounters>> methodWithCanExecuteExpression, Expression<Action<CommandAttributeViewModelBaseCounters>> methodWithCustomCanExecuteExpression, bool IsAsyncCommand = false) {
+            viewModel.SimpleCommand.Execute(null);
+            Assert.Equal(0, viewModel.SimpleMethodCallCount);
+            //Assert.Equal(1, viewModel.SimpleMethodCallCount);
+            //            EnqueueCallback(() => {
+            //                button.SetBinding(Button.CommandProperty, new Binding("NoAttributeCommand"));
+            //                Assert.IsNull(button.Command);
+
+            //                button.SetBinding(Button.CommandProperty, new Binding("MethodWithCommand"));
+            //                button.Command.Execute(null);
+            //            });
+            //            EnqueueWait(() => viewModel.MethodWithCommandCallCount == 1);
+            //            EnqueueCallback(() => {
+            //                button.SetBinding(Button.CommandProperty, new Binding("MyCommand"));
+            //                button.Command.Execute(null);
+            //            });
+            //            EnqueueWait(() => viewModel.CustomNameCommandCallCount == 1);
+            //            EnqueueCallback(() => {
+            //                button.SetBinding(Button.CommandProperty, new Binding("BaseClassCommand"));
+            //                button.Command.Execute(null);
+            //                Assert.AreEqual(1, viewModel.BaseClassCommandCallCount);
+            //                Assert.IsTrue(button.IsEnabled);
+
+            //                button.SetBinding(Button.CommandProperty, new Binding("MethodWithCanExecuteCommand"));
+            //                Assert.IsFalse(button.IsEnabled, "0");
+            //                viewModel.MethodWithCanExecuteCanExcute = true;
+            //            });
+            //#if !SILVERLIGHT
+            //            EnqueueWindowUpdateLayout(DispatcherPriority.Normal);
+            //#endif
+            //            EnqueueCallback(() => {
+            //                Assert.IsFalse(button.IsEnabled, "1");
+            //                viewModel.RaiseCanExecuteChanged(methodWithCanExecuteExpression);
+            //                Assert.AreEqual(button.Command, viewModel.GetCommand(methodWithCanExecuteExpression));
+            //#if !SILVERLIGHT
+            //                Assert.IsFalse(button.IsEnabled, "2");
+            //#endif
+            //            });
+            //            EnqueueWindowUpdateLayout();
+            //            EnqueueCallback(() => {
+            //                Assert.IsTrue(button.IsEnabled);
+            //                if(!IsAsyncCommand) {
+            //                    button.SetBinding(Button.CommandProperty, new Binding("MethodWithReturnTypeCommand"));
+            //                    button.Command.Execute(null);
+            //                    Assert.AreEqual(1, viewModel.MethodWithReturnTypeCallCount);
+
+            //                    button.SetBinding(Button.CommandProperty, new Binding("MethodWithReturnTypeAndParameterCommand"));
+            //                    button.Command.Execute("x");
+            //                    Assert.AreEqual(1, viewModel.MethodWithReturnTypeAndParameterCallCount);
+            //                }
+
+            //                button.SetBinding(Button.CommandProperty, new Binding("MethodWithParameterCommand"));
+            //                button.Command.Execute(9);
+            //            });
+            //            EnqueueWait(() => viewModel.MethodWithParameterCallCount == 1);
+            //            EnqueueCallback(() => {
+            //                if(button.Command is IAsyncCommand)
+            //                    EnqueueWait(() => ((IAsyncCommand)button.Command).IsExecuting == false);
+            //            });
+            //            EnqueueCallback(() => {
+            //                Assert.AreEqual(9, viewModel.MethodWithParameterLastParameter);
+            //                Assert.IsTrue(button.Command.CanExecute(9));
+            //                Assert.IsFalse(button.Command.CanExecute(13), "3");
+            //                button.Command.Execute("10");
+            //            });
+            //            EnqueueWait(() => viewModel.MethodWithParameterCallCount == 2);
+            //            EnqueueCallback(() => {
+            //                Assert.AreEqual(2, viewModel.MethodWithParameterCallCount);
+            //                Assert.AreEqual(10, viewModel.MethodWithParameterLastParameter);
+
+            //                button.SetBinding(Button.CommandProperty, new Binding("MethodWithCustomCanExecuteCommand"));
+            //                Assert.IsFalse(button.IsEnabled, "4");
+            //                viewModel.MethodWithCustomCanExecuteCanExcute = true;
+            //                Assert.IsFalse(button.IsEnabled, "5");
+            //                viewModel.RaiseCanExecuteChanged(methodWithCustomCanExecuteExpression);
+            //                Assert.IsTrue(button.IsEnabled);
+            //            });
+            //            EnqueueTestComplete();
         }
         #endregion
 

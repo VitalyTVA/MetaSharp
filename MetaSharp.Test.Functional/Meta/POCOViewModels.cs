@@ -248,4 +248,37 @@ namespace MetaSharp.Test.Meta.POCO {
             return parameter != "x";
         }
     }
+
+    public partial class AsyncCommandAttributeViewModel : CommandAttributeViewModelBase {
+        public Task Simple() {
+            return Task.Factory.StartNew(() => SimpleMethodCallCount++);
+        }
+        //public Task MethodWith() {
+        //    return Task.Factory.StartNew(() => MethodWithCommandCallCount++);
+        //}
+
+        //[AsyncCommand(false)]
+        //public Task NoAttribute() { return null; }
+
+        //[AsyncCommand(Name = "MyCommand")]
+        //public Task CustomName() {
+        //    return Task.Factory.StartNew(() => CustomNameCommandCallCount++);
+
+        //}
+
+        public Task MethodWithCanExecute() { return null; }
+        public bool CanMethodWithCanExecute() { return MethodWithCanExecuteCanExcute; }
+
+        //public Task MethodWithParameter(int parameter) {
+        //    return Task.Factory.StartNew(() => {
+        //        MethodWithParameterCallCount++;
+        //        MethodWithParameterLastParameter = parameter;
+        //    });
+        //}
+        //public bool CanMethodWithParameter(int parameter) { return parameter != 13; }
+
+        //[Command(CanExecuteMethodName = "CanMethodWithCustomCanExecute_", UseCommandManager = false)]
+        public Task MethodWithCustomCanExecute() { return null; }
+        public bool CanMethodWithCustomCanExecute_() { return MethodWithCustomCanExecuteCanExcute; }
+    }
 }
