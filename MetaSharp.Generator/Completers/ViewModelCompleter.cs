@@ -91,6 +91,7 @@ namespace DevExpress.Mvvm.DataAnnotations {
 }
 ";
         public static readonly ImmutableArray<string> Usings = ImmutableArray.Create(
+            "System",
             "System.ComponentModel",
             "System.Linq.Expressions", 
             "System.Windows.Input", 

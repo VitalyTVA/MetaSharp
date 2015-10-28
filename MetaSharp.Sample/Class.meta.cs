@@ -9,10 +9,9 @@ namespace MetaSharp.Sample {
     using System;
     using System.Linq;
     public static class Class1 {
-        [MetaLocation(MetaLocationKind.Designer)]
-        public static Either<IEnumerable<MetaError>, Output> CompletePOCOModels(MetaContext context) {
-            return context.Complete("Incomplete.cs")
-                .Select(text => new Output(text, "Incomplete.designer.cs"));
+        [MetaLocation(MetaLocation.Project)]
+        public static Either<IEnumerable<MetaError>, IEnumerable<Output>> CompletePOCOModels(MetaContext context) {
+            return context.Complete(new[] { "Incomplete.cs" });
         }
         public static string Do(MetaContext context) {
             var name = ImmutableArray.Create("B").Single();
@@ -22,10 +21,9 @@ $@"public class {name} {{
     }}
 }}");
         }
-        [MetaLocation(MetaLocationKind.Designer)]
+        [MetaLocation(MetaLocation.Project)]
         public static string Do2(MetaContext context) => Helper.Do2(context);
 
-        [MetaLocation(MetaLocationKind.IntermediateOutputNoIntellisense)]
         public static string Do3(MetaContext context) {
             var classGenerator = ClassGenerator.Class<D3>()
                 .Property<B>(x => x.Some2)

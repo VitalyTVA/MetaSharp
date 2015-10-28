@@ -300,8 +300,6 @@ namespace MetaSharp.Incomplete {
 @"
 using MetaSharp;
 namespace MetaSharp.Incomplete {
-using System;
-using System.ComponentModel;
     [MetaCompleteViewModel]
     public partial class ViewModel {
         public virtual Boo BooProperty { get; set; }

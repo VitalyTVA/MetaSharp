@@ -10,14 +10,40 @@ namespace MetaSharp.Sample {
     }
 }
 namespace MetaSharp.Sample {
+using System;
+using System.ComponentModel;
+using System.Linq.Expressions;
+using System.Windows.Input;
+using DevExpress.Mvvm;
+using DevExpress.Mvvm.POCO;
 
-
-    using System.ComponentModel;
-    partial class ViewModel {
+    partial class ViewModel : INotifyPropertyChanged, ISupportParentViewModel {
         public static ViewModel Create() {
             return new ViewModelImplementation();
         }
-        class ViewModelImplementation : ViewModel, INotifyPropertyChanged {
+
+        public event PropertyChangedEventHandler PropertyChanged;
+        void RaisePropertyChanged(string property) {
+            var handler = PropertyChanged;
+            if(handler != null)
+                handler(this, new PropertyChangedEventArgs(property));
+        }
+        void RaisePropertyChanged<T>(Expression<Func<ViewModel, T>> property) {
+            RaisePropertyChanged(DevExpress.Mvvm.Native.ExpressionHelper.GetPropertyName(property));
+        }
+        object parentViewModel;
+        object ISupportParentViewModel.ParentViewModel {
+            get { return parentViewModel; }
+            set {
+                if(parentViewModel == value)
+                    return;
+                var oldParentViewModel = parentViewModel;
+                parentViewModel = value;
+                OnParentViewModelChanged(oldParentViewModel);
+            }
+        }
+        partial void OnParentViewModelChanged(object oldParentViewModel);
+        class ViewModelImplementation : ViewModel, IPOCOViewModel {
             public override string BooProperty {
                 get { return base.BooProperty; }
                 set {
@@ -42,11 +68,8 @@ namespace MetaSharp.Sample {
 
                 }
             }
-            public event PropertyChangedEventHandler PropertyChanged;
-            void RaisePropertyChanged(string property) {
-                var handler = PropertyChanged;
-                if(handler != null)
-                    handler(this, new PropertyChangedEventArgs(property));
+            void IPOCOViewModel.RaisePropertyChanged(string propertyName) {
+                RaisePropertyChanged(propertyName);
             }
         }
     }
