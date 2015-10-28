@@ -257,8 +257,8 @@ namespace MetaSharp.Test.Meta.POCO {
         //    return Task.Factory.StartNew(() => MethodWithCommandCallCount++);
         //}
 
-        //[AsyncCommand(false)]
-        //public Task NoAttribute() { return null; }
+        [AsyncCommand(false)]
+        public Task NoAttribute() { return null; }
 
         //[AsyncCommand(Name = "MyCommand")]
         //public Task CustomName() {

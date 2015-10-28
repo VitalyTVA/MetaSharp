@@ -230,22 +230,11 @@ namespace MetaSharp.Test.Functional {
             var viewModel = AsyncCommandAttributeViewModel.Create();
             CommandAttribute_ViewModelTestCore(viewModel, x => viewModel.MethodWithCanExecute(), x => viewModel.MethodWithCustomCanExecute(), true);
         }
-        static void WaitFor(Func<bool> condition) {
-            var sw = new Stopwatch();
-            sw.Start();
-            while(!condition()) {
-                if(sw.ElapsedMilliseconds > 200)
-                    throw new TimeoutException();
-                DispatcherHelper.DoEvents();
-            }
-        }
         void CommandAttribute_ViewModelTestCore(AsyncCommandAttributeViewModel viewModel, Expression<Action<CommandAttributeViewModelBaseCounters>> methodWithCanExecuteExpression, Expression<Action<CommandAttributeViewModelBaseCounters>> methodWithCustomCanExecuteExpression, bool IsAsyncCommand = false) {
             viewModel.SimpleCommand.Execute(null);
             Assert.Equal(0, viewModel.SimpleMethodCallCount);
             WaitFor(() => 1 == viewModel.SimpleMethodCallCount);
-            //            EnqueueCallback(() => {
-            //                button.SetBinding(Button.CommandProperty, new Binding("NoAttributeCommand"));
-            //                Assert.IsNull(button.Command);
+            CheckNoCommand(viewModel, "NoAttribute");
 
             //                button.SetBinding(Button.CommandProperty, new Binding("MethodWithCommand"));
             //                button.Command.Execute(null);
@@ -395,6 +384,15 @@ namespace MetaSharp.Test.Functional {
         }
         static string GetCommandName<T>(Expression<Action<T>> methodExpression) {
             return ((MethodCallExpression)methodExpression.Body).Method.Name + "Command";
+        }
+        static void WaitFor(Func<bool> condition) {
+            var sw = new Stopwatch();
+            sw.Start();
+            while(!condition()) {
+                if(sw.ElapsedMilliseconds > 200)
+                    throw new TimeoutException();
+                DispatcherHelper.DoEvents();
+            }
         }
     }
     public static class TypeHelper {

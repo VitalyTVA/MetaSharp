@@ -144,7 +144,8 @@ $@"partial class {type.Name} : INotifyPropertyChanged, ISupportParentViewModel {
                         });
                     return new { method, asyncCommandInfo };
                 })
-                .Where(info => info.method.DeclaredAccessibility == Accessibility.Public
+                .Where(info => (info.asyncCommandInfo?.IsAsyncCommand ?? true)
+                    && info.method.DeclaredAccessibility == Accessibility.Public
                     && info.method.MethodKind == MethodKind.Ordinary
                     && !info.method.IsStatic
                     && (info.method.ReturnsVoid || info.method.ReturnType == taskType)
