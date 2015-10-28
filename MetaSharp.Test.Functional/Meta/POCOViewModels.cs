@@ -321,8 +321,21 @@ namespace MetaSharp.Test.Meta.POCO {
         }
     }
 
-    public partial class BindableBaseDescendant : BindableBase {
-        public virtual string Property { get; set; }
+    public partial class POCOViewModel_INPCImplementor : POCOViewModel_INPCImplementorBase, INotifyPropertyChanged {
+        public virtual string Property1 { get; set; }
+        public override void RaisePropertyChanged(string propertyName) {
+            RaisePropertyChangedCore(propertyName);
+        }
+    }
+
+    public partial class POCOViewModel_BindableBaseDescendant : BindableBase {
+        public virtual string Property1 { get; set; }
+
+        string property2;
+        public string Property2 {
+            get { return property2; }
+            set { SetProperty(ref property2, value, () => Property2); }
+        }
     }
 
     public partial class POCOViewModel_CommandsInViewModelBaseDescendant : ViewModelBase {

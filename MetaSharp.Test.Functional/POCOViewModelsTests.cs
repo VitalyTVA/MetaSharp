@@ -142,12 +142,22 @@ namespace MetaSharp.Test.Functional {
             ((ISupportParentViewModel)model).ParentViewModel = "x";
             Assert.Equal("x", ((ISupportParentViewModel)model).ParentViewModel);
         }
+
         [Fact]
-        public void BindableBaseDescendantTest() {
-            var model = BindableBaseDescendant.Create();
-            CheckBindableProperty(model, x => x.Property, (vm, x) => vm.Property = x, "x", "y");
-            ((ISupportParentViewModel)model).ParentViewModel = "x";
-            Assert.Equal("x", ((ISupportParentViewModel)model).ParentViewModel);
+        public void InheritBindableBaseTest() {
+            var viewModel = POCOViewModel_BindableBaseDescendant.Create();
+            var interfaces = viewModel.GetType().GetInterfaces();
+            CheckBindableProperty(viewModel, x => x.Property1, (vm, x) => vm.Property1 = x, "x", "y");
+            CheckBindableProperty(viewModel, x => x.Property2, (vm, x) => vm.Property2 = x, "x", "y");
+            ((ISupportParentViewModel)viewModel).ParentViewModel = "x";
+            Assert.Equal("x", ((ISupportParentViewModel)viewModel).ParentViewModel);
+        }
+
+        [Fact]
+        public void INPCImplementorTest() {
+            var viewModel = POCOViewModel_INPCImplementor.Create();
+            var interfaces = viewModel.GetType().GetInterfaces();
+            CheckBindableProperty(viewModel, x => x.Property1, (vm, x) => vm.Property1 = x, "x", "y");
         }
         #endregion
 
