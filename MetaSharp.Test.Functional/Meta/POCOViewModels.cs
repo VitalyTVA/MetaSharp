@@ -281,4 +281,34 @@ namespace MetaSharp.Test.Meta.POCO {
         public Task MethodWithCustomCanExecute() { return null; }
         public bool CanMethodWithCustomCanExecute_() { return MethodWithCustomCanExecuteCanExcute; }
     }
+
+    public partial class CommandAttributeViewModel : CommandAttributeViewModelBase {
+        public void Simple() { SimpleMethodCallCount++; }
+        public void MethodWith() { MethodWithCommandCallCount++; }
+
+        [Command(false)]
+        public void NoAttribute() { }
+
+        [Command(Name = "MyCommand")]
+        public void CustomName() { CustomNameCommandCallCount++; }
+
+        public void MethodWithCanExecute() { }
+        public bool CanMethodWithCanExecute() { return MethodWithCanExecuteCanExcute; }
+
+        [Command]
+        protected int MethodWithReturnType() { MethodWithReturnTypeCallCount++; return 0; }
+        [Command]
+        public int MethodWithReturnTypeAndParameter(string param) { Assert.Equal("x", param); MethodWithReturnTypeAndParameterCallCount++; return 0; }
+
+        public void MethodWithParameter(int parameter) { MethodWithParameterCallCount++; MethodWithParameterLastParameter = parameter; }
+        public bool CanMethodWithParameter(int parameter) { return parameter != 13; }
+
+        [Command(CanExecuteMethodName = "CanMethodWithCustomCanExecute_"
+#if !SILVERLIGHT
+, UseCommandManager = false
+#endif
+)]
+        public void MethodWithCustomCanExecute() { }
+        public bool CanMethodWithCustomCanExecute_() { return MethodWithCustomCanExecuteCanExcute; }
+    }
 }

@@ -287,6 +287,65 @@ namespace MetaSharp.Test.Functional {
             CommandManager.InvalidateRequerySuggested();
             DispatcherHelper.DoEvents();
         }
+
+        [Fact]
+        public void CommandAttribute_ViewModelTest() {
+            var viewModel = CommandAttributeViewModel.Create();
+            viewModel.SimpleCommand.Execute(null);
+            Assert.Equal(1, viewModel.SimpleMethodCallCount);
+
+            CheckNoCommand(viewModel, "NoAttribute");
+
+            viewModel.MethodWithCommand.Execute(null);
+            Assert.Equal(1, viewModel.MethodWithCommandCallCount);
+
+            viewModel.MyCommand.Execute(null);
+            Assert.Equal(1, viewModel.CustomNameCommandCallCount);
+
+            CheckNoCommand(viewModel, "BaseClass");
+
+            Assert.False(viewModel.MethodWithCanExecuteCommand.CanExecute(null));
+            viewModel.MethodWithCanExecuteCanExcute = true;
+            Assert.True(viewModel.MethodWithCanExecuteCommand.CanExecute(null));
+            //if(!IsAsyncCommand) {
+            //    viewModel.MethodWithReturnTypeCommand.Execute(null);
+            //    button.SetBinding(Button.CommandProperty, new Binding("MethodWithReturnTypeCommand"));
+            ////                    button.Command.Execute(null);
+            ////                    Assert.AreEqual(1, viewModel.MethodWithReturnTypeCallCount);
+
+            ////                    button.SetBinding(Button.CommandProperty, new Binding("MethodWithReturnTypeAndParameterCommand"));
+            ////                    button.Command.Execute("x");
+            ////                    Assert.AreEqual(1, viewModel.MethodWithReturnTypeAndParameterCallCount);
+            //}
+
+            viewModel.MethodWithParameterCommand.Execute(9);
+            Assert.Equal(1, viewModel.MethodWithParameterCallCount);
+
+            Assert.Equal(9, viewModel.MethodWithParameterLastParameter);
+            Assert.True(viewModel.MethodWithParameterCommand.CanExecute(9));
+            Assert.False(viewModel.MethodWithParameterCommand.CanExecute(13));
+            viewModel.MethodWithParameterCommand.Execute(10);
+            Assert.Equal(2, viewModel.MethodWithParameterCallCount);
+            Assert.Equal(10, viewModel.MethodWithParameterLastParameter);
+            var methodWithParameterCommandCanExecuteChangedCount = 0;
+            CommandManager.InvalidateRequerySuggested();
+            DispatcherHelper.DoEvents();
+            viewModel.MethodWithParameterCommand.CanExecuteChanged += (o, e) => {
+                methodWithParameterCommandCanExecuteChangedCount++;
+            };
+            CommandManager.InvalidateRequerySuggested();
+            DispatcherHelper.DoEvents();
+            Assert.Equal(1, methodWithParameterCommandCanExecuteChangedCount);
+
+            Assert.False(viewModel.MethodWithCustomCanExecuteCommand.CanExecute(null));
+            viewModel.MethodWithCustomCanExecuteCanExcute = true;
+            Assert.True(viewModel.MethodWithCustomCanExecuteCommand.CanExecute(null));
+            viewModel.MethodWithCustomCanExecuteCommand.CanExecuteChanged += (o, e) => {
+                throw new NotImplementedException();
+            };
+            CommandManager.InvalidateRequerySuggested();
+            DispatcherHelper.DoEvents();
+        }
         #endregion
 
         #region errors
