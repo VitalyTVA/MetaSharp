@@ -241,11 +241,8 @@ namespace MetaSharp.Test.Functional {
             Assert.Equal(0, viewModel.MethodWithCommandCallCount);
             WaitFor(() => 1 == viewModel.MethodWithCommandCallCount);
 
-            //            EnqueueCallback(() => {
-            //                button.SetBinding(Button.CommandProperty, new Binding("MyCommand"));
-            //                button.Command.Execute(null);
-            //            });
-            //            EnqueueWait(() => viewModel.CustomNameCommandCallCount == 1);
+            viewModel.MyCommand.Execute(null);
+            WaitFor(() => 1 == viewModel.CustomNameCommandCallCount);
             //            EnqueueCallback(() => {
             //                button.SetBinding(Button.CommandProperty, new Binding("BaseClassCommand"));
             //                button.Command.Execute(null);

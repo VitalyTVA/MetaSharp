@@ -260,11 +260,11 @@ namespace MetaSharp.Test.Meta.POCO {
         [AsyncCommand(false)]
         public Task NoAttribute() { return null; }
 
-        //[AsyncCommand(Name = "MyCommand")]
-        //public Task CustomName() {
-        //    return Task.Factory.StartNew(() => CustomNameCommandCallCount++);
+        [AsyncCommand(Name = "MyCommand")]
+        public Task CustomName() {
+            return Task.Factory.StartNew(() => CustomNameCommandCallCount++);
 
-        //}
+        }
 
         public Task MethodWithCanExecute() { return null; }
         public bool CanMethodWithCanExecute() { return MethodWithCanExecuteCanExcute; }

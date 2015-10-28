@@ -99,10 +99,12 @@ namespace DevExpress.Mvvm.DataAnnotations {
             }
         }
         class AsyncCommandInfo { //TODO make struct, auto-completed (self-hosting)
-            public readonly bool IsAsyncCommand, AllowMultipleExecution;
-            public AsyncCommandInfo(bool isAsyncCommand, bool allowMultipleExecution) {
-                IsAsyncCommand = isAsyncCommand;
+            public readonly bool IsCommand, AllowMultipleExecution;
+            public readonly string Name;
+            public AsyncCommandInfo(bool isCommand, bool allowMultipleExecution, string name) {
+                IsCommand = isCommand;
                 AllowMultipleExecution = allowMultipleExecution;
+                Name = name;
             }
         }
 
@@ -137,14 +139,15 @@ $@"partial class {type.Name} : INotifyPropertyChanged, ISupportParentViewModel {
                     var asyncCommandInfo = method.GetAttributes()
                         .FirstOrDefault(x => x.AttributeClass == asyncCommandAttributeType)
                         .With(x => {
-                            var args = x.ConstructorArguments.Select(arg => arg.Value).ToArray();
-                            var namedArgs = x.NamedArguments.ToImmutableDictionary(p => p.Key, p => (bool)p.Value.Value); //TODO error if names are not recognizable
+                            var args = x.ConstructorArguments.Select(arg => arg.Value).ToArray(); //TODO dup code
+                            var namedArgs = x.NamedArguments.ToImmutableDictionary(p => p.Key, p => p.Value.Value); //TODO error if names are not recognizable
                             return new AsyncCommandInfo(args.Length > 0 ? (bool)args[0] : true,
-                                namedArgs.GetValueOrDefault("AllowMultipleExecution"));
+                                allowMultipleExecution: (bool)namedArgs.GetValueOrDefault("AllowMultipleExecution", false),
+                                name: (string)namedArgs.GetValueOrDefault("Name"));
                         });
                     return new { method, asyncCommandInfo };
                 })
-                .Where(info => (info.asyncCommandInfo?.IsAsyncCommand ?? true)
+                .Where(info => (info.asyncCommandInfo?.IsCommand ?? true)
                     && info.method.DeclaredAccessibility == Accessibility.Public
                     && info.method.MethodKind == MethodKind.Ordinary
                     && !info.method.IsStatic
@@ -152,7 +155,7 @@ $@"partial class {type.Name} : INotifyPropertyChanged, ISupportParentViewModel {
                     && (!info.method.Parameters.Any() || (info.method.Parameters.Length == 1  && info.method.Parameters.Single().RefKind == RefKind.None)))
                 .Select(info => {
                     var isAsync = info.method.ReturnType == taskType;
-                    var commandName = info.method.Name + "Command";
+                    var commandName = info.asyncCommandInfo?.Name ?? (info.method.Name + "Command");
                     var methodName = info.method.Name;
                     var genericParameter = info.method.Parameters.SingleOrDefault()
                         .With(x => "<" + x.Type.DisplayString(model, x.Location()) + ">");
