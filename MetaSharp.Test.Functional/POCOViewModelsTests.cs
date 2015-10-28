@@ -272,7 +272,13 @@ namespace MetaSharp.Test.Functional {
             WaitFor(() => 2 == viewModel.MethodWithParameterCallCount);
             Assert.Equal(10, viewModel.MethodWithParameterLastParameter);
 
-
+            Assert.False(viewModel.MethodWithCustomCanExecuteCommand.CanExecute(null));
+            viewModel.MethodWithCustomCanExecuteCanExcute = true;
+            //EventHandler requerySuggestedHandler = (o, e) => {
+            //    new InvalidOperationException();
+            //};
+            //CommandManager.RequerySuggested += re
+            Assert.True(viewModel.MethodWithCustomCanExecuteCommand.CanExecute(null));
             //                button.SetBinding(Button.CommandProperty, new Binding("MethodWithCustomCanExecuteCommand"));
             //                Assert.IsFalse(button.IsEnabled, "4");
             //                viewModel.MethodWithCustomCanExecuteCanExcute = true;

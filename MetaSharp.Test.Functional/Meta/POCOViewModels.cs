@@ -277,7 +277,7 @@ namespace MetaSharp.Test.Meta.POCO {
         }
         public bool CanMethodWithParameter(int parameter) { return parameter != 13; }
 
-        //[Command(CanExecuteMethodName = "CanMethodWithCustomCanExecute_", UseCommandManager = false)]
+        [Command(CanExecuteMethodName = "CanMethodWithCustomCanExecute_", UseCommandManager = false)]
         public Task MethodWithCustomCanExecute() { return null; }
         public bool CanMethodWithCustomCanExecute_() { return MethodWithCustomCanExecuteCanExcute; }
     }

@@ -13,6 +13,15 @@ using CompleterResult = MetaSharp.Either<System.Collections.Immutable.ImmutableA
 namespace MetaSharp {
     //TODO do not generate command for method from base class if there is already one
     //TODO do generate command for method from base class if there no one and this method is accessible from completer
+    //TODO check command attribute works even for private methods
+
+    //TODO generate typed parent viewmode if view model has TParent view model parameter
+    //TODO auto calc dependent properties
+    //TODO auto generate default private ctor if none, use explicit factory methods directly
+    //TODO error if base class ctor is used
+    //TODO error if existing ctor not private
+    //TODO implement INPC in class, not in inherited class, so you can call RaisePropertyChanged without extension methods
+    //TODO INotifyPropertyChanging support
     public static class ViewModelCompleter {
         public static readonly Func<string, string> Implemetations = typeName =>
 $@"public event PropertyChangedEventHandler PropertyChanged;
@@ -79,18 +88,6 @@ namespace DevExpress.Mvvm.DataAnnotations {
             "System.Windows.Input", 
             "DevExpress.Mvvm");
 
-        //TODO generate typed parent viewmode if view model has TParent view model parameter
-        //TODO auto calc dependent properties
-        //TODO auto generate default private ctor if none, use explicit factory methods directly
-        //TODO error if base class ctor is used
-        //TODO error if existing ctor not private
-        //TODO implement INPC in class, not in inherited class, so you can call RaisePropertyChanged without extension methods
-        //TODO INotifyPropertyChanging support
-        //struct BindableAttribute {
-        //    readonly bool IsBindable;
-        //    readonly string OnPropertyChangedPropertyName;
-        //}
-
         class BindableInfo { //TODO make struct, auto-completed (self-hosting)
             public readonly bool IsBindable;
             public readonly string OnPropertyChangedMethodName, OnPropertyChangingMethodName;
@@ -102,11 +99,13 @@ namespace DevExpress.Mvvm.DataAnnotations {
         }
         class AsyncCommandInfo { //TODO make struct, auto-completed (self-hosting)
             public readonly bool IsCommand, AllowMultipleExecution;
-            public readonly string Name;
-            public AsyncCommandInfo(bool isCommand, bool allowMultipleExecution, string name) {
+            public readonly string Name, CanExecuteMethodName;
+
+            public AsyncCommandInfo(bool isCommand, bool allowMultipleExecution, string name, string canExecuteMethodName) {
                 IsCommand = isCommand;
                 AllowMultipleExecution = allowMultipleExecution;
                 Name = name;
+                CanExecuteMethodName = canExecuteMethodName;
             }
         }
 
@@ -132,20 +131,21 @@ $@"partial class {type.Name} : INotifyPropertyChanged, ISupportParentViewModel {
 
         static string GenerateCommands(SemanticModel model, INamedTypeSymbol type) {
             var asyncCommandAttributeType = model.Compilation.GetTypeByMetadataName("DevExpress.Mvvm.DataAnnotations.AsyncCommandAttribute");
-            //var commandAttributeType = model.Compilation.GetTypeByMetadataName("DevExpress.Mvvm.DataAnnotations.CommandAttribute");
+            var commandAttributeType = model.Compilation.GetTypeByMetadataName("DevExpress.Mvvm.DataAnnotations.CommandAttribute");
             var taskType = model.Compilation.GetTypeByMetadataName(typeof(Task).FullName);
             var methodsMap = type.Methods()
                 .ToImmutableDictionary(x => x.Name, x => x);
             return type.Methods()
                 .Select(method => {
                     var asyncCommandInfo = method.GetAttributes()
-                        .FirstOrDefault(x => x.AttributeClass == asyncCommandAttributeType)
+                        .FirstOrDefault(x => x.AttributeClass == asyncCommandAttributeType || x.AttributeClass == commandAttributeType)
                         .With(x => {
                             var args = x.ConstructorArguments.Select(arg => arg.Value).ToArray(); //TODO dup code
                             var namedArgs = x.NamedArguments.ToImmutableDictionary(p => p.Key, p => p.Value.Value); //TODO error if names are not recognizable
                             return new AsyncCommandInfo(args.Length > 0 ? (bool)args[0] : true,
                                 allowMultipleExecution: (bool)namedArgs.GetValueOrDefault("AllowMultipleExecution", false),
-                                name: (string)namedArgs.GetValueOrDefault("Name"));
+                                name: (string)namedArgs.GetValueOrDefault("Name"), 
+                                canExecuteMethodName: (string)namedArgs.GetValueOrDefault("CanExecuteMethodName"));
                         });
                     return new { method, asyncCommandInfo };
                 })
@@ -165,7 +165,7 @@ $@"partial class {type.Name} : INotifyPropertyChanged, ISupportParentViewModel {
                     var propertyType = isAsync 
                         ? "AsyncCommand" + genericParameter
                         : (genericParameter.With(x => $"DelegateCommand{x}") ?? "ICommand");
-                    var canExecuteMethodName = ", " + (methodsMap.GetValueOrDefault("Can" + methodName)?.Name ?? "null");
+                    var canExecuteMethodName = ", " + (info.asyncCommandInfo?.CanExecuteMethodName ?? (methodsMap.GetValueOrDefault("Can" + methodName)?.Name ?? "null"));
                     var allowMultipleExecution = (info.asyncCommandInfo?.AllowMultipleExecution ?? false) ? ", allowMultipleExecution: true" : null;
                     return
 $@"{commandTypeName} _{commandName};
