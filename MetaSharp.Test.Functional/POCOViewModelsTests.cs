@@ -270,10 +270,8 @@ namespace MetaSharp.Test.Functional {
             Assert.False(viewModel.MethodWithParameterCommand.CanExecute(13));
             viewModel.MethodWithParameterCommand.Execute(10);
             WaitFor(() => 2 == viewModel.MethodWithParameterCallCount);
+            Assert.Equal(10, viewModel.MethodWithParameterLastParameter);
 
-            //            EnqueueCallback(() => {
-            //                Assert.AreEqual(2, viewModel.MethodWithParameterCallCount);
-            //                Assert.AreEqual(10, viewModel.MethodWithParameterLastParameter);
 
             //                button.SetBinding(Button.CommandProperty, new Binding("MethodWithCustomCanExecuteCommand"));
             //                Assert.IsFalse(button.IsEnabled, "4");
