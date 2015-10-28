@@ -21,6 +21,8 @@ namespace MetaSharp {
     //TODO error if existing ctor not private
     //TODO implement INPC in class, not in inherited class, so you can call RaisePropertyChanged without extension methods
     //TODO INotifyPropertyChanging support
+
+    //TODO error is base class supports INPC, but has no RaisePropertyChanged method
     public static class ViewModelCompleter {
         public static readonly Func<string, string> Implemetations = typeName =>
 $@"public event PropertyChangedEventHandler PropertyChanged;
@@ -130,6 +132,7 @@ $@"partial class {type.Name} : INotifyPropertyChanged, ISupportParentViewModel {
         }
 
         static string GenerateCommands(SemanticModel model, INamedTypeSymbol type) {
+
             var asyncCommandAttributeType = model.Compilation.GetTypeByMetadataName("DevExpress.Mvvm.DataAnnotations.AsyncCommandAttribute");
             var commandAttributeType = model.Compilation.GetTypeByMetadataName("DevExpress.Mvvm.DataAnnotations.CommandAttribute");
             var taskType = model.Compilation.GetTypeByMetadataName(typeof(Task).FullName);
