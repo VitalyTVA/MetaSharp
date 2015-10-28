@@ -24,7 +24,7 @@ namespace MetaSharp {
 
     //TODO error is base class supports INPC, but has no RaisePropertyChanged method
     public static class ViewModelCompleter {
-        public static readonly Func<string, string> Implemetations = typeName =>
+        public static readonly Func<string, string> INPCImplemetation = typeName =>
 $@"public event PropertyChangedEventHandler PropertyChanged;
 void RaisePropertyChanged(string property) {{
     var handler = PropertyChanged;
@@ -33,8 +33,9 @@ void RaisePropertyChanged(string property) {{
 }}
 void RaisePropertyChanged<T>(Expression<Func<{typeName}, T>> property) {{
     RaisePropertyChanged(DevExpress.Mvvm.Native.ExpressionHelper.GetPropertyName(property));
-}}
-object parentViewModel;
+}}".AddTabs(1);
+        public static readonly Func<string, string> ParentViewModelImplementation = typeName =>
+$@"object parentViewModel;
 object ISupportParentViewModel.ParentViewModel {{
     get {{ return parentViewModel; }}
     set {{
@@ -50,6 +51,9 @@ partial void OnParentViewModelChanged(object oldParentViewModel);".AddTabs(1);
         public static readonly string Attrubutes = //TODO do not add this stub if Mvvm is already referenced via MetaReference?? (can't find how to write test for it)
 @"
 using System;
+namespace DevExpress.Mvvm {
+    public interface ISupportParentViewModel { }
+}
 namespace DevExpress.Mvvm.DataAnnotations {
     public class BindablePropertyAttribute : Attribute {
         public BindablePropertyAttribute()
@@ -118,13 +122,20 @@ namespace DevExpress.Mvvm.DataAnnotations {
         static string GenerateCore(SemanticModel model, INamedTypeSymbol type) {
             var commands = GenerateCommands(model, type);
             var properties = GenerateProperties(model, type);
+
+            var iSupportParentViewModelType = model.Compilation.GetTypeByMetadataName("DevExpress.Mvvm.ISupportParentViewModel");
+            var parentViewModelImplementation = type.AllInterfaces.Contains(iSupportParentViewModelType)
+                ? string.Empty
+                : ParentViewModelImplementation(type.Name);
+
             return
 $@"partial class {type.Name} : INotifyPropertyChanged, ISupportParentViewModel {{
     public static {type.Name} Create() {{
         return new {type.Name}Implementation();
     }}
 {commands.AddTabs(1)}
-{Implemetations(type.Name)}
+{INPCImplemetation(type.Name)}
+{parentViewModelImplementation}
     class {type.Name}Implementation : {type.Name} {{
 {properties.AddTabs(2)}
     }}
@@ -132,9 +143,9 @@ $@"partial class {type.Name} : INotifyPropertyChanged, ISupportParentViewModel {
         }
 
         static string GenerateCommands(SemanticModel model, INamedTypeSymbol type) {
-
             var asyncCommandAttributeType = model.Compilation.GetTypeByMetadataName("DevExpress.Mvvm.DataAnnotations.AsyncCommandAttribute");
             var commandAttributeType = model.Compilation.GetTypeByMetadataName("DevExpress.Mvvm.DataAnnotations.CommandAttribute");
+
             var taskType = model.Compilation.GetTypeByMetadataName(typeof(Task).FullName);
             var methodsMap = type.Methods()
                 .ToImmutableDictionary(x => x.Name, x => x);

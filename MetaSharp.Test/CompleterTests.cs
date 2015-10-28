@@ -291,6 +291,9 @@ namespace MetaSharp.Incomplete {
         #endregion
 
         #region view model
+        static string GetPOCOImplementations(string typeName) {
+            return ViewModelCompleter.INPCImplemetation(typeName) + "\r\n" + ViewModelCompleter.ParentViewModelImplementation(typeName);
+        }
         [Fact]
         public void CompleteViewModel() {
             string incomplete =
@@ -320,7 +323,7 @@ using DevExpress.Mvvm;
         }}
         DelegateCommand<string> _DoCommand;
         public DelegateCommand<string> DoCommand {{ get {{ return _DoCommand ?? (_DoCommand = new DelegateCommand<string>(Do, null)); }} }}
-{ViewModelCompleter.Implemetations("ViewModel").AddTabs(1)}
+{GetPOCOImplementations("ViewModel").AddTabs(1)}
         class ViewModelImplementation : ViewModel {{
             public override Boo BooProperty {{
                 get {{ return base.BooProperty; }}
@@ -388,7 +391,7 @@ using DevExpress.Mvvm;
         public static ViewModel Create() {{
             return new ViewModelImplementation();
         }}
-{ViewModelCompleter.Implemetations("ViewModel").AddTabs(1)}
+{GetPOCOImplementations("ViewModel").AddTabs(1)}
         class ViewModelImplementation : ViewModel {{
         }}
     }}

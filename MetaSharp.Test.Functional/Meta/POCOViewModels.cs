@@ -8,6 +8,7 @@ namespace MetaSharp.Test.Meta.POCO {
     using System;
     using System.Linq.Expressions;
     using System.Threading.Tasks;
+    using DevExpress.Mvvm;
 
     public partial class POCOViewModel {
         internal string NotPublicProperty { get; set; }
@@ -310,5 +311,13 @@ namespace MetaSharp.Test.Meta.POCO {
 )]
         public void MethodWithCustomCanExecute() { }
         public bool CanMethodWithCustomCanExecute_() { return MethodWithCustomCanExecuteCanExcute; }
+    }
+
+    public partial class CustomParentViewModelImplementation : ISupportParentViewModel {
+        public virtual string Property { get; set; }
+        object ISupportParentViewModel.ParentViewModel { get; set; }
+        void OnParentViewModelChanged(object oldParentViewModel) {
+            throw new InvalidOperationException();
+        }
     }
 }

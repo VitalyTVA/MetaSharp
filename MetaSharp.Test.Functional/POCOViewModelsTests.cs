@@ -104,7 +104,7 @@ namespace MetaSharp.Test.Functional {
         }
         #endregion
 
-        #region RaisePropertyChanged implementation
+        #region interfaces implementation
         [Fact]
         public void RaisePropertyChangedImplementation() {
             var viewModel = POCOViewModel.Create();
@@ -131,6 +131,13 @@ namespace MetaSharp.Test.Functional {
             Assert.Same(viewModel, viewModel.SetParentViewModel(type));
             Assert.Equal(type, viewModel.GetParentViewModel<Type>());
             Assert.Same(GetType(), viewModel.OldParentViewModel);
+        }
+        [Fact]
+        public void CustomParentViewModelImplementationTest() {
+            var model = CustomParentViewModelImplementation.Create();
+            CheckBindableProperty(model, x => x.Property, (vm, x) => vm.Property = x, "x", "y");
+            ((ISupportParentViewModel)model).ParentViewModel = "x";
+            Assert.Equal("x", ((ISupportParentViewModel)model).ParentViewModel);
         }
         #endregion
 
