@@ -307,16 +307,11 @@ namespace MetaSharp.Test.Functional {
             Assert.False(viewModel.MethodWithCanExecuteCommand.CanExecute(null));
             viewModel.MethodWithCanExecuteCanExcute = true;
             Assert.True(viewModel.MethodWithCanExecuteCommand.CanExecute(null));
-            //if(!IsAsyncCommand) {
-            //    viewModel.MethodWithReturnTypeCommand.Execute(null);
-            //    button.SetBinding(Button.CommandProperty, new Binding("MethodWithReturnTypeCommand"));
-            ////                    button.Command.Execute(null);
-            ////                    Assert.AreEqual(1, viewModel.MethodWithReturnTypeCallCount);
 
-            ////                    button.SetBinding(Button.CommandProperty, new Binding("MethodWithReturnTypeAndParameterCommand"));
-            ////                    button.Command.Execute("x");
-            ////                    Assert.AreEqual(1, viewModel.MethodWithReturnTypeAndParameterCallCount);
-            //}
+            viewModel.MethodWithReturnTypeCommand.Execute(null);
+            Assert.Equal(1, viewModel.MethodWithReturnTypeCallCount);
+            viewModel.MethodWithReturnTypeAndParameterCommand.Execute("x");
+            Assert.Equal(1, viewModel.MethodWithReturnTypeAndParameterCallCount);
 
             viewModel.MethodWithParameterCommand.Execute(9);
             Assert.Equal(1, viewModel.MethodWithParameterCallCount);

@@ -13,7 +13,6 @@ using CompleterResult = MetaSharp.Either<System.Collections.Immutable.ImmutableA
 namespace MetaSharp {
     //TODO do not generate command for method from base class if there is already one
     //TODO do generate command for method from base class if there no one and this method is accessible from completer
-    //TODO check command attribute works even for private methods
 
     //TODO generate typed parent viewmode if view model has TParent view model parameter
     //TODO auto calc dependent properties
@@ -143,7 +142,8 @@ $@"partial class {type.Name} : INotifyPropertyChanged, ISupportParentViewModel {
                         .With(x => {
                             var args = x.ConstructorArguments.Select(arg => arg.Value).ToArray(); //TODO dup code
                             var namedArgs = x.NamedArguments.ToImmutableDictionary(p => p.Key, p => p.Value.Value); //TODO error if names are not recognizable
-                            return new AsyncCommandInfo(args.Length > 0 ? (bool)args[0] : true,
+                            return new AsyncCommandInfo(
+                                isCommand: args.Length > 0 ? (bool)args[0] : true,
                                 allowMultipleExecution: (bool)namedArgs.GetValueOrDefault("AllowMultipleExecution", false),
                                 useCommandManager: (bool)namedArgs.GetValueOrDefault("UseCommandManager", true),
                                 name: (string)namedArgs.GetValueOrDefault("Name"), 
@@ -151,11 +151,10 @@ $@"partial class {type.Name} : INotifyPropertyChanged, ISupportParentViewModel {
                         });
                     return new { method, asyncCommandInfo };
                 })
-                .Where(info => (info.asyncCommandInfo?.IsCommand ?? true)
-                    && info.method.DeclaredAccessibility == Accessibility.Public
+                .Where(info => (info.asyncCommandInfo?.IsCommand ?? (info.method.DeclaredAccessibility == Accessibility.Public))
                     && info.method.MethodKind == MethodKind.Ordinary
                     && !info.method.IsStatic
-                    && (info.method.ReturnsVoid || info.method.ReturnType == taskType)
+                    && (info.method.ReturnsVoid || info.method.ReturnType == taskType || (info.asyncCommandInfo?.IsCommand ?? false))
                     && (!info.method.Parameters.Any() || (info.method.Parameters.Length == 1  && info.method.Parameters.Single().RefKind == RefKind.None)))
                 .Select(info => {
                     var isAsync = info.method.ReturnType == taskType;
@@ -163,6 +162,12 @@ $@"partial class {type.Name} : INotifyPropertyChanged, ISupportParentViewModel {
                     var methodName = info.method.Name;
                     var genericParameter = info.method.Parameters.SingleOrDefault()
                         .With(x => "<" + x.Type.DisplayString(model, x.Location()) + ">");
+                    if(!info.method.ReturnsVoid && info.method.ReturnType != taskType) {
+                        if(genericParameter == null)
+                            methodName = $"() => {methodName}()";
+                        else
+                            methodName = $"x => {methodName}(x)";
+                    }
                     var commandTypeName = (isAsync ? "AsyncCommand" : "DelegateCommand") + genericParameter;
                     var propertyType = isAsync 
                         ? "AsyncCommand" + genericParameter

@@ -296,7 +296,7 @@ namespace MetaSharp.Test.Meta.POCO {
         public bool CanMethodWithCanExecute() { return MethodWithCanExecuteCanExcute; }
 
         [Command]
-        protected int MethodWithReturnType() { MethodWithReturnTypeCallCount++; return 0; }
+        int MethodWithReturnType() { MethodWithReturnTypeCallCount++; return 0; }
         [Command]
         public int MethodWithReturnTypeAndParameter(string param) { Assert.Equal("x", param); MethodWithReturnTypeAndParameterCallCount++; return 0; }
 
