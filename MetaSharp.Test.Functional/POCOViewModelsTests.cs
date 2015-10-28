@@ -228,9 +228,6 @@ namespace MetaSharp.Test.Functional {
         [Fact]
         public void AsyncCommandAttribute_ViewModelTest() {
             var viewModel = AsyncCommandAttributeViewModel.Create();
-            CommandAttribute_ViewModelTestCore(viewModel, x => viewModel.MethodWithCanExecute(), x => viewModel.MethodWithCustomCanExecute(), true);
-        }
-        void CommandAttribute_ViewModelTestCore(AsyncCommandAttributeViewModel viewModel, Expression<Action<CommandAttributeViewModelBaseCounters>> methodWithCanExecuteExpression, Expression<Action<CommandAttributeViewModelBaseCounters>> methodWithCustomCanExecuteExpression, bool IsAsyncCommand = false) {
             viewModel.SimpleCommand.Execute(null);
             Assert.Equal(0, viewModel.SimpleMethodCallCount);
             WaitFor(() => 1 == viewModel.SimpleMethodCallCount);
