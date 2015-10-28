@@ -265,13 +265,12 @@ namespace MetaSharp.Test.Functional {
             WaitFor(() => 1 == viewModel.MethodWithParameterCallCount);
             WaitFor(() => !viewModel.MethodWithParameterCommand.IsExecuting);
 
-            //            EnqueueCallback(() => {
-            //                Assert.AreEqual(9, viewModel.MethodWithParameterLastParameter);
-            //                Assert.IsTrue(button.Command.CanExecute(9));
-            //                Assert.IsFalse(button.Command.CanExecute(13), "3");
-            //                button.Command.Execute("10");
-            //            });
-            //            EnqueueWait(() => viewModel.MethodWithParameterCallCount == 2);
+            Assert.Equal(9, viewModel.MethodWithParameterLastParameter);
+            Assert.True(viewModel.MethodWithParameterCommand.CanExecute(9));
+            Assert.False(viewModel.MethodWithParameterCommand.CanExecute(13));
+            viewModel.MethodWithParameterCommand.Execute(10);
+            WaitFor(() => 2 == viewModel.MethodWithParameterCallCount);
+
             //            EnqueueCallback(() => {
             //                Assert.AreEqual(2, viewModel.MethodWithParameterCallCount);
             //                Assert.AreEqual(10, viewModel.MethodWithParameterLastParameter);
