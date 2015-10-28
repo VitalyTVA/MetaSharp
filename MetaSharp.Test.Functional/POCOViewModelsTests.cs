@@ -271,22 +271,24 @@ namespace MetaSharp.Test.Functional {
             viewModel.MethodWithParameterCommand.Execute(10);
             WaitFor(() => 2 == viewModel.MethodWithParameterCallCount);
             Assert.Equal(10, viewModel.MethodWithParameterLastParameter);
+            var methodWithParameterCommandCanExecuteChangedCount = 0;
+            CommandManager.InvalidateRequerySuggested();
+            DispatcherHelper.DoEvents();
+            viewModel.MethodWithParameterCommand.CanExecuteChanged += (o, e) => {
+                methodWithParameterCommandCanExecuteChangedCount++;
+            };
+            CommandManager.InvalidateRequerySuggested();
+            DispatcherHelper.DoEvents();
+            Assert.Equal(1, methodWithParameterCommandCanExecuteChangedCount);
 
             Assert.False(viewModel.MethodWithCustomCanExecuteCommand.CanExecute(null));
             viewModel.MethodWithCustomCanExecuteCanExcute = true;
-            //EventHandler requerySuggestedHandler = (o, e) => {
-            //    new InvalidOperationException();
-            //};
-            //CommandManager.RequerySuggested += re
             Assert.True(viewModel.MethodWithCustomCanExecuteCommand.CanExecute(null));
-            //                button.SetBinding(Button.CommandProperty, new Binding("MethodWithCustomCanExecuteCommand"));
-            //                Assert.IsFalse(button.IsEnabled, "4");
-            //                viewModel.MethodWithCustomCanExecuteCanExcute = true;
-            //                Assert.IsFalse(button.IsEnabled, "5");
-            //                viewModel.RaiseCanExecuteChanged(methodWithCustomCanExecuteExpression);
-            //                Assert.IsTrue(button.IsEnabled);
-            //            });
-            //            EnqueueTestComplete();
+            viewModel.MethodWithCustomCanExecuteCommand.CanExecuteChanged += (o, e) => {
+                throw new NotImplementedException();
+            };
+            CommandManager.InvalidateRequerySuggested();
+            DispatcherHelper.DoEvents();
         }
         #endregion
 

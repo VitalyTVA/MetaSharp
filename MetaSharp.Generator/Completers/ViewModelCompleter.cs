@@ -71,7 +71,7 @@ namespace DevExpress.Mvvm.DataAnnotations {
         }
         public string Name { get; set; }
         public string CanExecuteMethodName { get; set; }
-        public bool? UseCommandManager { get; set; }
+        public bool UseCommandManager { get; set; }
     }
     public class AsyncCommandAttribute : CommandAttribute {
         public AsyncCommandAttribute(bool isAsincCommand)
@@ -98,12 +98,13 @@ namespace DevExpress.Mvvm.DataAnnotations {
             }
         }
         class AsyncCommandInfo { //TODO make struct, auto-completed (self-hosting)
-            public readonly bool IsCommand, AllowMultipleExecution;
+            public readonly bool IsCommand, AllowMultipleExecution, UseCommandManager;
             public readonly string Name, CanExecuteMethodName;
 
-            public AsyncCommandInfo(bool isCommand, bool allowMultipleExecution, string name, string canExecuteMethodName) {
+            public AsyncCommandInfo(bool isCommand, bool allowMultipleExecution, bool useCommandManager, string name, string canExecuteMethodName) {
                 IsCommand = isCommand;
                 AllowMultipleExecution = allowMultipleExecution;
+                UseCommandManager = useCommandManager;
                 Name = name;
                 CanExecuteMethodName = canExecuteMethodName;
             }
@@ -144,6 +145,7 @@ $@"partial class {type.Name} : INotifyPropertyChanged, ISupportParentViewModel {
                             var namedArgs = x.NamedArguments.ToImmutableDictionary(p => p.Key, p => p.Value.Value); //TODO error if names are not recognizable
                             return new AsyncCommandInfo(args.Length > 0 ? (bool)args[0] : true,
                                 allowMultipleExecution: (bool)namedArgs.GetValueOrDefault("AllowMultipleExecution", false),
+                                useCommandManager: (bool)namedArgs.GetValueOrDefault("UseCommandManager", true),
                                 name: (string)namedArgs.GetValueOrDefault("Name"), 
                                 canExecuteMethodName: (string)namedArgs.GetValueOrDefault("CanExecuteMethodName"));
                         });
@@ -167,9 +169,10 @@ $@"partial class {type.Name} : INotifyPropertyChanged, ISupportParentViewModel {
                         : (genericParameter.With(x => $"DelegateCommand{x}") ?? "ICommand");
                     var canExecuteMethodName = ", " + (info.asyncCommandInfo?.CanExecuteMethodName ?? (methodsMap.GetValueOrDefault("Can" + methodName)?.Name ?? "null"));
                     var allowMultipleExecution = (info.asyncCommandInfo?.AllowMultipleExecution ?? false) ? ", allowMultipleExecution: true" : null;
+                    var useCommandManager = !(info.asyncCommandInfo?.UseCommandManager ?? true) ? ", useCommandManager: false" : null;
                     return
 $@"{commandTypeName} _{commandName};
-public {propertyType} {commandName} {{ get {{ return _{commandName} ?? (_{commandName} = new {commandTypeName}({methodName}{canExecuteMethodName}{allowMultipleExecution})); }} }}";
+public {propertyType} {commandName} {{ get {{ return _{commandName} ?? (_{commandName} = new {commandTypeName}({methodName}{canExecuteMethodName}{allowMultipleExecution}{useCommandManager})); }} }}";
                 })
                 .ConcatStringsWithNewLines();
         }
