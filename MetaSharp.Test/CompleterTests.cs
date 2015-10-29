@@ -308,7 +308,7 @@ namespace MetaSharp.Incomplete {
     [MetaCompleteViewModel]
     public partial class ViewModel {
         public ViewModel() { }
-        public ViewModel(int x, Boo boo) { }
+        public ViewModel(int x, Boo boo = default(Boo), string s = ""x"") { }
         public virtual Boo BooProperty { get; set; }
         public virtual int IntProperty { get; set; }
         public void Do(string x) { }
@@ -327,8 +327,8 @@ using DevExpress.Mvvm.POCO;
         public static ViewModel Create() {{
             return new ViewModelImplementation();
         }}
-        public static ViewModel Create(int x, Boo boo) {{
-            return new ViewModelImplementation(x, boo);
+        public static ViewModel Create(int x, Boo boo = default(Boo), string s = ""x"") {{
+            return new ViewModelImplementation(x, boo, s);
         }}
         DelegateCommand<string> _DoCommand;
         public DelegateCommand<string> DoCommand {{ get {{ return _DoCommand ?? (_DoCommand = new DelegateCommand<string>(Do, null)); }} }}
@@ -336,8 +336,8 @@ using DevExpress.Mvvm.POCO;
         class ViewModelImplementation : ViewModel, IPOCOViewModel {{
             public ViewModelImplementation() 
                 :base() {{ }}
-            public ViewModelImplementation(int x, Boo boo) 
-                :base(x, boo) {{ }}
+            public ViewModelImplementation(int x, Boo boo = default(Boo), string s = ""x"") 
+                :base(x, boo, s) {{ }}
             public override Boo BooProperty {{
                 get {{ return base.BooProperty; }}
                 set {{
