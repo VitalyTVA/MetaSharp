@@ -431,6 +431,15 @@ namespace MetaSharp.Test.Functional {
         }
         #endregion
 
+        #region ctors
+        [Fact]
+        public void CustomConstructorTest() {
+            var vm = CustomConstructor.Create("a");
+            Assert.Equal("a", vm.A);
+            CheckBindableProperty(vm, x => x.A, (x, val) => x.A = val, "x", "y");
+        }
+        #endregion
+
         #region errors
         [Fact]
         public void CallRaiseCommandChangedMethodExtensionMethodForNotPOCOViewModelTest() {

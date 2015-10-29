@@ -364,4 +364,11 @@ namespace MetaSharp.Test.Meta.POCO {
         IServiceContainer _ServiceContainer;
         IServiceContainer ISupportServices.ServiceContainer { get { return _ServiceContainer ?? (_ServiceContainer = new ServiceContainer(this)); } }
     }
+
+    public partial class CustomConstructor {
+        public virtual string A { get; set; }
+        public CustomConstructor(string a) {
+            A = a;
+        }
+    }
 }
