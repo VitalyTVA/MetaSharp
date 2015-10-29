@@ -14,9 +14,9 @@ namespace MetaSharp {
     //TODO do not generate command for method from base class if there is already one
     //TODO do generate command for method from base class if there no one and this method is accessible from completer
 
-    //TODO generate typed parent viewmode if view model has TParent view model parameter
     //TODO auto calc dependent properties
-    //TODO auto generate default private ctor if none, use explicit factory methods directly
+    //TODO auto generate default private ctor if none, 
+    //TODO write user-defined factory methods (do not overwrite them or attribute to hide specific ctor)
     //TODO error if base class ctor is used
     //TODO error if existing ctor not private
     //TODO implement INPC in class, not in inherited class, so you can call RaisePropertyChanged without extension methods
@@ -24,6 +24,7 @@ namespace MetaSharp {
 
     //TODO error is base class supports INPC, but has no RaisePropertyChanged method
     //TODO copy attributes to overriden properties and methods
+    //TODO warnings if class has public ctors
     public static class ViewModelCompleter {
         #region constants
         public static readonly Func<string, string> INPCImplemetation = typeName =>
@@ -126,7 +127,7 @@ namespace DevExpress.Mvvm.DataAnnotations {
                 Name = name;
                 CanExecuteMethodName = canExecuteMethodName;
             }
-        } 
+        }
         #endregion
 
         public static CompleterResult Generate(SemanticModel model, INamedTypeSymbol type) {
@@ -136,6 +137,7 @@ namespace DevExpress.Mvvm.DataAnnotations {
         static string GenerateCore(SemanticModel model, INamedTypeSymbol type) {
             var commands = GenerateCommands(model, type);
             var properties = GenerateProperties(model, type);
+            var createMethods = GenerateCreateMethods(model, type);
 
             Func<Func<string, string>, string, string> getImplementation = (getImpl, interfaceName) => {
                 var interfaceType = model.Compilation.GetTypeByMetadataName(interfaceName);
@@ -149,9 +151,7 @@ namespace DevExpress.Mvvm.DataAnnotations {
 
             return
 $@"partial class {type.Name} : INotifyPropertyChanged, ISupportParentViewModel, ISupportServices {{
-    public static {type.Name} Create() {{
-        return new {type.Name}Implementation();
-    }}
+{createMethods.AddTabs(1)}
 {commands.AddTabs(1)}
 {inpcImplementation}
 {parentViewModelImplementation}
@@ -163,6 +163,13 @@ $@"partial class {type.Name} : INotifyPropertyChanged, ISupportParentViewModel, 
         }}
     }}
 }}";
+        }
+        static string GenerateCreateMethods(SemanticModel model, INamedTypeSymbol type) {
+            return
+$@"public static {type.Name} Create() {{
+    return new {type.Name}Implementation();
+}}
+";
         }
 
         static string GenerateCommands(SemanticModel model, INamedTypeSymbol type) {
