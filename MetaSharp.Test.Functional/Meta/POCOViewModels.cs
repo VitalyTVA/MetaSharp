@@ -357,4 +357,9 @@ namespace MetaSharp.Test.Meta.POCO {
             RaiseCanExecuteChanged(commandMethodExpression);
         }
     }
+
+    public partial class CustomSupportServicesImplementation : ISupportServices {
+        IServiceContainer _ServiceContainer;
+        IServiceContainer ISupportServices.ServiceContainer { get { return _ServiceContainer ?? (_ServiceContainer = new ServiceContainer(this)); } }
+    }
 }

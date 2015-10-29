@@ -398,6 +398,39 @@ namespace MetaSharp.Test.Functional {
         }
         #endregion
 
+        #region services
+        [Fact]
+        public void CustomSupportServicesImplementationTest() {
+            CheckServicesImplementation(CustomSupportServicesImplementation.Create());
+        }
+        [Fact]
+        public void SupportServicesInViewModelBaseDescendant() {
+            CheckServicesImplementation(POCOViewModel_CommandsInViewModelBaseDescendant.Create());
+        }
+        [Fact]
+        public void SupportServicesPOCOModel() {
+            CheckServicesImplementation(POCOViewModel.Create());
+        }
+        interface IService1 { }
+        interface IService2 { }
+        class Service1 : IService1 { }
+        class Service2 : IService2 { }
+        void CheckServicesImplementation(ISupportServices services) {
+            var parent = CustomSupportServicesImplementation.Create();
+            ((ISupportParentViewModel)services).ParentViewModel = parent;
+
+            var service1 = new Service1();
+            services.ServiceContainer.RegisterService(service1);
+            var service2 = new Service2();
+            ((ISupportServices)parent).ServiceContainer.RegisterService(service2);
+
+            Assert.Same(service1, services.GetService<IService1>());
+            Assert.Same(service1, services.ServiceContainer.GetService<IService1>());
+            Assert.Same(service2, services.GetService<IService2>());
+            Assert.Same(service2, services.ServiceContainer.GetService<IService2>());
+        }
+        #endregion
+
         #region errors
         [Fact]
         public void CallRaiseCommandChangedMethodExtensionMethodForNotPOCOViewModelTest() {

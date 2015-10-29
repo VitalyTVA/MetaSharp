@@ -292,7 +292,12 @@ namespace MetaSharp.Incomplete {
 
         #region view model
         static string GetPOCOImplementations(string typeName) {
-            return ViewModelCompleter.INPCImplemetation(typeName) + "\r\n" + ViewModelCompleter.ParentViewModelImplementation(typeName);
+            return (ViewModelCompleter.INPCImplemetation(typeName) 
+                + "\r\n" 
+                + ViewModelCompleter.ParentViewModelImplementation(typeName)
+                + "\r\n"
+                + ViewModelCompleter.SupportServicesImplementation(typeName))
+                .AddTabs(2);
         }
         [Fact]
         public void CompleteViewModel() {
@@ -316,13 +321,13 @@ using System.Linq.Expressions;
 using System.Windows.Input;
 using DevExpress.Mvvm;
 using DevExpress.Mvvm.POCO;
-    partial class ViewModel : INotifyPropertyChanged, ISupportParentViewModel {{
+    partial class ViewModel : INotifyPropertyChanged, ISupportParentViewModel, ISupportServices {{
         public static ViewModel Create() {{
             return new ViewModelImplementation();
         }}
         DelegateCommand<string> _DoCommand;
         public DelegateCommand<string> DoCommand {{ get {{ return _DoCommand ?? (_DoCommand = new DelegateCommand<string>(Do, null)); }} }}
-{GetPOCOImplementations("ViewModel").AddTabs(1)}
+{GetPOCOImplementations("ViewModel")}
         class ViewModelImplementation : ViewModel, IPOCOViewModel {{
             public override Boo BooProperty {{
                 get {{ return base.BooProperty; }}
@@ -390,11 +395,11 @@ using System.Linq.Expressions;
 using System.Windows.Input;
 using DevExpress.Mvvm;
 using DevExpress.Mvvm.POCO;
-    partial class ViewModel : INotifyPropertyChanged, ISupportParentViewModel {{
+    partial class ViewModel : INotifyPropertyChanged, ISupportParentViewModel, ISupportServices {{
         public static ViewModel Create() {{
             return new ViewModelImplementation();
         }}
-{GetPOCOImplementations("ViewModel").AddTabs(1)}
+{GetPOCOImplementations("ViewModel")}
         class ViewModelImplementation : ViewModel, IPOCOViewModel {{
             void IPOCOViewModel.RaisePropertyChanged(string propertyName) {{
                 RaisePropertyChanged(propertyName);

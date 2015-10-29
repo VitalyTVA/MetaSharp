@@ -33,7 +33,7 @@ void RaisePropertyChanged(string property) {{
 }}
 void RaisePropertyChanged<T>(Expression<Func<{typeName}, T>> property) {{
     RaisePropertyChanged(DevExpress.Mvvm.Native.ExpressionHelper.GetPropertyName(property));
-}}".AddTabs(1);
+}}";
         public static readonly Func<string, string> ParentViewModelImplementation = typeName =>
 $@"object parentViewModel;
 object ISupportParentViewModel.ParentViewModel {{
@@ -46,7 +46,10 @@ object ISupportParentViewModel.ParentViewModel {{
         OnParentViewModelChanged(oldParentViewModel);
     }}
 }}
-partial void OnParentViewModelChanged(object oldParentViewModel);".AddTabs(1);
+partial void OnParentViewModelChanged(object oldParentViewModel);";
+        public static readonly Func<string, string> SupportServicesImplementation = typeName =>
+$@"IServiceContainer _ServiceContainer;
+IServiceContainer ISupportServices.ServiceContainer {{ get {{ return _ServiceContainer ?? (_ServiceContainer = new ServiceContainer(this)); }} }}";
 
         public static readonly string KnownTypes = //TODO do not add this stub if Mvvm is already referenced via MetaReference?? (can't find how to write test for it)
 @"
@@ -54,8 +57,9 @@ using System;
 using System.ComponentModel;
 namespace DevExpress.Mvvm {
     public interface ISupportParentViewModel { }
+    public interface ISupportServices { }
     public class BindableBase : INotifyPropertyChanged { }
-    public class ViewModelBase : BindableBase, ISupportParentViewModel { }
+    public class ViewModelBase : BindableBase, ISupportParentViewModel, ISupportServices { }
 }
 namespace DevExpress.Mvvm.DataAnnotations {
     public class BindablePropertyAttribute : Attribute {
@@ -127,25 +131,26 @@ namespace DevExpress.Mvvm.DataAnnotations {
         static string GenerateCore(SemanticModel model, INamedTypeSymbol type) {
             var commands = GenerateCommands(model, type);
             var properties = GenerateProperties(model, type);
-            
-            var iSupportParentViewModelType = model.Compilation.GetTypeByMetadataName("DevExpress.Mvvm.ISupportParentViewModel");
-            var parentViewModelImplementation = type.AllInterfaces.Contains(iSupportParentViewModelType)
-                ? string.Empty
-                : ParentViewModelImplementation(type.Name);
 
-            var iNPCType= model.Compilation.GetTypeByMetadataName("System.ComponentModel.INotifyPropertyChanged");
-            var inpcImplementation = type.AllInterfaces.Contains(iNPCType)
-                ? string.Empty
-                : INPCImplemetation(type.Name); //TODO dup code
+            Func<Func<string, string>, string, string> getImplementation = (getImpl, interfaceName) => {
+                var interfaceType = model.Compilation.GetTypeByMetadataName(interfaceName);
+                return type.AllInterfaces.Contains(interfaceType)
+                    ? string.Empty
+                    : getImpl(type.Name).AddTabs(1);
+            };
+            var inpcImplementation = getImplementation(INPCImplemetation, "System.ComponentModel.INotifyPropertyChanged");
+            var parentViewModelImplementation = getImplementation(ParentViewModelImplementation, "DevExpress.Mvvm.ISupportParentViewModel");
+            var supportServicesImplementation = getImplementation(SupportServicesImplementation, "DevExpress.Mvvm.ISupportServices");
 
             return
-$@"partial class {type.Name} : INotifyPropertyChanged, ISupportParentViewModel {{
+$@"partial class {type.Name} : INotifyPropertyChanged, ISupportParentViewModel, ISupportServices {{
     public static {type.Name} Create() {{
         return new {type.Name}Implementation();
     }}
 {commands.AddTabs(1)}
 {inpcImplementation}
 {parentViewModelImplementation}
+{supportServicesImplementation}
     class {type.Name}Implementation : {type.Name}, IPOCOViewModel {{
 {properties.AddTabs(2)}
         void IPOCOViewModel.RaisePropertyChanged(string propertyName) {{
