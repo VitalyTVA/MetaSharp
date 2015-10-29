@@ -307,6 +307,8 @@ using MetaSharp;
 namespace MetaSharp.Incomplete {
     [MetaCompleteViewModel]
     public partial class ViewModel {
+        public ViewModel() { }
+        public ViewModel(int x, Boo boo) { }
         public virtual Boo BooProperty { get; set; }
         public virtual int IntProperty { get; set; }
         public void Do(string x) { }
@@ -325,10 +327,17 @@ using DevExpress.Mvvm.POCO;
         public static ViewModel Create() {{
             return new ViewModelImplementation();
         }}
+        public static ViewModel Create(int x, Boo boo) {{
+            return new ViewModelImplementation(x, boo);
+        }}
         DelegateCommand<string> _DoCommand;
         public DelegateCommand<string> DoCommand {{ get {{ return _DoCommand ?? (_DoCommand = new DelegateCommand<string>(Do, null)); }} }}
 {GetPOCOImplementations("ViewModel")}
         class ViewModelImplementation : ViewModel, IPOCOViewModel {{
+            public ViewModelImplementation() 
+                :base() {{ }}
+            public ViewModelImplementation(int x, Boo boo) 
+                :base(x, boo) {{ }}
             public override Boo BooProperty {{
                 get {{ return base.BooProperty; }}
                 set {{
@@ -401,6 +410,8 @@ using DevExpress.Mvvm.POCO;
         }}
 {GetPOCOImplementations("ViewModel")}
         class ViewModelImplementation : ViewModel, IPOCOViewModel {{
+            public ViewModelImplementation() 
+                :base() {{ }}
             void IPOCOViewModel.RaisePropertyChanged(string propertyName) {{
                 RaisePropertyChanged(propertyName);
             }}

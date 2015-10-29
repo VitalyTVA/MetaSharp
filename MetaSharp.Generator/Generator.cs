@@ -347,10 +347,16 @@ namespace MetaSharp {
             return type.GetMembers().OfType<IPropertySymbol>();
         }
         public static IEnumerable<IMethodSymbol> Methods(this INamedTypeSymbol type) {
-            return type.GetMembers().OfType<IMethodSymbol>();
+            return type.MethodsCore(MethodKind.Ordinary);
+        }
+        public static IEnumerable<IMethodSymbol> Constructors(this INamedTypeSymbol type) {
+            return type.MethodsCore(MethodKind.Constructor);
+        }
+        static IEnumerable<IMethodSymbol> MethodsCore(this INamedTypeSymbol type, MethodKind kind) {
+            return type.GetMembers().OfType<IMethodSymbol>().Where(x => x.MethodKind == kind);
         }
         public static IMethodSymbol StaticConstructor(this INamedTypeSymbol type) {
-            return type.Methods().FirstOrDefault(x => x.Name == WellKnownMemberNames.StaticConstructorName);
+            return type.MethodsCore(MethodKind.StaticConstructor).FirstOrDefault();
         }
         public static string ToAccessibilityModifier(this Accessibility accessibility, Accessibility? containingAccessibility) {
             if(containingAccessibility != null && containingAccessibility.Value == accessibility)

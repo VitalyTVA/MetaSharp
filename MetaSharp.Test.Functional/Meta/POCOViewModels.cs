@@ -11,6 +11,8 @@ namespace MetaSharp.Test.Meta.POCO {
     using DevExpress.Mvvm;
 
     public partial class POCOViewModel {
+        static POCOViewModel() {
+        }
         internal string NotPublicProperty { get; set; }
         public string NotVirtualProperty { get; set; }
         public string NotVirtualPropertyWithPrivateSetter { get; set; }

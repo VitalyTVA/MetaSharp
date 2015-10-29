@@ -11,6 +11,7 @@ using System.Threading.Tasks;
 using CompleterResult = MetaSharp.Either<System.Collections.Immutable.ImmutableArray<MetaSharp.CompleterError>, string>;
 
 namespace MetaSharp {
+    //TODO GENERIC TYPES
     //TODO do not generate command for method from base class if there is already one
     //TODO do generate command for method from base class if there no one and this method is accessible from completer
 
@@ -21,6 +22,7 @@ namespace MetaSharp {
     //TODO error if existing ctor not private
     //TODO implement INPC in class, not in inherited class, so you can call RaisePropertyChanged without extension methods
     //TODO INotifyPropertyChanging support
+    //TODO group output in regions
 
     //TODO error is base class supports INPC, but has no RaisePropertyChanged method
     //TODO copy attributes to overriden properties and methods
@@ -137,7 +139,7 @@ namespace DevExpress.Mvvm.DataAnnotations {
         static string GenerateCore(SemanticModel model, INamedTypeSymbol type) {
             var commands = GenerateCommands(model, type);
             var properties = GenerateProperties(model, type);
-            var createMethods = GenerateCreateMethods(model, type);
+            var createMethodsAndConstructors = GenerateCreateMethodsAndConstructors(model, type);
 
             Func<Func<string, string>, string, string> getImplementation = (getImpl, interfaceName) => {
                 var interfaceType = model.Compilation.GetTypeByMetadataName(interfaceName);
@@ -151,12 +153,13 @@ namespace DevExpress.Mvvm.DataAnnotations {
 
             return
 $@"partial class {type.Name} : INotifyPropertyChanged, ISupportParentViewModel, ISupportServices {{
-{createMethods.AddTabs(1)}
+{createMethodsAndConstructors.Item1.AddTabs(1)}
 {commands.AddTabs(1)}
 {inpcImplementation}
 {parentViewModelImplementation}
 {supportServicesImplementation}
     class {type.Name}Implementation : {type.Name}, IPOCOViewModel {{
+{createMethodsAndConstructors.Item2.AddTabs(2)}
 {properties.AddTabs(2)}
         void IPOCOViewModel.RaisePropertyChanged(string propertyName) {{
             RaisePropertyChanged(propertyName);
@@ -164,12 +167,32 @@ $@"partial class {type.Name} : INotifyPropertyChanged, ISupportParentViewModel, 
     }}
 }}";
         }
-        static string GenerateCreateMethods(SemanticModel model, INamedTypeSymbol type) {
-            return
-$@"public static {type.Name} Create() {{
-    return new {type.Name}Implementation();
-}}
-";
+        static Tuple<string, string> GenerateCreateMethodsAndConstructors(SemanticModel model, INamedTypeSymbol type) {
+            var paramsAndArgs = type.Constructors()
+                .Select(method => {
+                    var parameters = method.IsImplicitlyDeclared 
+                        ? SyntaxFactory.ParameterList().Parameters 
+                        : ((ConstructorDeclarationSyntax)method.Node()).ParameterList.Parameters;
+                    var arguments = parameters.Select(x => x.Identifier.ToString()).ConcatStrings(", ");
+                    return new { parameters, arguments };
+                })
+                .ToImmutableArray();
+            var createMethods = paramsAndArgs
+                .Select(info => {
+                    return
+$@"public static {type.Name} Create({info.parameters}) {{
+    return new {type.Name}Implementation({info.arguments});
+}}";
+                })
+                .ConcatStringsWithNewLines();
+            var constructors = paramsAndArgs
+                .Select(info => {
+                    return
+$@"public {type.Name}Implementation({info.parameters}) 
+    :base({info.arguments}) {{ }}";
+                })
+                .ConcatStringsWithNewLines();
+            return Tuple.Create(createMethods, constructors);
         }
 
         static string GenerateCommands(SemanticModel model, INamedTypeSymbol type) {
