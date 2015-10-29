@@ -381,6 +381,8 @@ namespace MetaSharp {
             return propertySyntax.AccessorList.Accessors.First().Body == null;
         }
         public static SyntaxNode Node(this ISymbol symbol) {
+            if(symbol.IsImplicitlyDeclared)
+                throw new InvalidOperationException();
             var location = symbol.Location();
             return location.SourceTree.GetCompilationUnitRoot().FindNode(location.SourceSpan);
         }
