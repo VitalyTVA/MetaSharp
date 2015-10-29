@@ -24,6 +24,7 @@ namespace MetaSharp {
 
     //TODO error is base class supports INPC, but has no RaisePropertyChanged method
     public static class ViewModelCompleter {
+        #region constants
         public static readonly Func<string, string> INPCImplemetation = typeName =>
 $@"public event PropertyChangedEventHandler PropertyChanged;
 void RaisePropertyChanged(string property) {{
@@ -97,11 +98,13 @@ namespace DevExpress.Mvvm.DataAnnotations {
         public static readonly ImmutableArray<string> Usings = ImmutableArray.Create(
             "System",
             "System.ComponentModel",
-            "System.Linq.Expressions", 
-            "System.Windows.Input", 
+            "System.Linq.Expressions",
+            "System.Windows.Input",
             "DevExpress.Mvvm",
             "DevExpress.Mvvm.POCO");
+        #endregion
 
+        #region inner classes
         class BindableInfo { //TODO make struct, auto-completed (self-hosting)
             public readonly bool IsBindable;
             public readonly string OnPropertyChangedMethodName, OnPropertyChangingMethodName;
@@ -122,7 +125,8 @@ namespace DevExpress.Mvvm.DataAnnotations {
                 Name = name;
                 CanExecuteMethodName = canExecuteMethodName;
             }
-        }
+        } 
+        #endregion
 
         public static CompleterResult Generate(SemanticModel model, INamedTypeSymbol type) {
             return GenerateCore(model, type);
