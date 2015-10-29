@@ -23,6 +23,7 @@ namespace MetaSharp {
     //TODO INotifyPropertyChanging support
 
     //TODO error is base class supports INPC, but has no RaisePropertyChanged method
+    //TODO copy attributes to overriden properties and methods
     public static class ViewModelCompleter {
         #region constants
         public static readonly Func<string, string> INPCImplemetation = typeName =>
