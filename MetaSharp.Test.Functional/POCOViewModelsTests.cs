@@ -27,6 +27,7 @@ namespace MetaSharp.Test.Functional {
             Assert.True(typeof(INotifyPropertyChanged).IsAssignableFrom(typeof(POCOViewModel)));
             Assert.True(typeof(ISupportParentViewModel).IsAssignableFrom(typeof(POCOViewModel)));
             Assert.False(typeof(IPOCOViewModel).IsAssignableFrom(typeof(POCOViewModel)));
+            Assert.False(typeof(IDataErrorInfo).IsAssignableFrom(typeof(POCOViewModel)));
             var viewModel = POCOViewModel.Create();
             Assert.Equal(viewModel.GetType(), viewModel.GetType().GetProperty("Property1").DeclaringType);
 
