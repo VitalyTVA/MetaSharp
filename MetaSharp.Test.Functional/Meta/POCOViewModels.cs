@@ -377,4 +377,16 @@ namespace MetaSharp.Test.Meta.POCO {
         [Required]
         public virtual string StringProp { get; set; }
     }
+
+    public partial class CustomExplicitDataErrorInfoPropertyImplementation : IDataErrorInfo {
+        [Required]
+        public virtual string StringProp { get; set; }
+        string IDataErrorInfo.Error { get { return "custom error"; } }
+    }
+
+    public partial class CustomExplicitDataErrorInfoIndexerImplementation : IDataErrorInfo {
+        [Required]
+        public virtual string StringProp { get; set; }
+        string IDataErrorInfo.this[string columnName] { get { return columnName + " error"; } }
+    }
 }

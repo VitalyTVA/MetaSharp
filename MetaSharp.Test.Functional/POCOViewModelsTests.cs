@@ -461,6 +461,20 @@ namespace MetaSharp.Test.Functional {
             Assert.Equal(hwvm["StringProp"], asInfo["StringProp"]);
             Assert.Equal(hwvm.Error, asInfo.Error);
         }
+        [Fact]
+        public void CustomIDataErrorInfoImplementations() {
+            IDataErrorInfo vm = CustomExplicitDataErrorInfoPropertyImplementation.Create();
+            var hwvm = new HandwrittenDataErrorInfoClass();
+            Assert.Equal(hwvm["StringProp"], vm["StringProp"]);
+            Assert.Equal("custom error", vm.Error);
+        }
+        [Fact]
+        public void CustomIDataErrorIndexerImplementations() {
+            IDataErrorInfo vm = CustomExplicitDataErrorInfoIndexerImplementation.Create();
+            var hwvm = new HandwrittenDataErrorInfoClass();
+            Assert.Equal("StringProp error", vm["StringProp"]);
+            Assert.Equal(string.Empty, vm.Error);
+        }
         #endregion
 
         #region errors

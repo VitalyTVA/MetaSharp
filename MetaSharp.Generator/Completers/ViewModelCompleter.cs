@@ -12,6 +12,7 @@ using CompleterResult = MetaSharp.Either<System.Collections.Immutable.ImmutableA
 
 namespace MetaSharp {
     //TODO GENERIC TYPES
+    //TODO IMPLEMENT INTERFACEC USING SEPARATE IMPLEMENTOR CLASS
     //TODO do not generate command for method from base class if there is already one
     //TODO do generate command for method from base class if there no one and this method is accessible from completer
 
@@ -58,9 +59,10 @@ partial void OnParentViewModelChanged(object oldParentViewModel);";
 $@"IServiceContainer _ServiceContainer;
 IServiceContainer ISupportServices.ServiceContainer {{ get {{ return _ServiceContainer ?? (_ServiceContainer = new ServiceContainer(this)); }} }}";
 
-        public static readonly Func<string, string> DataErrorInfoImplementation = typeName =>
-$@"string IDataErrorInfo.Error {{ get {{ return string.Empty; }} }}
-string IDataErrorInfo.this[string columnName] {{ get {{ return IDataErrorInfoHelper.GetErrorText(this, columnName); }} }}";
+        public static readonly string DataErrorInfoErrorImplementation =
+"string IDataErrorInfo.Error { get { return string.Empty; } }";
+        public static readonly string DataErrorInfoIndexerImplementation =
+"string IDataErrorInfo.this[string columnName] { get { return IDataErrorInfoHelper.GetErrorText(this, columnName); } }"; 
 
         public static readonly string KnownTypes = //TODO do not add this stub if Mvvm is already referenced via MetaReference?? (can't find how to write test for it)
 @"
@@ -158,10 +160,14 @@ namespace DevExpress.Mvvm.DataAnnotations {
             var parentViewModelImplementation = getImplementation(ParentViewModelImplementation, "DevExpress.Mvvm.ISupportParentViewModel");
             var supportServicesImplementation = getImplementation(SupportServicesImplementation, "DevExpress.Mvvm.ISupportServices");
 
-            var iDataErrorInfoType = model.Compilation.GetTypeByMetadataName("System.ComponentModel.IDataErrorInfo");
-            var dataErrorInfoImplementation = type.AllInterfaces.Contains(iDataErrorInfoType) 
-                ? DataErrorInfoImplementation(type.Name)
-                : null;
+            const string IDataErrorInfoName = "System.ComponentModel.IDataErrorInfo";
+            var iDataErrorInfoType = model.Compilation.GetTypeByMetadataName(IDataErrorInfoName);
+            var dataErrorInfoImplementation = type.AllInterfaces.Contains(iDataErrorInfoType)
+                ? (
+                    DataErrorInfoErrorImplementation.If(x => !type.Properties().Any(m => m.Name == IDataErrorInfoName + ".Error"))
+                    +
+                    DataErrorInfoIndexerImplementation.If(x => !type.Properties().Any(m => m.Name == IDataErrorInfoName + ".this[]"))
+                ) : null;
 
             return
 $@"partial class {type.Name} : INotifyPropertyChanged, ISupportParentViewModel, ISupportServices {{
