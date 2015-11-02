@@ -12,7 +12,9 @@ using CompleterResult = MetaSharp.Either<System.Collections.Immutable.ImmutableA
 
 namespace MetaSharp {
     //TODO GENERIC TYPES
-    //TODO IMPLEMENT INTERFACEC USING SEPARATE IMPLEMENTOR CLASS
+    //TODO IMPLEMENT INTERFACE USING SEPARATE IMPLEMENTOR CLASS
+    //TODO IMPLEMENT ATTRIBUTE PARSER AND ANALIZE ATTRIBUTES USING IT
+
     //TODO do not generate command for method from base class if there is already one
     //TODO do generate command for method from base class if there no one and this method is accessible from completer
 
