@@ -161,12 +161,16 @@ namespace DevExpress.Mvvm.DataAnnotations {
             var supportServicesImplementation = getImplementation(SupportServicesImplementation, "DevExpress.Mvvm.ISupportServices");
 
             const string IDataErrorInfoName = "System.ComponentModel.IDataErrorInfo";
+            Func<string, string, string> getIDataErrorInfoPropertyImplementation =(implementation, name) =>
+                type.Properties().Any(m => (m.Name == IDataErrorInfoName + "." + name) || (m.DeclaredAccessibility == Accessibility.Public && m.Name == name))
+                    ? null
+                    : implementation;
             var iDataErrorInfoType = model.Compilation.GetTypeByMetadataName(IDataErrorInfoName);
             var dataErrorInfoImplementation = type.AllInterfaces.Contains(iDataErrorInfoType)
                 ? (
-                    DataErrorInfoErrorImplementation.If(x => !type.Properties().Any(m => m.Name == IDataErrorInfoName + ".Error"))
-                    +
-                    DataErrorInfoIndexerImplementation.If(x => !type.Properties().Any(m => m.Name == IDataErrorInfoName + ".this[]"))
+                    getIDataErrorInfoPropertyImplementation(DataErrorInfoErrorImplementation, "Error") 
+                    + 
+                    getIDataErrorInfoPropertyImplementation(DataErrorInfoIndexerImplementation, "this[]")
                 ) : null;
 
             return

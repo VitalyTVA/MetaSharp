@@ -376,6 +376,8 @@ namespace MetaSharp.Test.Meta.POCO {
     public partial class AttributedDataErrorInfoClass : IDataErrorInfo {
         [Required]
         public virtual string StringProp { get; set; }
+        internal string Error { get { return "custom error"; } }
+        protected string this[string columnName] { get { return columnName + " error"; } }
     }
 
     public partial class CustomExplicitDataErrorInfoPropertyImplementation : IDataErrorInfo {
@@ -388,5 +390,17 @@ namespace MetaSharp.Test.Meta.POCO {
         [Required]
         public virtual string StringProp { get; set; }
         string IDataErrorInfo.this[string columnName] { get { return columnName + " error"; } }
+    }
+
+    public partial class CustomImplicitDataErrorInfoPropertyImplementation : IDataErrorInfo {
+        [Required]
+        public virtual string StringProp { get; set; }
+        public string Error { get { return "custom error"; } }
+    }
+
+    public partial class CustomImplicitDataErrorInfoIndexerImplementation : IDataErrorInfo {
+        [Required]
+        public virtual string StringProp { get; set; }
+        public string this[string columnName] { get { return columnName + " error"; } }
     }
 }

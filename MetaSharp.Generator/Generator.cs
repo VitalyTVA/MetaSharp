@@ -41,7 +41,9 @@ namespace MetaSharp {
     //TODO binary output - drawing images??
 
     //TODO single usage extension + diagnostic, Unit<T> + only Unit diagnostic
-    //TODO diagnostic - always name parameters with same type, always name default parameters, specify named parameters in correct order etc.
+    //TODO diagnostic - always name parameters with same type, always name default parameters, specify named parameters in correct order, etc.
+    //TODO independent namespaces diagnostic (do not use classes from other namespaces in certain namespace)
+    //TODO override only diagnostic
     public static class Generator {
         class MethodId {
             public readonly string Name, Type;

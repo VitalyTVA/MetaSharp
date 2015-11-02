@@ -462,15 +462,29 @@ namespace MetaSharp.Test.Functional {
             Assert.Equal(hwvm.Error, asInfo.Error);
         }
         [Fact]
-        public void CustomIDataErrorInfoImplementations() {
+        public void CustomIDataErrorInfoImplementation() {
             IDataErrorInfo vm = CustomExplicitDataErrorInfoPropertyImplementation.Create();
             var hwvm = new HandwrittenDataErrorInfoClass();
             Assert.Equal(hwvm["StringProp"], vm["StringProp"]);
             Assert.Equal("custom error", vm.Error);
         }
         [Fact]
-        public void CustomIDataErrorIndexerImplementations() {
+        public void CustomIDataErrorIndexerImplementation() {
             IDataErrorInfo vm = CustomExplicitDataErrorInfoIndexerImplementation.Create();
+            var hwvm = new HandwrittenDataErrorInfoClass();
+            Assert.Equal("StringProp error", vm["StringProp"]);
+            Assert.Equal(string.Empty, vm.Error);
+        }
+        [Fact]
+        public void CustomIDataErrorInfoImplementation_Implicit() {
+            IDataErrorInfo vm = CustomImplicitDataErrorInfoPropertyImplementation.Create();
+            var hwvm = new HandwrittenDataErrorInfoClass();
+            Assert.Equal(hwvm["StringProp"], vm["StringProp"]);
+            Assert.Equal("custom error", vm.Error);
+        }
+        [Fact]
+        public void CustomIDataErrorIndexerImplementation_Implicit() {
+            IDataErrorInfo vm = CustomImplicitDataErrorInfoIndexerImplementation.Create();
             var hwvm = new HandwrittenDataErrorInfoClass();
             Assert.Equal("StringProp error", vm["StringProp"]);
             Assert.Equal(string.Empty, vm.Error);
