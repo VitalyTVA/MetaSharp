@@ -1,6 +1,8 @@
-﻿using System;
+﻿using DevExpress.Mvvm;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -34,5 +36,12 @@ namespace MetaSharp.Test.Meta.POCO {
         }
         public virtual void RaisePropertyChanged(string propertyName) {
         }
+    }
+    //[POCOViewModel(ImplementIDataErrorInfo = true)]
+    public class HandwrittenDataErrorInfoClass : IDataErrorInfo {
+        [Required]
+        public string StringProp { get; set; }
+        public string Error { get { return string.Empty; } }
+        public string this[string columnName] { get { return IDataErrorInfoHelper.GetErrorText(this, columnName); } }
     }
 }

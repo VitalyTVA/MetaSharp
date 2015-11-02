@@ -27,6 +27,8 @@ namespace MetaSharp {
     //TODO error is base class supports INPC, but has no RaisePropertyChanged method
     //TODO copy attributes to overriden properties and methods
     //TODO warnings if class has public ctors
+
+    //TODO ignore POCOViewModel attribute or not??
     public static class ViewModelCompleter {
         #region constants
         public static readonly Func<string, string> INPCImplemetation = typeName =>
@@ -55,6 +57,10 @@ partial void OnParentViewModelChanged(object oldParentViewModel);";
         public static readonly Func<string, string> SupportServicesImplementation = typeName =>
 $@"IServiceContainer _ServiceContainer;
 IServiceContainer ISupportServices.ServiceContainer {{ get {{ return _ServiceContainer ?? (_ServiceContainer = new ServiceContainer(this)); }} }}";
+
+        public static readonly Func<string, string> DataErrorInfoImplementation = typeName =>
+$@"string IDataErrorInfo.Error {{ get {{ return string.Empty; }} }}
+string IDataErrorInfo.this[string columnName] {{ get {{ return IDataErrorInfoHelper.GetErrorText(this, columnName); }} }}";
 
         public static readonly string KnownTypes = //TODO do not add this stub if Mvvm is already referenced via MetaReference?? (can't find how to write test for it)
 @"
@@ -141,6 +147,7 @@ namespace DevExpress.Mvvm.DataAnnotations {
             var properties = GenerateProperties(model, type);
             var createMethodsAndConstructors = GenerateCreateMethodsAndConstructors(model, type);
 
+
             Func<Func<string, string>, string, string> getImplementation = (getImpl, interfaceName) => {
                 var interfaceType = model.Compilation.GetTypeByMetadataName(interfaceName);
                 return type.AllInterfaces.Contains(interfaceType)
@@ -151,6 +158,11 @@ namespace DevExpress.Mvvm.DataAnnotations {
             var parentViewModelImplementation = getImplementation(ParentViewModelImplementation, "DevExpress.Mvvm.ISupportParentViewModel");
             var supportServicesImplementation = getImplementation(SupportServicesImplementation, "DevExpress.Mvvm.ISupportServices");
 
+            var iDataErrorInfoType = model.Compilation.GetTypeByMetadataName("System.ComponentModel.IDataErrorInfo");
+            var dataErrorInfoImplementation = type.AllInterfaces.Contains(iDataErrorInfoType) 
+                ? DataErrorInfoImplementation(type.Name)
+                : null;
+
             return
 $@"partial class {type.Name} : INotifyPropertyChanged, ISupportParentViewModel, ISupportServices {{
 {createMethodsAndConstructors.Item1.AddTabs(1)}
@@ -158,6 +170,7 @@ $@"partial class {type.Name} : INotifyPropertyChanged, ISupportParentViewModel, 
 {inpcImplementation}
 {parentViewModelImplementation}
 {supportServicesImplementation}
+{dataErrorInfoImplementation}
     class {type.Name}Implementation : {type.Name}, IPOCOViewModel {{
 {createMethodsAndConstructors.Item2.AddTabs(2)}
 {properties.AddTabs(2)}

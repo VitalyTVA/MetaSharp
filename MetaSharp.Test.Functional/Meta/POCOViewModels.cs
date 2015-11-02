@@ -9,6 +9,7 @@ namespace MetaSharp.Test.Meta.POCO {
     using System.Linq.Expressions;
     using System.Threading.Tasks;
     using DevExpress.Mvvm;
+    using System.ComponentModel.DataAnnotations;
 
     public partial class POCOViewModel {
         static POCOViewModel() {
@@ -370,5 +371,10 @@ namespace MetaSharp.Test.Meta.POCO {
         public CustomConstructor(string a) {
             A = a;
         }
+    }
+
+    public partial class AttributedDataErrorInfoClass : IDataErrorInfo {
+        [Required]
+        public virtual string StringProp { get; set; }
     }
 }

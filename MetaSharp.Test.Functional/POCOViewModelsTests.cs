@@ -441,6 +441,28 @@ namespace MetaSharp.Test.Functional {
         }
         #endregion
 
+        #region IDataErrorInfo
+        [Fact]
+        public void ImplementIDataErrorInfo() {
+            var vm = AttributedDataErrorInfoClass.Create();
+            var asInfo = vm as IDataErrorInfo;
+
+            var hwvm = new HandwrittenDataErrorInfoClass();
+            Assert.True(vm is IDataErrorInfo);
+            Assert.Equal(hwvm[""], asInfo[""]);
+            Assert.Equal(hwvm["StringProp"], asInfo["StringProp"]);
+            Assert.Equal(hwvm.Error, asInfo.Error);
+            vm.StringProp = "";
+            hwvm.StringProp = "";
+            Assert.Equal(hwvm["StringProp"], asInfo["StringProp"]);
+            Assert.Equal(hwvm.Error, asInfo.Error);
+            vm.StringProp = "123";
+            hwvm.StringProp = "123";
+            Assert.Equal(hwvm["StringProp"], asInfo["StringProp"]);
+            Assert.Equal(hwvm.Error, asInfo.Error);
+        }
+        #endregion
+
         #region errors
         [Fact]
         public void CallRaiseCommandChangedMethodExtensionMethodForNotPOCOViewModelTest() {
