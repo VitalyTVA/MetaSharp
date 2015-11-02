@@ -34,7 +34,7 @@ namespace MetaSharp {
     //TODO duplicate includes and references
     //TODO invalid includes and references
 
-    //TODO ADT, immutable objects, DProps, ViewModels, MonadTransfomers, Templates, Localization, Aspects, Pattern Matching (+for enums), 
+    //TODO ADT, immutable objects (including Add/RemoveXXX methods for immutable collections), MonadTransfomers, Templates, Localization, Aspects, Pattern Matching (+for enums), 
 	//TODO Mix-in/default interface implementations (IBindingList as example)
     //TODO Wrap object in viewmodels, expose entity properties from view model as bindable
     //TODO parsers
