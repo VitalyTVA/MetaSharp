@@ -425,9 +425,9 @@ namespace MetaSharp.HelloWorld {
                         Assert.Contains("InvalidOperationException:", errors.First().Message);
                         Assert.DoesNotContain("TargetInvocationException:", errors.First().Message);
                         Assert.Collection(errors,
-                            error => AssertError(error, name1, Messages.Exception_Id, 5, 30, 5, 34),
-                            error => AssertError(error, name2, Messages.Exception_Id),
-                            error => AssertError(error, name2, Messages.Exception_Id));
+                            error => AssertError(error, name1, Messages.Exception.Id, 5, 30, 5, 34),
+                            error => AssertError(error, name2, Messages.Exception.Id),
+                            error => AssertError(error, name2, Messages.Exception.Id));
                     }
                 }
             );

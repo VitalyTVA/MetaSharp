@@ -436,15 +436,17 @@ using DevExpress.Mvvm.POCO;
         readonly static string MvvmDllPath = Directory.GetDirectories(@"..\..\packages\", "DevExpressMvvm.*").Single() + @"\lib\net40-client\DevExpress.Mvvm.dll";
 
         [Fact]
-        public void CompleteViewModel_PropertyErrors() {
+        public void CompleteViewModel_Errors() {
             string incomplete =
 @"
 using MetaSharp;
 using DevExpress.Mvvm.DataAnnotations;
 namespace MetaSharp.Incomplete {
-    public class POCOViewModel_InvalidMetadata_BindableAttributeOnNotVirtualProeprty {
+    public class POCOViewModel_Errors {
         [BindableProperty]
         public string Property { get; set; }
+        //[BindableProperty]
+        //public virtual string Property { get { return null; } }
     }
 }";
 

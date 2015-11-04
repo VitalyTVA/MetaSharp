@@ -9,8 +9,7 @@ namespace MetaSharp {
     public static class Messages {
         const string MessagePrefix = MessagesCore.MessagePrefix;
         //TODO check all messages
-        public const string Exception_Id = MessagePrefix + "0000";
-        public const string Exception_Message = "Exception occured during generating output: {0} See build output for details.\r\n{1}";
+        public static readonly Message Exception = new Message("0000", "Exception occured during generating output: {0} See build output for details.\r\n{1}");
 
         public const string PropertyTypeMissed_Id = MessagePrefix + "0001";
         public const string PropertyTypeMissed_Message = "Either property type should be explicitly specified or default value should be explicitly typed to generate dependency property";
@@ -23,5 +22,16 @@ namespace MetaSharp {
 
         public const string PropertyIsNotVirual_Id = MessagePrefix + "0004";
         public const string PropertyIsNotVirual_Message = "Cannot make non-virtual property bindable: {0}.";
+    }
+    public struct Message {
+        public string id, Text;
+        public string Id { get { return MessagesCore.MessagePrefix + id; } }
+        public Message(string id, string text) {
+            this.id = id;
+            Text = text;
+        }
+        public Message Format(params object[] args) {
+            return new Message(id, string.Format(Text, args));
+        }
     }
 }
