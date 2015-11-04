@@ -20,5 +20,8 @@ namespace MetaSharp {
 
         public const string IncorrectOwnerType_Id = MessagePrefix + "0003";
         public const string IncorrectOwnerType_Message = "Owner type doesn't match the enclosing type.";
+
+        public const string PropertyIsNotVirual_Id = MessagePrefix + "0004";
+        public const string PropertyIsNotVirual_Message = "Cannot make non-virtual property bindable: {0}.";
     }
 }
