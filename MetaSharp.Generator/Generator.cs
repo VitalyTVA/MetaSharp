@@ -235,7 +235,7 @@ namespace MetaSharp {
             return CreateError(id: error.Id, file: file, message: error.GetMessage(), span: span);
         }
         public static MetaError CreateError(Message mesage, string file, FileLinePositionSpan span) {
-            return CreateError(mesage.Id, file, mesage.Text, span);
+            return CreateError(mesage.FullId, file, mesage.Text, span);
         }
         public static MetaError CreateError(string id, string file, string message, FileLinePositionSpan span) {
             return new MetaError(
