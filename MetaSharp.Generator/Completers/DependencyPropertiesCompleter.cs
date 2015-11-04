@@ -57,7 +57,7 @@ $@"partial class {type.Name} {{
             var ownerTypeSyntax = ((GenericNameSyntax)last.Expression).TypeArgumentList.Arguments.Single();
             var ownerType = model.GetTypeInfo(ownerTypeSyntax).Type;
             if(ownerType != type)
-                return new CompleterError(ownerTypeSyntax, Messages.IncorrectOwnerType_Id, Messages.IncorrectOwnerType_Message).YieldToImmutable();
+                return new CompleterError(ownerTypeSyntax, Messages.IncorrectOwnerType).YieldToImmutable();
             var properties = chain
                 .Take(chain.Length - 1)
                 .Select(x => {

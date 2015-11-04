@@ -9,15 +9,14 @@ namespace MetaSharp {
     public static class Messages {
         const string MessagePrefix = MessagesCore.MessagePrefix;
         //TODO check all messages
+        //TODO write test checking id's are not repeated
         public static readonly UnfomattedMessage Exception = new UnfomattedMessage("0000", "Exception occured during generating output: {0} See build output for details.\r\n{1}");
+
         public static readonly Message PropertyTypeMissed = new Message("0001", "Either property type should be explicitly specified or default value should be explicitly typed to generate dependency property");
         public static readonly UnfomattedMessage IncorrectPropertyName = new UnfomattedMessage("0002", "Dependency property field for the the property '{0}' should have '{1}' name.");
+        public static readonly Message IncorrectOwnerType = new Message("0003", "Owner type doesn't match the enclosing type.");
 
-        public const string IncorrectOwnerType_Id = MessagePrefix + "0003";
-        public const string IncorrectOwnerType_Message = "Owner type doesn't match the enclosing type.";
-
-        public const string PropertyIsNotVirual_Id = MessagePrefix + "0004";
-        public const string PropertyIsNotVirual_Message = "Cannot make non-virtual property bindable: {0}.";
+        public static readonly UnfomattedMessage PropertyIsNotVirual = new UnfomattedMessage("0004", "Cannot make non-virtual property bindable: {0}.");
     }
     public struct UnfomattedMessage {
         readonly string id;

@@ -458,7 +458,7 @@ namespace MetaSharp.Incomplete {
                     new TestFile(name, incomplete, isInFlow: false)
                 ),
                 errors => Assert.Collection(errors,
-                        error => AssertError(error, Path.GetFullPath(name), Messages.PropertyIsNotVirual_Id,
+                        error => AssertError(error, Path.GetFullPath(name), Messages.PropertyIsNotVirual.FullId,
                             "Cannot make non-virtual property bindable: Property.", 6, 9, 7, 45)
                 )
             );
@@ -667,8 +667,8 @@ using System;
                     new TestFile(name, incomplete, isInFlow: false)
                 ),
                 errors => Assert.Collection(errors,
-                        error => AssertError(error, Path.GetFullPath(name), Messages.IncorrectOwnerType_Id,
-                            Messages.IncorrectOwnerType_Message, 8, 44, 8, 55)
+                        error => AssertError(error, Path.GetFullPath(name), Messages.IncorrectOwnerType.FullId,
+                            Messages.IncorrectOwnerType.Text, 8, 44, 8, 55)
                 )
             );
         }
