@@ -161,12 +161,12 @@ namespace DevExpress.Mvvm.DataAnnotations {
 
         CompleterResult GenerateCore() {
 
-            var res = LinqExtensionsEx.Combine(
+            var res = Either.Combine(
                 CompleterResult.Right(GenerateCommands()),
                 GenerateProperties(), 
                 Either<ImmutableArray<CompleterError>, Tuple<string, string>>.Right(GenerateCreateMethodsAndConstructors()), 
                 (commands, properties, createMethodsAndConstructors) => {
-                    return
+                    return CompleterResult.Right(
         $@"partial class {type.Name} : INotifyPropertyChanged, ISupportParentViewModel, ISupportServices {{
 {createMethodsAndConstructors.Item1.AddTabs(1)}
 {commands.AddTabs(1)}
@@ -178,7 +178,7 @@ namespace DevExpress.Mvvm.DataAnnotations {
             RaisePropertyChanged(propertyName);
         }}
     }}
-}}";
+}}");
                 })
                 .SelectError(erorrs => erorrs.SelectMany(x => x).ToImmutableArray());
             return res;
