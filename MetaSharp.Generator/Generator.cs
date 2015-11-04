@@ -234,8 +234,8 @@ namespace MetaSharp {
         static MetaError ToGeneratorError(this Diagnostic error, string file, FileLinePositionSpan span) {
             return CreateError(id: error.Id, file: file, message: error.GetMessage(), span: span);
         }
-        public static MetaError CreateError(Message mesage, string file, FileLinePositionSpan span) {
-            return CreateError(mesage.FullId, file, mesage.Text, span);
+        public static MetaError CreateError(Message message, string file, FileLinePositionSpan span) {
+            return CreateError(message.FullId, file, message.Text, span);
         }
         public static MetaError CreateError(string id, string file, string message, FileLinePositionSpan span) {
             return new MetaError(

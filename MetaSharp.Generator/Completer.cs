@@ -25,22 +25,15 @@ namespace MetaSharp {
     }
     public class CompleterError {
         public readonly SyntaxTree Tree;
-        public readonly string Id, Message;
+        public readonly Message Message;
         public readonly FileLinePositionSpan Span;
-        public CompleterError(SyntaxTree tree, Message message, FileLinePositionSpan span)
-            : this(tree, message.FullId, message.Text, span) {
-        }
-        public CompleterError(SyntaxNode node, Message message)
-            : this(node, message.FullId, message.Text) {
-        }
-        public CompleterError(SyntaxTree tree, string id, string message, FileLinePositionSpan span) {
+        public CompleterError(SyntaxTree tree, Message message, FileLinePositionSpan span) {
             Tree = tree;
             Span = span;
-            Id = id;
             Message = message;
         }
-        public CompleterError(SyntaxNode node, string id, string message)
-            : this(node.SyntaxTree, id, message, node.LineSpan()) {
+        public CompleterError(SyntaxNode node, Message message)
+            : this(node.SyntaxTree, message, node.LineSpan()) {
         }
     }
     public static class Completer {
@@ -95,7 +88,7 @@ namespace MetaSharp {
                                 => val.With(s => MetaContextExtensions.WrapMembers(s.Yield(), type.Namespace(), type.Location().GetUsings().Concat(additionalUsings).Distinct()));
                                 var completion = x.completer.Complete(model, type);
                                 return completion.Transform(
-                                    errors => errors.Select(e => Generator.CreateError(id: e.Id, file: Path.GetFullPath(file), message: e.Message, span: e.Span)),
+                                    errors => errors.Select(e => Generator.CreateError(message: e.Message, file: Path.GetFullPath(file), span: e.Span)),
                                     value => wrapMembers(value)
                                 );
                             })
