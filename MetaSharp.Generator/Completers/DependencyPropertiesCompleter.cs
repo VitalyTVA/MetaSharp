@@ -103,8 +103,8 @@ $@"partial class {type.Name} {{
             Func<int, string, CompleterError> getError = (index, suffix) => {
                 var fieldName = ((IdentifierNameSyntax)arguments[index].Expression).ToString();
                 if(propertyName + suffix != fieldName) {
-                    var message = string.Format(Messages.IncorrectPropertyName_Message, propertyName, propertyName + suffix);
-                    return new CompleterError(arguments[index].Expression, Messages.IncorrectPropertyName_Id, message);
+                    var message = Messages.IncorrectPropertyName.Format(propertyName, propertyName + suffix);
+                    return new CompleterError(arguments[index].Expression, message);
                 }
                 return null;
             };

@@ -30,6 +30,9 @@ namespace MetaSharp {
         public CompleterError(SyntaxTree tree, Message message, FileLinePositionSpan span)
             : this(tree, message.FullId, message.Text, span) {
         }
+        public CompleterError(SyntaxNode node, Message message)
+            : this(node, message.FullId, message.Text) {
+        }
         public CompleterError(SyntaxTree tree, string id, string message, FileLinePositionSpan span) {
             Tree = tree;
             Span = span;

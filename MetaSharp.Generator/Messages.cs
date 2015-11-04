@@ -11,9 +11,7 @@ namespace MetaSharp {
         //TODO check all messages
         public static readonly UnfomattedMessage Exception = new UnfomattedMessage("0000", "Exception occured during generating output: {0} See build output for details.\r\n{1}");
         public static readonly Message PropertyTypeMissed = new Message("0001", "Either property type should be explicitly specified or default value should be explicitly typed to generate dependency property");
-
-        public const string IncorrectPropertyName_Id = MessagePrefix + "0002";
-        public const string IncorrectPropertyName_Message = "Dependency property field for the the property '{0}' should have '{1}' name.";
+        public static readonly UnfomattedMessage IncorrectPropertyName = new UnfomattedMessage("0002", "Dependency property field for the the property '{0}' should have '{1}' name.");
 
         public const string IncorrectOwnerType_Id = MessagePrefix + "0003";
         public const string IncorrectOwnerType_Message = "Owner type doesn't match the enclosing type.";
