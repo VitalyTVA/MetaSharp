@@ -291,16 +291,6 @@ public {propertyType} {commandName} {{ get {{ return _{commandName} ?? (_{comman
             var methods = type.Methods()
                 .ToImmutableDictionary(x => x.Name, x => x);
 
-            Func<IPropertySymbol, BindableInfo, Either<CompleterError, bool>> isBindable = (property, bindableInfo) => {
-                if(!property.IsVirtual && (bindableInfo?.IsBindable ?? false))
-                    return new CompleterError(property.Node(), Messages.PropertyIsNotVirual_Id, string.Format(Messages.PropertyIsNotVirual_Message, property.Name));
-                return property.IsVirtual
-                    && (bindableInfo?.IsBindable ?? true)
-                    && property.DeclaredAccessibility == Accessibility.Public
-                    && property.GetMethod.DeclaredAccessibility == Accessibility.Public
-                    && property.IsAutoImplemented() || bindableInfo.Return(bi => bi.IsBindable, () => false);
-            };
-
             Func<IPropertySymbol, BindableInfo, string> generateProperty = (property, bindableInfo) => {
                 var setterModifier = property.SetMethod.DeclaredAccessibility.ToAccessibilityModifier(property.DeclaredAccessibility);
 
@@ -356,7 +346,15 @@ $@"public override {property.TypeDisplayString(model)} {property.Name} {{
                         namedArgs.GetValueOrDefault("OnPropertyChangedMethodName"),
                         namedArgs.GetValueOrDefault("OnPropertyChangingMethodName"));
                 });
-
+        Either<CompleterError, bool> isBindable(IPropertySymbol property, BindableInfo bindableInfo) {
+            if(!property.IsVirtual && (bindableInfo?.IsBindable ?? false))
+                return new CompleterError(property.Node(), Messages.PropertyIsNotVirual_Id, string.Format(Messages.PropertyIsNotVirual_Message, property.Name));
+            return property.IsVirtual
+                && (bindableInfo?.IsBindable ?? true)
+                && property.DeclaredAccessibility == Accessibility.Public
+                && property.GetMethod.DeclaredAccessibility == Accessibility.Public
+                && property.IsAutoImplemented() || bindableInfo.Return(bi => bi.IsBindable, () => false);
+        }
         #endregion
     }
 }
