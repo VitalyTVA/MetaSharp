@@ -17,6 +17,7 @@ namespace MetaSharp {
 
         public static readonly UnfomattedMessage POCO_PropertyIsNotVirual = new UnfomattedMessage("0004", "Cannot make non-virtual property bindable: {0}.");
         public static readonly UnfomattedMessage POCO_PropertyHasNoSetter = new UnfomattedMessage("0005", "Cannot make property without setter bindable: {0}.");
+        public static readonly UnfomattedMessage POCO_PropertyHasNoPublicGetter = new UnfomattedMessage("0006", "Cannot make property without public getter bindable: {0}.");
     }
     public struct UnfomattedMessage {
         readonly string id;

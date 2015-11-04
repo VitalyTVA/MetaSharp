@@ -321,6 +321,8 @@ public {propertyType} {commandName} {{ get {{ return _{commandName} ?? (_{comman
                     return getError(Messages.POCO_PropertyIsNotVirual);
                 if(property.IsReadOnly)
                     return getError(Messages.POCO_PropertyHasNoSetter);
+                if(property.GetMethod.DeclaredAccessibility != Accessibility.Public)
+                    return getError(Messages.POCO_PropertyHasNoPublicGetter);
             }
             return property.IsVirtual
                 && (bindableInfo?.IsBindable ?? true)

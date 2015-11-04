@@ -446,9 +446,11 @@ using DevExpress.Mvvm.DataAnnotations;
 namespace MetaSharp.Incomplete {
     public class POCOViewModel_Errors {
         [BindableProperty]
-        public string Property { get; set; }
+        public string NotVirtualProperty { get; set; }
         [BindableProperty]
-        public virtual string Property { get { return null; } }
+        public virtual string NoSetterProperty { get { return null; } }
+        [BindableProperty]
+        public virtual string PrivateGetterProperty { private get; set; }
     }
 }";
 
@@ -461,9 +463,11 @@ namespace MetaSharp.Incomplete {
                 ),
                 errors => Assert.Collection(errors,
                         error => AssertError(error, Path.GetFullPath(name), Messages.POCO_PropertyIsNotVirual.FullId,
-                            "Cannot make non-virtual property bindable: Property.", 6, 9, 7, 45),
+                            "Cannot make non-virtual property bindable: NotVirtualProperty.", 6, 9, 7, 55),
                         error => AssertError(error, Path.GetFullPath(name), Messages.POCO_PropertyHasNoSetter.FullId,
-                            "Cannot make property without setter bindable: Property.", 8, 9, 9, 64)
+                            "Cannot make property without setter bindable: NoSetterProperty.", 8, 9, 9, 72),
+                        error => AssertError(error, Path.GetFullPath(name), Messages.POCO_PropertyHasNoPublicGetter.FullId,
+                            "Cannot make property without public getter bindable: PrivateGetterProperty.", 10, 9, 11, 74)
                 )
             );
         }
