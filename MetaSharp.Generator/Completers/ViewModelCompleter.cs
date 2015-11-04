@@ -166,6 +166,11 @@ namespace DevExpress.Mvvm.DataAnnotations {
                 return properties.ToLeft();
             var createMethodsAndConstructors = GenerateCreateMethodsAndConstructors();
 
+            //LinqExtensionsEx.Combine(
+            //    CompleterResult.Right(commands), 
+            //    properties, 
+            //    Either<ImmutableArray<CompleterError>, Tuple<string, string>>.Right(createMethodsAndConstructors), (x1, x2, x3) => "");
+
             return
 $@"partial class {type.Name} : INotifyPropertyChanged, ISupportParentViewModel, ISupportServices {{
 {createMethodsAndConstructors.Item1.AddTabs(1)}

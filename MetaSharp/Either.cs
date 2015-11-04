@@ -102,6 +102,7 @@ namespace MetaSharp {
                 )
             );
         }
+
         public static IEnumerable<Either<TLeft, TRight>> WhereEither<TLeft, TRight>(this IEnumerable<Either<TLeft, TRight>> source, Predicate<TRight> filter) {
             return source.Where(x => x.Match(left => true, right => filter(right)));
         }
