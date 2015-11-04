@@ -57,7 +57,7 @@ $@"partial class {type.Name} {{
             var ownerTypeSyntax = ((GenericNameSyntax)last.Expression).TypeArgumentList.Arguments.Single();
             var ownerType = model.GetTypeInfo(ownerTypeSyntax).Type;
             if(ownerType != type)
-                return new CompleterError(ownerTypeSyntax, Messages.IncorrectOwnerType).YieldToImmutable();
+                return new CompleterError(ownerTypeSyntax, Messages.DependecyProperty_IncorrectOwnerType).YieldToImmutable();
             var properties = chain
                 .Take(chain.Length - 1)
                 .Select(x => {
@@ -79,7 +79,7 @@ $@"partial class {type.Name} {{
                     }
                     if(propertyType == null) {
                         var span = memberAccess.Name.LineSpan();
-                        return new CompleterError(memberAccess.SyntaxTree, Messages.PropertyTypeMissed, new FileLinePositionSpan(string.Empty, span.EndLinePosition, span.EndLinePosition));
+                        return new CompleterError(memberAccess.SyntaxTree, Messages.DependecyProperty_PropertyTypeMissed, new FileLinePositionSpan(string.Empty, span.EndLinePosition, span.EndLinePosition));
                     }
 
                     var propertyName = GetPropertyName(arguments, readOnly, memberAccess.Name.SyntaxTree);
@@ -103,7 +103,7 @@ $@"partial class {type.Name} {{
             Func<int, string, CompleterError> getError = (index, suffix) => {
                 var fieldName = ((IdentifierNameSyntax)arguments[index].Expression).ToString();
                 if(propertyName + suffix != fieldName) {
-                    var message = Messages.IncorrectPropertyName.Format(propertyName, propertyName + suffix);
+                    var message = Messages.DependecyProperty_IncorrectPropertyName.Format(propertyName, propertyName + suffix);
                     return new CompleterError(arguments[index].Expression, message);
                 }
                 return null;

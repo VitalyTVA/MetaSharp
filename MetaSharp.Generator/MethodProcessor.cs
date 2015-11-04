@@ -36,7 +36,7 @@ namespace MetaSharp {
                 ImmutableArray<Output> output = ValueToOutputs(methodResult, methodContext.Method.ReturnType, getDefaultOutput);
                 return output;
             } catch(TargetInvocationException e) {
-                var error = Generator.CreateError(Messages.Exception.Format(e.InnerException.Message, e.InnerException), methodContext.FileName, methodContext.MethodSpan);
+                var error = Generator.CreateError(Messages.General_Exception.Format(e.InnerException.Message, e.InnerException), methodContext.FileName, methodContext.MethodSpan);
                 return error.YieldToImmutable();
             }
         }

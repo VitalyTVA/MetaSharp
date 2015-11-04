@@ -458,7 +458,7 @@ namespace MetaSharp.Incomplete {
                     new TestFile(name, incomplete, isInFlow: false)
                 ),
                 errors => Assert.Collection(errors,
-                        error => AssertError(error, Path.GetFullPath(name), Messages.PropertyIsNotVirual.FullId,
+                        error => AssertError(error, Path.GetFullPath(name), Messages.POCO_PropertyIsNotVirual.FullId,
                             "Cannot make non-virtual property bindable: Property.", 6, 9, 7, 45)
                 )
             );
@@ -602,8 +602,8 @@ using System;
                     new TestFile(@"Some\..\" + name, incomplete, isInFlow: false)
                 ),
                 errors => Assert.Collection(errors,
-                        error => AssertError(error, Path.GetFullPath(name), Messages.PropertyTypeMissed.FullId, Messages.PropertyTypeMissed.Text, 9, 26),
-                        error => AssertError(error, Path.GetFullPath(name), Messages.PropertyTypeMissed.FullId, Messages.PropertyTypeMissed.Text, 10, 27)
+                        error => AssertError(error, Path.GetFullPath(name), Messages.DependecyProperty_PropertyTypeMissed.FullId, Messages.DependecyProperty_PropertyTypeMissed.Text, 9, 26),
+                        error => AssertError(error, Path.GetFullPath(name), Messages.DependecyProperty_PropertyTypeMissed.FullId, Messages.DependecyProperty_PropertyTypeMissed.Text, 10, 27)
                 )
             );
         }
@@ -633,13 +633,13 @@ using System;
                     new TestFile(name, incomplete, isInFlow: false)
                 ),
                 errors => Assert.Collection(errors,
-                        error => AssertError(error, Path.GetFullPath(name), Messages.IncorrectPropertyName.FullId,
+                        error => AssertError(error, Path.GetFullPath(name), Messages.DependecyProperty_IncorrectPropertyName.FullId,
                             "Dependency property field for the the property 'Prop1' should have 'Prop1Property' name.", 9, 47, 9, 60),
-                        error => AssertError(error, Path.GetFullPath(name), Messages.IncorrectPropertyName.FullId,
+                        error => AssertError(error, Path.GetFullPath(name), Messages.DependecyProperty_IncorrectPropertyName.FullId,
                             "Dependency property field for the the property 'Prop2' should have 'Prop2Property' name.", 10, 45, 10, 59),
-                        error => AssertError(error, Path.GetFullPath(name), Messages.IncorrectPropertyName.FullId,
+                        error => AssertError(error, Path.GetFullPath(name), Messages.DependecyProperty_IncorrectPropertyName.FullId,
                             "Dependency property field for the the property 'Prop3' should have 'Prop3PropertyKey' name.", 11, 53, 11, 66),
-                        error => AssertError(error, Path.GetFullPath(name), Messages.IncorrectPropertyName.FullId,
+                        error => AssertError(error, Path.GetFullPath(name), Messages.DependecyProperty_IncorrectPropertyName.FullId,
                             "Dependency property field for the the property 'Prop4' should have 'Prop4Property' name.", 12, 75, 12, 88)
                 )
             );
@@ -667,8 +667,8 @@ using System;
                     new TestFile(name, incomplete, isInFlow: false)
                 ),
                 errors => Assert.Collection(errors,
-                        error => AssertError(error, Path.GetFullPath(name), Messages.IncorrectOwnerType.FullId,
-                            Messages.IncorrectOwnerType.Text, 8, 44, 8, 55)
+                        error => AssertError(error, Path.GetFullPath(name), Messages.DependecyProperty_IncorrectOwnerType.FullId,
+                            Messages.DependecyProperty_IncorrectOwnerType.Text, 8, 44, 8, 55)
                 )
             );
         }

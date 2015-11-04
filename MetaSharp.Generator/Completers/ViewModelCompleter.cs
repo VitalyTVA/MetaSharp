@@ -315,7 +315,7 @@ public {propertyType} {commandName} {{ get {{ return _{commandName} ?? (_{comman
         }
         Either<CompleterError, bool> IsBindable(IPropertySymbol property, BindableInfo bindableInfo) {
             if(!property.IsVirtual && (bindableInfo?.IsBindable ?? false))
-                return new CompleterError(property.Node(), Messages.PropertyIsNotVirual.Format(property.Name));
+                return new CompleterError(property.Node(), Messages.POCO_PropertyIsNotVirual.Format(property.Name));
             return property.IsVirtual
                 && (bindableInfo?.IsBindable ?? true)
                 && property.DeclaredAccessibility == Accessibility.Public
