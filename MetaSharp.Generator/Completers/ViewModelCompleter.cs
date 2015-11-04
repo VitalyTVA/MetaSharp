@@ -158,6 +158,7 @@ namespace DevExpress.Mvvm.DataAnnotations {
             bindablePropertyAttributeType = model.Compilation.GetTypeByMetadataName("DevExpress.Mvvm.DataAnnotations.BindablePropertyAttribute");
             methods = type.Methods().ToImmutableDictionary(x => x.Name, x => x);
         }
+
         CompleterResult GenerateCore() {
             var commands = GenerateCommands();
             var properties = GenerateProperties();
