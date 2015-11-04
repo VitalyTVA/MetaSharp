@@ -29,7 +29,7 @@ namespace MetaSharp {
     //TODO group output in regions
 
     //TODO error is base class supports INPC, but has no RaisePropertyChanged method
-    //TODO copy attributes to overriden properties and methods
+    //TODO copy attributes to overriden properties and methods (the same which POCO already copies)
     //TODO warnings if class has public ctors
 
     //TODO ignore POCOViewModel attribute or not??
