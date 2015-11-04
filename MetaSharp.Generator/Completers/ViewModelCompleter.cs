@@ -165,16 +165,28 @@ namespace DevExpress.Mvvm.DataAnnotations {
                 return properties.ToLeft();
             var createMethodsAndConstructors = GenerateCreateMethodsAndConstructors();
 
+            return
+$@"partial class {type.Name} : INotifyPropertyChanged, ISupportParentViewModel, ISupportServices {{
+{createMethodsAndConstructors.Item1.AddTabs(1)}
+{commands.AddTabs(1)}
+{GetImplementations()}
+    class {type.Name}Implementation : {type.Name}, IPOCOViewModel {{
+{createMethodsAndConstructors.Item2.AddTabs(2)}
+{properties.ToRight().AddTabs(2)}
+        void IPOCOViewModel.RaisePropertyChanged(string propertyName) {{
+            RaisePropertyChanged(propertyName);
+        }}
+    }}
+}}";
+        }
+
+        string GetImplementations() {
             Func<Func<string, string>, string, string> getImplementation = (getImpl, interfaceName) => {
                 var interfaceType = model.Compilation.GetTypeByMetadataName(interfaceName);
                 return type.AllInterfaces.Contains(interfaceType)
                     ? string.Empty
                     : getImpl(type.Name).AddTabs(1);
             };
-            var inpcImplementation = getImplementation(INPCImplemetation, "System.ComponentModel.INotifyPropertyChanged");
-            var parentViewModelImplementation = getImplementation(ParentViewModelImplementation, "DevExpress.Mvvm.ISupportParentViewModel");
-            var supportServicesImplementation = getImplementation(SupportServicesImplementation, "DevExpress.Mvvm.ISupportServices");
-
             const string IDataErrorInfoName = "System.ComponentModel.IDataErrorInfo";
             Func<string, string, string> getIDataErrorInfoPropertyImplementation = (implementation, name) =>
                  type.Properties().Any(m => (m.Name == IDataErrorInfoName + "." + name) || (m.DeclaredAccessibility == Accessibility.Public && m.Name == name))
@@ -187,23 +199,12 @@ namespace DevExpress.Mvvm.DataAnnotations {
                     +
                     getIDataErrorInfoPropertyImplementation(DataErrorInfoIndexerImplementation, "this[]")
                 ) : null;
-
-            return
-$@"partial class {type.Name} : INotifyPropertyChanged, ISupportParentViewModel, ISupportServices {{
-{createMethodsAndConstructors.Item1.AddTabs(1)}
-{commands.AddTabs(1)}
-{inpcImplementation}
-{parentViewModelImplementation}
-{supportServicesImplementation}
-{dataErrorInfoImplementation}
-    class {type.Name}Implementation : {type.Name}, IPOCOViewModel {{
-{createMethodsAndConstructors.Item2.AddTabs(2)}
-{properties.ToRight().AddTabs(2)}
-        void IPOCOViewModel.RaisePropertyChanged(string propertyName) {{
-            RaisePropertyChanged(propertyName);
-        }}
-    }}
-}}";
+            return new[] {
+                getImplementation(INPCImplemetation, "System.ComponentModel.INotifyPropertyChanged"),
+                getImplementation(ParentViewModelImplementation, "DevExpress.Mvvm.ISupportParentViewModel"),
+                getImplementation(SupportServicesImplementation, "DevExpress.Mvvm.ISupportServices"),
+                dataErrorInfoImplementation,
+            }.ConcatStringsWithNewLines();
         }
 
         Tuple<string, string> GenerateCreateMethodsAndConstructors() {
