@@ -314,8 +314,14 @@ public {propertyType} {commandName} {{ get {{ return _{commandName} ?? (_{comman
                 });
         }
         Either<CompleterError, bool> IsBindable(IPropertySymbol property, BindableInfo bindableInfo) {
-            if(!property.IsVirtual && (bindableInfo?.IsBindable ?? false))
-                return new CompleterError(property.Node(), Messages.POCO_PropertyIsNotVirual.Format(property.Name));
+            if(bindableInfo?.IsBindable ?? false) {
+                Func<UnfomattedMessage, CompleterError> getError = message =>
+                    new CompleterError(property.Node(), message.Format(property.Name));
+                if(!property.IsVirtual)
+                    return getError(Messages.POCO_PropertyIsNotVirual);
+                if(property.IsReadOnly)
+                    return getError(Messages.POCO_PropertyHasNoSetter);
+            }
             return property.IsVirtual
                 && (bindableInfo?.IsBindable ?? true)
                 && property.DeclaredAccessibility == Accessibility.Public

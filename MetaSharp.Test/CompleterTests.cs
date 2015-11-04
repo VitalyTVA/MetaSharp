@@ -299,6 +299,7 @@ namespace MetaSharp.Incomplete {
                 + ViewModelCompleter.SupportServicesImplementation(typeName))
                 .AddTabs(2);
         }
+
         [Fact]
         public void CompleteViewModel() {
             string incomplete =
@@ -381,6 +382,7 @@ namespace MetaSharp.Incomplete {
             );
             AssertCompiles(new[] { input, incomplete, output, additionalClasses }, MvvmDllPath.Yield());
         }
+
         [Fact]
         public void CompleteViewModel_ExplicitMvvmMetaReference() {
             string incomplete =
@@ -445,8 +447,8 @@ namespace MetaSharp.Incomplete {
     public class POCOViewModel_Errors {
         [BindableProperty]
         public string Property { get; set; }
-        //[BindableProperty]
-        //public virtual string Property { get { return null; } }
+        [BindableProperty]
+        public virtual string Property { get { return null; } }
     }
 }";
 
@@ -459,7 +461,9 @@ namespace MetaSharp.Incomplete {
                 ),
                 errors => Assert.Collection(errors,
                         error => AssertError(error, Path.GetFullPath(name), Messages.POCO_PropertyIsNotVirual.FullId,
-                            "Cannot make non-virtual property bindable: Property.", 6, 9, 7, 45)
+                            "Cannot make non-virtual property bindable: Property.", 6, 9, 7, 45),
+                        error => AssertError(error, Path.GetFullPath(name), Messages.POCO_PropertyHasNoSetter.FullId,
+                            "Cannot make property without setter bindable: Property.", 8, 9, 9, 64)
                 )
             );
         }

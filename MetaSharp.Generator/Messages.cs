@@ -16,6 +16,7 @@ namespace MetaSharp {
         public static readonly Message DependecyProperty_IncorrectOwnerType = new Message("0003", "Owner type doesn't match the enclosing type.");
 
         public static readonly UnfomattedMessage POCO_PropertyIsNotVirual = new UnfomattedMessage("0004", "Cannot make non-virtual property bindable: {0}.");
+        public static readonly UnfomattedMessage POCO_PropertyHasNoSetter = new UnfomattedMessage("0005", "Cannot make property without setter bindable: {0}.");
     }
     public struct UnfomattedMessage {
         readonly string id;
