@@ -149,11 +149,13 @@ namespace DevExpress.Mvvm.DataAnnotations {
 
         readonly SemanticModel model; 
         readonly INamedTypeSymbol type, bindablePropertyAttributeType;
+        readonly ImmutableDictionary<string, IMethodSymbol> methods;
 
         ViewModelCompleter(SemanticModel model, INamedTypeSymbol type) {
             this.model = model;
             this.type = type;
             bindablePropertyAttributeType = model.Compilation.GetTypeByMetadataName("DevExpress.Mvvm.DataAnnotations.BindablePropertyAttribute");
+            methods = type.Methods().ToImmutableDictionary(x => x.Name, x => x);
         }
         CompleterResult GenerateCore() {
             var commands = GenerateCommands();
@@ -285,30 +287,59 @@ public {propertyType} {commandName} {{ get {{ return _{commandName} ?? (_{comman
                 .ConcatStringsWithNewLines();
         }
 
-
         #region properties
         CompleterResult GenerateProperties() {
-            var methods = type.Methods()
-                .ToImmutableDictionary(x => x.Name, x => x);
+            var properties = type.Properties()
+                .Select(property => {
+                    var bindableInfo = GetBindableInfo(property);
+                    return new { property, bindableInfo };
+                })
+                .Select(info => IsBindable(info.property, info.bindableInfo)
+                    .Select(isBindableValue => isBindableValue ? info : null)
+                 )
+                .Where(x => x.Match(left => true, right => right != null))
+                .Select(x => x.Select(info => GenerateProperty(info.property, info.bindableInfo)))
+                .AggregateEither(errors => errors.ToImmutableArray(), values => values.ConcatStringsWithNewLines());
+            return properties;
+        }
+        BindableInfo GetBindableInfo(IPropertySymbol property) { 
+            return property.GetAttributes()
+                .FirstOrDefault(x => x.AttributeClass == bindablePropertyAttributeType)
+                .With(x => {
+                    var args = x.ConstructorArguments.Select(arg => arg.Value).ToArray();
+                    var namedArgs = x.NamedArguments.ToImmutableDictionary(p => p.Key, p => (string)p.Value.Value); //TODO error if names are not recognizable
+                    return new BindableInfo(args.Length > 0 ? (bool)args[0] : true,
+                        namedArgs.GetValueOrDefault("OnPropertyChangedMethodName"),
+                        namedArgs.GetValueOrDefault("OnPropertyChangingMethodName"));
+                });
+        }
+        Either<CompleterError, bool> IsBindable(IPropertySymbol property, BindableInfo bindableInfo) {
+            if(!property.IsVirtual && (bindableInfo?.IsBindable ?? false))
+                return new CompleterError(property.Node(), Messages.PropertyIsNotVirual_Id, string.Format(Messages.PropertyIsNotVirual_Message, property.Name));
+            return property.IsVirtual
+                && (bindableInfo?.IsBindable ?? true)
+                && property.DeclaredAccessibility == Accessibility.Public
+                && property.GetMethod.DeclaredAccessibility == Accessibility.Public
+                && property.IsAutoImplemented() || bindableInfo.Return(bi => bi.IsBindable, () => false);
+        }
+        string GenerateProperty(IPropertySymbol property, BindableInfo bindableInfo) {
+            var setterModifier = property.SetMethod.DeclaredAccessibility.ToAccessibilityModifier(property.DeclaredAccessibility);
 
-            Func<IPropertySymbol, BindableInfo, string> generateProperty = (property, bindableInfo) => {
-                var setterModifier = property.SetMethod.DeclaredAccessibility.ToAccessibilityModifier(property.DeclaredAccessibility);
+            //TODO diplicated code
+            var onChangedMethodName = bindableInfo?.OnPropertyChangedMethodName ?? $"On{property.Name}Changed".If(x => property.IsAutoImplemented());
+            var onChangedMethod = onChangedMethodName.With(x => methods.GetValueOrDefault(x));
+            var needOldValue = onChangedMethod.Return(x => x.Parameters.Length == 1, () => false);
+            var oldValueStorage = needOldValue ? $"var oldValue = base.{property.Name};".AddTabs(2) : null;
+            var oldValueName = needOldValue ? "oldValue" : null;
+            var onChangedMethodCall = onChangedMethod.With(x => $"{x.Name}({oldValueName});".AddTabs(2));
 
-                //TODO diplicated code
-                var onChangedMethodName = bindableInfo?.OnPropertyChangedMethodName ?? $"On{property.Name}Changed".If(x => property.IsAutoImplemented());
-                var onChangedMethod = onChangedMethodName.With(x => methods.GetValueOrDefault(x));
-                var needOldValue = onChangedMethod.Return(x => x.Parameters.Length == 1, () => false);
-                var oldValueStorage = needOldValue ? $"var oldValue = base.{property.Name};".AddTabs(2) : null;
-                var oldValueName = needOldValue ? "oldValue" : null;
-                var onChangedMethodCall = onChangedMethod.With(x => $"{x.Name}({oldValueName});".AddTabs(2));
+            var onChangingMethodName = bindableInfo?.OnPropertyChangingMethodName ?? $"On{property.Name}Changing".If(x => property.IsAutoImplemented());
+            var onChangingMethod = onChangingMethodName.With(x => methods.GetValueOrDefault(x));
+            var needNewValue = onChangingMethod.Return(x => x.Parameters.Length == 1, () => false);
+            var newValueName = needNewValue ? "value" : null;
+            var onChangingMethodCall = onChangingMethod.With(x => $"{x.Name}({newValueName});".AddTabs(2));
 
-                var onChangingMethodName = bindableInfo?.OnPropertyChangingMethodName ?? $"On{property.Name}Changing".If(x => property.IsAutoImplemented());
-                var onChangingMethod = onChangingMethodName.With(x => methods.GetValueOrDefault(x));
-                var needNewValue = onChangingMethod.Return(x => x.Parameters.Length == 1, () => false);
-                var newValueName = needNewValue ? "value" : null;
-                var onChangingMethodCall = onChangingMethod.With(x => $"{x.Name}({newValueName});".AddTabs(2));
-
-                return
+            return
 $@"public override {property.TypeDisplayString(model)} {property.Name} {{
     get {{ return base.{property.Name}; }}
     {setterModifier}set {{
@@ -321,39 +352,6 @@ $@"public override {property.TypeDisplayString(model)} {property.Name} {{
 {onChangedMethodCall}
     }}
 }}";
-            };
-
-            var properties = type.Properties()
-                .Select(property => {
-                    var bindableInfo = GetBindableInfo(property);
-                    return new { property, bindableInfo };
-                })
-                .Select(info => isBindable(info.property, info.bindableInfo)
-                    .Select(isBindableValue => isBindableValue ? info : null)
-                 )
-                .Where(x => x.Match(left => true, right => right != null))
-                .Select(x => x.Select(info => generateProperty(info.property, info.bindableInfo)))
-                .AggregateEither(errors => errors.ToImmutableArray(), values => values.ConcatStringsWithNewLines());
-            return properties;
-        }
-        BindableInfo GetBindableInfo(IPropertySymbol property) =>
-            property.GetAttributes()
-                .FirstOrDefault(x => x.AttributeClass == bindablePropertyAttributeType)
-                .With(x => {
-                    var args = x.ConstructorArguments.Select(arg => arg.Value).ToArray();
-                    var namedArgs = x.NamedArguments.ToImmutableDictionary(p => p.Key, p => (string)p.Value.Value); //TODO error if names are not recognizable
-                                return new BindableInfo(args.Length > 0 ? (bool)args[0] : true,
-                        namedArgs.GetValueOrDefault("OnPropertyChangedMethodName"),
-                        namedArgs.GetValueOrDefault("OnPropertyChangingMethodName"));
-                });
-        Either<CompleterError, bool> isBindable(IPropertySymbol property, BindableInfo bindableInfo) {
-            if(!property.IsVirtual && (bindableInfo?.IsBindable ?? false))
-                return new CompleterError(property.Node(), Messages.PropertyIsNotVirual_Id, string.Format(Messages.PropertyIsNotVirual_Message, property.Name));
-            return property.IsVirtual
-                && (bindableInfo?.IsBindable ?? true)
-                && property.DeclaredAccessibility == Accessibility.Public
-                && property.GetMethod.DeclaredAccessibility == Accessibility.Public
-                && property.IsAutoImplemented() || bindableInfo.Return(bi => bi.IsBindable, () => false);
         }
         #endregion
     }
