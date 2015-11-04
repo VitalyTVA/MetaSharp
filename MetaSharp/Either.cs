@@ -62,6 +62,12 @@ namespace MetaSharp {
                 right => Either<TLeft, TRightNew>.Right(selector(right))
             );
         }
+        public static Either<TLeftNew, TRight> SelectError<TLeft, TRight, TLeftNew>(this Either<TLeft, TRight> value, Func<TLeft, TLeftNew> selector) {
+            return value.Match(
+                left => Either<TLeftNew, TRight>.Left(selector(left)),
+                right => Either<TLeftNew, TRight>.Right(right)
+            );
+        }
         //public static Either<TLeft, TProjection> SelectMany<TLeft, TRight, TRightNew, TProjection>(
         //    this Either<TLeft, TRight> value,
         //    Func<TRight, Either<TLeft, TRightNew>> selector,

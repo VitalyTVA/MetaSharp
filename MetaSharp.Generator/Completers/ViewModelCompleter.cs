@@ -160,30 +160,29 @@ namespace DevExpress.Mvvm.DataAnnotations {
         }
 
         CompleterResult GenerateCore() {
-            var commands = GenerateCommands();
-            var properties = GenerateProperties();
-            if(properties.IsLeft())
-                return properties.ToLeft();
-            var createMethodsAndConstructors = GenerateCreateMethodsAndConstructors();
 
-            //LinqExtensionsEx.Combine(
-            //    CompleterResult.Right(commands), 
-            //    properties, 
-            //    Either<ImmutableArray<CompleterError>, Tuple<string, string>>.Right(createMethodsAndConstructors), (x1, x2, x3) => "");
-
-            return
-$@"partial class {type.Name} : INotifyPropertyChanged, ISupportParentViewModel, ISupportServices {{
+            var res = LinqExtensionsEx.Combine(
+                CompleterResult.Right(GenerateCommands()),
+                GenerateProperties(), 
+                Either<ImmutableArray<CompleterError>, Tuple<string, string>>.Right(GenerateCreateMethodsAndConstructors()), 
+                (commands, properties, createMethodsAndConstructors) => {
+                    return
+        $@"partial class {type.Name} : INotifyPropertyChanged, ISupportParentViewModel, ISupportServices {{
 {createMethodsAndConstructors.Item1.AddTabs(1)}
 {commands.AddTabs(1)}
 {GetImplementations()}
     class {type.Name}Implementation : {type.Name}, IPOCOViewModel {{
 {createMethodsAndConstructors.Item2.AddTabs(2)}
-{properties.ToRight().AddTabs(2)}
+{properties.AddTabs(2)}
         void IPOCOViewModel.RaisePropertyChanged(string propertyName) {{
             RaisePropertyChanged(propertyName);
         }}
     }}
 }}";
+                })
+                .SelectError(erorrs => erorrs.SelectMany(x => x).ToImmutableArray());
+            return res;
+
         }
 
         string GetImplementations() {
