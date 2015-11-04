@@ -33,7 +33,7 @@ namespace MetaSharp {
     //TODO warnings if class has public ctors
 
     //TODO ignore POCOViewModel attribute or not??
-    public static class ViewModelCompleter {
+    public class ViewModelCompleter {
         #region constants
         public static readonly Func<string, string> INPCImplemetation = typeName =>
 $@"public event PropertyChangedEventHandler PropertyChanged;
@@ -144,12 +144,22 @@ namespace DevExpress.Mvvm.DataAnnotations {
         #endregion
 
         public static CompleterResult Generate(SemanticModel model, INamedTypeSymbol type) {
-            var commands = GenerateCommands(model, type);
-            var properties = GenerateProperties(model, type);
+            return new ViewModelCompleter(model, type).GenerateCore();
+        }
+
+        readonly SemanticModel model; 
+        readonly INamedTypeSymbol type;
+
+        ViewModelCompleter(SemanticModel model, INamedTypeSymbol type) {
+            this.model = model;
+            this.type = type;
+        }
+        CompleterResult GenerateCore() {
+            var commands = GenerateCommands();
+            var properties = GenerateProperties();
             if(properties.IsLeft())
                 return properties.ToLeft();
-            var createMethodsAndConstructors = GenerateCreateMethodsAndConstructors(model, type);
-
+            var createMethodsAndConstructors = GenerateCreateMethodsAndConstructors();
 
             Func<Func<string, string>, string, string> getImplementation = (getImpl, interfaceName) => {
                 var interfaceType = model.Compilation.GetTypeByMetadataName(interfaceName);
@@ -162,15 +172,15 @@ namespace DevExpress.Mvvm.DataAnnotations {
             var supportServicesImplementation = getImplementation(SupportServicesImplementation, "DevExpress.Mvvm.ISupportServices");
 
             const string IDataErrorInfoName = "System.ComponentModel.IDataErrorInfo";
-            Func<string, string, string> getIDataErrorInfoPropertyImplementation =(implementation, name) =>
-                type.Properties().Any(m => (m.Name == IDataErrorInfoName + "." + name) || (m.DeclaredAccessibility == Accessibility.Public && m.Name == name))
-                    ? null
-                    : implementation;
+            Func<string, string, string> getIDataErrorInfoPropertyImplementation = (implementation, name) =>
+                 type.Properties().Any(m => (m.Name == IDataErrorInfoName + "." + name) || (m.DeclaredAccessibility == Accessibility.Public && m.Name == name))
+                     ? null
+                     : implementation;
             var iDataErrorInfoType = model.Compilation.GetTypeByMetadataName(IDataErrorInfoName);
             var dataErrorInfoImplementation = type.AllInterfaces.Contains(iDataErrorInfoType)
                 ? (
-                    getIDataErrorInfoPropertyImplementation(DataErrorInfoErrorImplementation, "Error") 
-                    + 
+                    getIDataErrorInfoPropertyImplementation(DataErrorInfoErrorImplementation, "Error")
+                    +
                     getIDataErrorInfoPropertyImplementation(DataErrorInfoIndexerImplementation, "this[]")
                 ) : null;
 
@@ -191,7 +201,8 @@ $@"partial class {type.Name} : INotifyPropertyChanged, ISupportParentViewModel, 
     }}
 }}";
         }
-        static Tuple<string, string> GenerateCreateMethodsAndConstructors(SemanticModel model, INamedTypeSymbol type) {
+
+        Tuple<string, string> GenerateCreateMethodsAndConstructors() {
             var paramsAndArgs = type.Constructors()
                 .Select(method => {
                     var parameters = method.IsImplicitlyDeclared 
@@ -219,7 +230,7 @@ $@"public {type.Name}Implementation({info.parameters})
             return Tuple.Create(createMethods, constructors);
         }
 
-        static string GenerateCommands(SemanticModel model, INamedTypeSymbol type) {
+        string GenerateCommands() {
             var asyncCommandAttributeType = model.Compilation.GetTypeByMetadataName("DevExpress.Mvvm.DataAnnotations.AsyncCommandAttribute");
             var commandAttributeType = model.Compilation.GetTypeByMetadataName("DevExpress.Mvvm.DataAnnotations.CommandAttribute");
 
@@ -274,7 +285,7 @@ public {propertyType} {commandName} {{ get {{ return _{commandName} ?? (_{comman
         }
 
 
-        static CompleterResult GenerateProperties(SemanticModel model, INamedTypeSymbol type) {
+        CompleterResult GenerateProperties() {
             var bindablePropertyAttributeType = model.Compilation.GetTypeByMetadataName("DevExpress.Mvvm.DataAnnotations.BindablePropertyAttribute");
             var methods = type.Methods()
                 .ToImmutableDictionary(x => x.Name, x => x);
