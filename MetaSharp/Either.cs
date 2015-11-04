@@ -62,20 +62,20 @@ namespace MetaSharp {
                 right => Either<TLeft, TRightNew>.Right(selector(right))
             );
         }
-        public static Either<TLeft, TProjection> SelectMany<TLeft, TRight, TRightNew, TProjection>(
-            this Either<TLeft, TRight> value,
-            Func<TRight, Either<TLeft, TRightNew>> selector,
-            Func<TRight, TRightNew, TProjection> projector) {
+        //public static Either<TLeft, TProjection> SelectMany<TLeft, TRight, TRightNew, TProjection>(
+        //    this Either<TLeft, TRight> value,
+        //    Func<TRight, Either<TLeft, TRightNew>> selector,
+        //    Func<TRight, TRightNew, TProjection> projector) {
 
-            if(value.IsLeft())
-                return Either<TLeft, TProjection>.Left(value.ToLeft());
+        //    if(value.IsLeft())
+        //        return Either<TLeft, TProjection>.Left(value.ToLeft());
 
-            var res = selector(value.ToRight());
-            if(res.IsLeft())
-                return Either<TLeft, TProjection>.Left(res.ToLeft());
+        //    var res = selector(value.ToRight());
+        //    if(res.IsLeft())
+        //        return Either<TLeft, TProjection>.Left(res.ToLeft());
 
-            return Either<TLeft, TProjection>.Right(projector(value.ToRight(), res.ToRight()));
-        }
+        //    return Either<TLeft, TProjection>.Right(projector(value.ToRight(), res.ToRight()));
+        //}
         //public static Either<TLeft, TRight> Where<TLeft, TRight>(this Either<TLeft, TRight> value, Predicate<TRight> predicate) {
         //    return value.Match(
         //        left => Either<TLeft, TRightNew>.Left(left),
@@ -101,6 +101,9 @@ namespace MetaSharp {
                     accRight => value.Match(left => Either<TLeftAcc, TRightAcc>.Left(leftAcc(leftSeed, left)), right => Either<TLeftAcc, TRightAcc>.Right(rightAcc(accRight, right)))
                 )
             );
+        }
+        public static IEnumerable<Either<TLeft, TRight>> WhereEither<TLeft, TRight>(this IEnumerable<Either<TLeft, TRight>> source, Predicate<TRight> filter) {
+            return source.Where(x => x.Match(left => true, right => filter(right)));
         }
     }
 }

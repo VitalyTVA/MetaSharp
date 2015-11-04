@@ -297,7 +297,7 @@ public {propertyType} {commandName} {{ get {{ return _{commandName} ?? (_{comman
                 .Select(info => IsBindable(info.property, info.bindableInfo)
                     .Select(isBindableValue => isBindableValue ? info : null)
                  )
-                .Where(x => x.Match(left => true, right => right != null))
+                .WhereEither(x => x != null)
                 .Select(x => x.Select(info => GenerateProperty(info.property, info.bindableInfo)))
                 .AggregateEither(errors => errors.ToImmutableArray(), values => values.ConcatStringsWithNewLines());
             return properties;
