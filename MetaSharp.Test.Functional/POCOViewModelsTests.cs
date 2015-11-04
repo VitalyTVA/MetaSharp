@@ -439,6 +439,12 @@ namespace MetaSharp.Test.Functional {
             Assert.Equal("a", vm.A);
             CheckBindableProperty(vm, x => x.A, (x, val) => x.A = val, "x", "y");
         }
+
+        [Fact]
+        public void PrivateClassTest() {
+            var vm = PrivatePOCOViewModel.Create();
+            CheckBindableProperty(vm, x => x.StringProp, (x, val) => x.StringProp = val, "x", "y");
+        }
         #endregion
 
         #region IDataErrorInfo

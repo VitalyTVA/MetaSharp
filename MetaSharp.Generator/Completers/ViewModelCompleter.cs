@@ -33,6 +33,7 @@ namespace MetaSharp {
     //TODO warnings if class has public ctors
 
     //TODO ignore POCOViewModel attribute or not??
+    //TODO coerce callback for returning values
     public class ViewModelCompleter {
         #region constants
         public static readonly Func<string, string> INPCImplemetation = typeName =>

@@ -403,4 +403,7 @@ namespace MetaSharp.Test.Meta.POCO {
         public virtual string StringProp { get; set; }
         public string this[string columnName] { get { return columnName + " error"; } }
     }
+    partial class PrivatePOCOViewModel {
+        public virtual string StringProp { get; set; }
+    }
 }
