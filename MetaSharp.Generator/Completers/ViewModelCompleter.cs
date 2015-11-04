@@ -148,11 +148,12 @@ namespace DevExpress.Mvvm.DataAnnotations {
         }
 
         readonly SemanticModel model; 
-        readonly INamedTypeSymbol type;
+        readonly INamedTypeSymbol type, bindablePropertyAttributeType;
 
         ViewModelCompleter(SemanticModel model, INamedTypeSymbol type) {
             this.model = model;
             this.type = type;
+            bindablePropertyAttributeType = model.Compilation.GetTypeByMetadataName("DevExpress.Mvvm.DataAnnotations.BindablePropertyAttribute");
         }
         CompleterResult GenerateCore() {
             var commands = GenerateCommands();
@@ -285,21 +286,10 @@ public {propertyType} {commandName} {{ get {{ return _{commandName} ?? (_{comman
         }
 
 
+        #region properties
         CompleterResult GenerateProperties() {
-            var bindablePropertyAttributeType = model.Compilation.GetTypeByMetadataName("DevExpress.Mvvm.DataAnnotations.BindablePropertyAttribute");
             var methods = type.Methods()
                 .ToImmutableDictionary(x => x.Name, x => x);
-
-            Func<IPropertySymbol, BindableInfo> getBindableInfo = property => 
-                property.GetAttributes()
-                    .FirstOrDefault(x => x.AttributeClass == bindablePropertyAttributeType)
-                    .With(x => {
-                        var args = x.ConstructorArguments.Select(arg => arg.Value).ToArray();
-                        var namedArgs = x.NamedArguments.ToImmutableDictionary(p => p.Key, p => (string)p.Value.Value); //TODO error if names are not recognizable
-                        return new BindableInfo(args.Length > 0 ? (bool)args[0] : true,
-                            namedArgs.GetValueOrDefault("OnPropertyChangedMethodName"),
-                            namedArgs.GetValueOrDefault("OnPropertyChangingMethodName"));
-                    });
 
             Func<IPropertySymbol, BindableInfo, Either<CompleterError, bool>> isBindable = (property, bindableInfo) => {
                 if(!property.IsVirtual && (bindableInfo?.IsBindable ?? false))
@@ -345,7 +335,7 @@ $@"public override {property.TypeDisplayString(model)} {property.Name} {{
 
             var properties = type.Properties()
                 .Select(property => {
-                    var bindableInfo = getBindableInfo(property);
+                    var bindableInfo = GetBindableInfo(property);
                     return new { property, bindableInfo };
                 })
                 .Select(info => isBindable(info.property, info.bindableInfo)
@@ -356,5 +346,17 @@ $@"public override {property.TypeDisplayString(model)} {property.Name} {{
                 .AggregateEither(errors => errors.ToImmutableArray(), values => values.ConcatStringsWithNewLines());
             return properties;
         }
+        BindableInfo GetBindableInfo(IPropertySymbol property) =>
+            property.GetAttributes()
+                .FirstOrDefault(x => x.AttributeClass == bindablePropertyAttributeType)
+                .With(x => {
+                    var args = x.ConstructorArguments.Select(arg => arg.Value).ToArray();
+                    var namedArgs = x.NamedArguments.ToImmutableDictionary(p => p.Key, p => (string)p.Value.Value); //TODO error if names are not recognizable
+                                return new BindableInfo(args.Length > 0 ? (bool)args[0] : true,
+                        namedArgs.GetValueOrDefault("OnPropertyChangedMethodName"),
+                        namedArgs.GetValueOrDefault("OnPropertyChangingMethodName"));
+                });
+
+        #endregion
     }
 }
