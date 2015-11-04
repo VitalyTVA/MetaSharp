@@ -79,7 +79,7 @@ $@"partial class {type.Name} {{
                     }
                     if(propertyType == null) {
                         var span = memberAccess.Name.LineSpan();
-                        return new CompleterError(memberAccess.SyntaxTree, Messages.PropertyTypeMissed_Id, Messages.PropertyTypeMissed_Message, new FileLinePositionSpan(string.Empty, span.EndLinePosition, span.EndLinePosition));
+                        return new CompleterError(memberAccess.SyntaxTree, Messages.PropertyTypeMissed, new FileLinePositionSpan(string.Empty, span.EndLinePosition, span.EndLinePosition));
                     }
 
                     var propertyName = GetPropertyName(arguments, readOnly, memberAccess.Name.SyntaxTree);

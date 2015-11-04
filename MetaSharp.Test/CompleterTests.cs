@@ -602,8 +602,8 @@ using System;
                     new TestFile(@"Some\..\" + name, incomplete, isInFlow: false)
                 ),
                 errors => Assert.Collection(errors,
-                        error => AssertError(error, Path.GetFullPath(name), Messages.PropertyTypeMissed_Id, Messages.PropertyTypeMissed_Message, 9, 26),
-                        error => AssertError(error, Path.GetFullPath(name), Messages.PropertyTypeMissed_Id, Messages.PropertyTypeMissed_Message, 10, 27)
+                        error => AssertError(error, Path.GetFullPath(name), Messages.PropertyTypeMissed.FullId, Messages.PropertyTypeMissed.Text, 9, 26),
+                        error => AssertError(error, Path.GetFullPath(name), Messages.PropertyTypeMissed.FullId, Messages.PropertyTypeMissed.Text, 10, 27)
                 )
             );
         }
