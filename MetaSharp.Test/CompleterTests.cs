@@ -451,6 +451,11 @@ namespace MetaSharp.Incomplete {
         public virtual string NoSetterProperty { get { return null; } }
         [BindableProperty]
         public virtual string PrivateGetterProperty { private get; set; }
+
+        public virtual string MultiplePropertyChanged { get; set; }
+        protected void OnMultiplePropertyChangedChanged() { }
+        protected void OnMultiplePropertyChangedChanged(string oldValue) { }
+
     }
 }";
             string incomplete2 =
@@ -480,6 +485,9 @@ namespace MetaSharp.Incomplete {
                             "Cannot make property without setter bindable: NoSetterProperty.", 9, 31, 9, 47),
                         error => AssertError(error, Path.GetFullPath(name1), Messages.POCO_PropertyHasNoPublicGetter.FullId,
                             "Cannot make property without public getter bindable: PrivateGetterProperty.", 11, 31, 11, 52),
+                        error => AssertError(error, Path.GetFullPath(name1), Messages.POCO_MoreThanOnePropertyChangedMethod.FullId,
+                            "More than one property changed method: MultiplePropertyChanged.", 13, 31, 13, 54),
+
                         error => AssertError(error, Path.GetFullPath(name2), Messages.POCO_SealedClass.FullId,
                             "Cannot create POCO implementation class for the sealed class: POCOViewModel_ClassErrors.", 5, 25, 5, 50)
                 )

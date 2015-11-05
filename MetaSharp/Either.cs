@@ -69,20 +69,32 @@ namespace MetaSharp {
                 right => Either<TLeftNew, TRight>.Right(right)
             );
         }
-        //public static Either<TLeft, TProjection> SelectMany<TLeft, TRight, TRightNew, TProjection>(
-        //    this Either<TLeft, TRight> value,
-        //    Func<TRight, Either<TLeft, TRightNew>> selector,
-        //    Func<TRight, TRightNew, TProjection> projector) {
+        public static Either<TLeft, TProjection> SelectMany<TLeft, TRight, TRightNew, TProjection>(
+            //TODO duplicated code
+            this Either<TLeft, TRight> value,
+            Func<TRight, Either<TLeft, TRightNew>> selector,
+            Func<TRight, TRightNew, TProjection> projector) {
 
-        //    if(value.IsLeft())
-        //        return Either<TLeft, TProjection>.Left(value.ToLeft());
+            if(value.IsLeft())
+                return Either<TLeft, TProjection>.Left(value.ToLeft());
 
-        //    var res = selector(value.ToRight());
-        //    if(res.IsLeft())
-        //        return Either<TLeft, TProjection>.Left(res.ToLeft());
+            var res = selector(value.ToRight());
+            if(res.IsLeft())
+                return Either<TLeft, TProjection>.Left(res.ToLeft());
 
-        //    return Either<TLeft, TProjection>.Right(projector(value.ToRight(), res.ToRight()));
-        //}
+            return Either<TLeft, TProjection>.Right(projector(value.ToRight(), res.ToRight()));
+        }
+        public static Either<TLeft, TRightNew> SelectMany<TLeft, TRight, TRightNew>(
+            //TODO duplicated code
+            this Either<TLeft, TRight> value,
+            Func<TRight, Either<TLeft, TRightNew>> selector) {
+
+            if(value.IsLeft())
+                return Either<TLeft, TRightNew>.Left(value.ToLeft());
+
+            return selector(value.ToRight());
+        }
+
         //public static Either<TLeft, TRight> Where<TLeft, TRight>(this Either<TLeft, TRight> value, Predicate<TRight> predicate) {
         //    return value.Match(
         //        left => Either<TLeft, TRightNew>.Left(left),

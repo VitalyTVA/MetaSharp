@@ -19,6 +19,7 @@ namespace MetaSharp {
         public static readonly UnfomattedMessage POCO_PropertyHasNoSetter = new UnfomattedMessage("0005", "Cannot make property without setter bindable: {0}.");
         public static readonly UnfomattedMessage POCO_PropertyHasNoPublicGetter = new UnfomattedMessage("0006", "Cannot make property without public getter bindable: {0}.");
         public static readonly UnfomattedMessage POCO_SealedClass = new UnfomattedMessage("0007", "Cannot create POCO implementation class for the sealed class: {0}.");
+        public static readonly UnfomattedMessage POCO_MoreThanOnePropertyChangedMethod = new UnfomattedMessage("0008", "More than one property changed method: {0}.");
     }
     public struct UnfomattedMessage {
         readonly string id;

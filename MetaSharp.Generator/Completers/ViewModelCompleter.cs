@@ -151,13 +151,15 @@ namespace DevExpress.Mvvm.DataAnnotations {
 
         readonly SemanticModel model; 
         readonly INamedTypeSymbol type, bindablePropertyAttributeType;
-        readonly ImmutableDictionary<string, IMethodSymbol> methods;
+        readonly ImmutableDictionary<string, ImmutableArray<IMethodSymbol>> methods;
 
         ViewModelCompleter(SemanticModel model, INamedTypeSymbol type) {
             this.model = model;
             this.type = type;
             bindablePropertyAttributeType = model.Compilation.GetTypeByMetadataName("DevExpress.Mvvm.DataAnnotations.BindablePropertyAttribute");
-            methods = type.Methods().ToImmutableDictionary(x => x.Name, x => x);
+            methods = type.Methods()
+                .ToLookup(x => x.Name)
+                .ToImmutableDictionary(x => x.Key, x => x.ToImmutableArray());
         }
 
         CompleterResult GenerateCore() {
@@ -254,8 +256,6 @@ $@"public {type.Name}Implementation({info.parameters})
             var commandAttributeType = model.Compilation.GetTypeByMetadataName("DevExpress.Mvvm.DataAnnotations.CommandAttribute");
 
             var taskType = model.Compilation.GetTypeByMetadataName(typeof(Task).FullName);
-            var methodsMap = type.Methods()
-                .ToImmutableDictionary(x => x.Name, x => x);
             return type.Methods()
                 .Select(method => {
                     var asyncCommandInfo = method.GetAttributes()
@@ -293,7 +293,7 @@ $@"public {type.Name}Implementation({info.parameters})
                     var propertyType = isAsync 
                         ? "AsyncCommand" + genericParameter
                         : (genericParameter.With(x => $"DelegateCommand{x}") ?? "ICommand");
-                    var canExecuteMethodName = ", " + (info.asyncCommandInfo?.CanExecuteMethodName ?? (methodsMap.GetValueOrDefault("Can" + methodName)?.Name ?? "null"));
+                    var canExecuteMethodName = ", " + (info.asyncCommandInfo?.CanExecuteMethodName ?? (GetMethods("Can" + methodName).SingleOrDefault()?.Name ?? "null"));
                     var allowMultipleExecution = (info.asyncCommandInfo?.AllowMultipleExecution ?? false) ? ", allowMultipleExecution: true" : null;
                     var useCommandManager = !(info.asyncCommandInfo?.UseCommandManager ?? true) ? ", useCommandManager: false" : null;
                     return
@@ -301,6 +301,13 @@ $@"{commandTypeName} _{commandName};
 public {propertyType} {commandName} {{ get {{ return _{commandName} ?? (_{commandName} = new {commandTypeName}({methodName}{canExecuteMethodName}{allowMultipleExecution}{useCommandManager})); }} }}";
                 })
                 .ConcatStringsWithNewLines();
+        }
+
+        ImmutableArray<IMethodSymbol> GetMethods(string name) {
+            return methods.GetValueOrDefault(name, ImmutableArray<IMethodSymbol>.Empty);
+        }
+        CompleterError CreatePropertyError(IPropertySymbol property, UnfomattedMessage message) {
+            return CompleterError.CreateForPropertyName(property, message.Format(property.Name));
         }
 
         #region properties
@@ -314,7 +321,7 @@ public {propertyType} {commandName} {{ get {{ return _{commandName} ?? (_{comman
                     .Select(isBindableValue => isBindableValue ? info : null)
                  )
                 .WhereEither(x => x != null)
-                .Select(x => x.Select(info => GenerateProperty(info.property, info.bindableInfo)))
+                .Select(x => x.SelectMany(info => GenerateProperty(info.property, info.bindableInfo)))
                 .AggregateEither(errors => errors.ToImmutableArray(), values => values.ConcatStringsWithNewLines());
             return properties;
         }
@@ -331,14 +338,12 @@ public {propertyType} {commandName} {{ get {{ return _{commandName} ?? (_{comman
         }
         Either<CompleterError, bool> IsBindable(IPropertySymbol property, BindableInfo bindableInfo) {
             if(bindableInfo?.IsBindable ?? false) {
-                Func<UnfomattedMessage, CompleterError> getError = message =>
-                    CompleterError.CreateForPropertyName(property, message.Format(property.Name));
                 if(!property.IsVirtual)
-                    return getError(Messages.POCO_PropertyIsNotVirual);
+                    return CreatePropertyError(property, Messages.POCO_PropertyIsNotVirual);
                 if(property.IsReadOnly)
-                    return getError(Messages.POCO_PropertyHasNoSetter);
+                    return CreatePropertyError(property, Messages.POCO_PropertyHasNoSetter);
                 if(property.GetMethod.DeclaredAccessibility != Accessibility.Public)
-                    return getError(Messages.POCO_PropertyHasNoPublicGetter);
+                    return CreatePropertyError(property, Messages.POCO_PropertyHasNoPublicGetter);
             }
             return property.IsVirtual
                 && (bindableInfo?.IsBindable ?? true)
@@ -346,19 +351,21 @@ public {propertyType} {commandName} {{ get {{ return _{commandName} ?? (_{comman
                 && property.GetMethod.DeclaredAccessibility == Accessibility.Public
                 && property.IsAutoImplemented() || bindableInfo.Return(bi => bi.IsBindable, () => false);
         }
-        string GenerateProperty(IPropertySymbol property, BindableInfo bindableInfo) {
+        Either<CompleterError, string> GenerateProperty(IPropertySymbol property, BindableInfo bindableInfo) {
             var setterModifier = property.SetMethod.DeclaredAccessibility.ToAccessibilityModifier(property.DeclaredAccessibility);
 
-            //TODO diplicated code
+            //TODO ugly, diplicated code
             var onChangedMethodName = bindableInfo?.OnPropertyChangedMethodName ?? $"On{property.Name}Changed".If(x => property.IsAutoImplemented());
-            var onChangedMethod = onChangedMethodName.With(x => methods.GetValueOrDefault(x));
+            if(onChangedMethodName != null && GetMethods(onChangedMethodName).Tail().Any())
+                return CreatePropertyError(property, Messages.POCO_MoreThanOnePropertyChangedMethod);
+            var onChangedMethod = onChangedMethodName.With(x => GetMethods(x).SingleOrDefault());
             var needOldValue = onChangedMethod.Return(x => x.Parameters.Length == 1, () => false);
             var oldValueStorage = needOldValue ? $"var oldValue = base.{property.Name};".AddTabs(2) : null;
             var oldValueName = needOldValue ? "oldValue" : null;
             var onChangedMethodCall = onChangedMethod.With(x => $"{x.Name}({oldValueName});".AddTabs(2));
 
             var onChangingMethodName = bindableInfo?.OnPropertyChangingMethodName ?? $"On{property.Name}Changing".If(x => property.IsAutoImplemented());
-            var onChangingMethod = onChangingMethodName.With(x => methods.GetValueOrDefault(x));
+            var onChangingMethod = onChangingMethodName.With(x => GetMethods(x).SingleOrDefault());
             var needNewValue = onChangingMethod.Return(x => x.Parameters.Length == 1, () => false);
             var newValueName = needNewValue ? "value" : null;
             var onChangingMethodCall = onChangingMethod.With(x => $"{x.Name}({newValueName});".AddTabs(2));
