@@ -452,6 +452,10 @@ namespace MetaSharp.Incomplete {
         [BindableProperty]
         public virtual string PrivateGetterProperty { private get; set; }
     }
+    public sealed class POCOViewModel_ClassErrors {
+        [BindableProperty]
+        public string NotVirtualProperty { get; set; }
+    }
 }";
 
             var name = "IncompleteViewModels.cs";
@@ -467,7 +471,9 @@ namespace MetaSharp.Incomplete {
                         error => AssertError(error, Path.GetFullPath(name), Messages.POCO_PropertyHasNoSetter.FullId,
                             "Cannot make property without setter bindable: NoSetterProperty.", 8, 9, 9, 72),
                         error => AssertError(error, Path.GetFullPath(name), Messages.POCO_PropertyHasNoPublicGetter.FullId,
-                            "Cannot make property without public getter bindable: PrivateGetterProperty.", 10, 9, 11, 74)
+                            "Cannot make property without public getter bindable: PrivateGetterProperty.", 10, 9, 11, 74),
+                        error => AssertError(error, Path.GetFullPath(name), Messages.POCO_SealedClass.FullId,
+                            "Cannot create POCO implementation class for the sealed class: POCOViewModel_ClassErrors.", 13, 5, 16, 6)
                 )
             );
         }

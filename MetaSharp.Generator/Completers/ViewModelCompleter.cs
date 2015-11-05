@@ -160,13 +160,16 @@ namespace DevExpress.Mvvm.DataAnnotations {
         }
 
         CompleterResult GenerateCore() {
+            var classErrors = GetClassErrors().ToImmutableArray();
+            if(classErrors.Any())
+                return classErrors;
 
             var res = Either.Combine(
                 CompleterResult.Right(GenerateCommands()),
                 GenerateProperties(), 
                 Either<ImmutableArray<CompleterError>, Tuple<string, string>>.Right(GenerateCreateMethodsAndConstructors()), 
                 (commands, properties, createMethodsAndConstructors) => {
-                    return CompleterResult.Right(
+                    return 
         $@"partial class {type.Name} : INotifyPropertyChanged, ISupportParentViewModel, ISupportServices {{
 {createMethodsAndConstructors.Item1.AddTabs(1)}
 {commands.AddTabs(1)}
@@ -178,11 +181,16 @@ namespace DevExpress.Mvvm.DataAnnotations {
             RaisePropertyChanged(propertyName);
         }}
     }}
-}}");
+}}";
                 })
                 .SelectError(erorrs => erorrs.SelectMany(x => x).ToImmutableArray());
             return res;
 
+        }
+
+        IEnumerable<CompleterError> GetClassErrors() {
+            if(type.IsSealed)
+                yield return new CompleterError(type.Node(), Messages.POCO_SealedClass.Format(type.Name));
         }
 
         string GetImplementations() {

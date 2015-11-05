@@ -118,13 +118,12 @@ namespace MetaSharp {
             Either<TLeft, T1> x1,
             Either<TLeft, T2> x2,
             Either<TLeft, T3> x3,
-            Func<T1, T2, T3, Either<TLeft, TResult>> combine
+            Func<T1, T2, T3, TResult> combine
         ) {
             IEnumerable<TLeft> lefts = Lefts(x1, x2, x3);
             if(lefts.Any())
                 return Either<IEnumerable<TLeft>, TResult>.Left(lefts);
-            return combine(x1.ToRight(), x2.ToRight(), x3.ToRight())
-                .SelectError(error => lefts.Concat(error.Yield()));
+            return combine(x1.ToRight(), x2.ToRight(), x3.ToRight());
         }
         static IEnumerable<TLeft> Lefts<TLeft, T1, T2, T3>(
             Either<TLeft, T1> x1,
