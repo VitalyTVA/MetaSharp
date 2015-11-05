@@ -456,6 +456,8 @@ namespace MetaSharp.Incomplete {
         protected void OnMultiplePropertyChangedChanged() { }
         protected void OnMultiplePropertyChangedChanged(string oldValue) { }
 
+        public virtual string TwoParametersChanged { get; set; }
+        protected void OnTwoParametersChangedChanged(string a, string b) { }
     }
 }";
             string incomplete2 =
@@ -487,6 +489,8 @@ namespace MetaSharp.Incomplete {
                             "Cannot make property without public getter bindable: PrivateGetterProperty.", 11, 31, 11, 52),
                         error => AssertError(error, Path.GetFullPath(name1), Messages.POCO_MoreThanOnePropertyChangedMethod.FullId,
                             "More than one property changed method: MultiplePropertyChanged.", 13, 31, 13, 54),
+                        error => AssertError(error, Path.GetFullPath(name1), Messages.POCO_PropertyChangedCantHaveMoreThanOneParameter.FullId,
+                            "Property changed method cannot have more than one parameter: TwoParametersChanged.", 17, 31, 17, 51),
 
                         error => AssertError(error, Path.GetFullPath(name2), Messages.POCO_SealedClass.FullId,
                             "Cannot create POCO implementation class for the sealed class: POCOViewModel_ClassErrors.", 5, 25, 5, 50)

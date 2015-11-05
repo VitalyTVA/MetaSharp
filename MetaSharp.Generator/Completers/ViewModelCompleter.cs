@@ -356,9 +356,11 @@ public {propertyType} {commandName} {{ get {{ return _{commandName} ?? (_{comman
 
             //TODO ugly, diplicated code
             var onChangedMethodName = bindableInfo?.OnPropertyChangedMethodName ?? $"On{property.Name}Changed".If(x => property.IsAutoImplemented());
-            if(onChangedMethodName != null && GetMethods(onChangedMethodName).Tail().Any())
+            if(onChangedMethodName != null && GetMethods(onChangedMethodName).Length > 1)
                 return CreatePropertyError(property, Messages.POCO_MoreThanOnePropertyChangedMethod);
             var onChangedMethod = onChangedMethodName.With(x => GetMethods(x).SingleOrDefault());
+            if(onChangedMethod != null && onChangedMethod.Parameters.Length > 1)
+                return CreatePropertyError(property, Messages.POCO_PropertyChangedCantHaveMoreThanOneParameter);
             var needOldValue = onChangedMethod.Return(x => x.Parameters.Length == 1, () => false);
             var oldValueStorage = needOldValue ? $"var oldValue = base.{property.Name};".AddTabs(2) : null;
             var oldValueName = needOldValue ? "oldValue" : null;
