@@ -35,6 +35,7 @@ namespace MetaSharp {
     //TODO ignore POCOViewModel attribute or not??
     //TODO coerce callback for returning values
     //TODO POCO class with errors in more than 1 place (find all .Node() usages here and in all other code)
+    //TODO allow property changed method which return value if explicitly specified in BindablePropertyAttribute??
     public class ViewModelCompleter {
         #region constants
         public static readonly Func<string, string> INPCImplemetation = typeName =>
@@ -306,7 +307,7 @@ public {propertyType} {commandName} {{ get {{ return _{commandName} ?? (_{comman
         ImmutableArray<IMethodSymbol> GetMethods(string name) {
             return methods.GetValueOrDefault(name, ImmutableArray<IMethodSymbol>.Empty);
         }
-        CompleterError CreatePropertyError(IPropertySymbol property, UnfomattedMessage message) {
+        static CompleterError CreatePropertyError(IPropertySymbol property, UnfomattedMessage message) {
             return CompleterError.CreateForPropertyName(property, message.Format(property.Name));
         }
 
@@ -359,8 +360,12 @@ public {propertyType} {commandName} {{ get {{ return _{commandName} ?? (_{comman
             if(onChangedMethodName != null && GetMethods(onChangedMethodName).Length > 1)
                 return CreatePropertyError(property, Messages.POCO_MoreThanOnePropertyChangedMethod);
             var onChangedMethod = onChangedMethodName.With(x => GetMethods(x).SingleOrDefault());
-            if(onChangedMethod != null && onChangedMethod.Parameters.Length > 1)
-                return CreatePropertyError(property, Messages.POCO_PropertyChangedCantHaveMoreThanOneParameter);
+            if(onChangedMethod != null) {
+                if(onChangedMethod.Parameters.Length > 1)
+                    return CreatePropertyError(property, Messages.POCO_PropertyChangedCantHaveMoreThanOneParameter);
+                if(!onChangedMethod.ReturnsVoid)
+                    return CreatePropertyError(property, Messages.POCO_PropertyChangedCantHaveReturnType);
+            }
             var needOldValue = onChangedMethod.Return(x => x.Parameters.Length == 1, () => false);
             var oldValueStorage = needOldValue ? $"var oldValue = base.{property.Name};".AddTabs(2) : null;
             var oldValueName = needOldValue ? "oldValue" : null;

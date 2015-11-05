@@ -458,6 +458,9 @@ namespace MetaSharp.Incomplete {
 
         public virtual string TwoParametersChanged { get; set; }
         protected void OnTwoParametersChangedChanged(string a, string b) { }
+
+        public virtual string FuncChanged { get; set; }
+        protected int OnFuncChangedChanged() { return 0; }
     }
 }";
             string incomplete2 =
@@ -491,6 +494,8 @@ namespace MetaSharp.Incomplete {
                             "More than one property changed method: MultiplePropertyChanged.", 13, 31, 13, 54),
                         error => AssertError(error, Path.GetFullPath(name1), Messages.POCO_PropertyChangedCantHaveMoreThanOneParameter.FullId,
                             "Property changed method cannot have more than one parameter: TwoParametersChanged.", 17, 31, 17, 51),
+                        error => AssertError(error, Path.GetFullPath(name1), Messages.POCO_PropertyChangedCantHaveReturnType.FullId,
+                            "Property changed method cannot have return type: FuncChanged.", 20, 31, 20, 42),
 
                         error => AssertError(error, Path.GetFullPath(name2), Messages.POCO_SealedClass.FullId,
                             "Cannot create POCO implementation class for the sealed class: POCOViewModel_ClassErrors.", 5, 25, 5, 50)
