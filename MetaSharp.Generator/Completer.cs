@@ -27,9 +27,15 @@ namespace MetaSharp {
         public static CompleterError CreateForTypeName(INamedTypeSymbol type, Message message) {
             return new CompleterError(type.Node().SyntaxTree, message, type.NameToken());
         }
-        public static CompleterError CreateForPropertyName(IPropertySymbol property, Message message) {
-            return new CompleterError(property.Node().SyntaxTree, message, property.NameToken());
+        #region create member error
+        //TODO duplicated code
+        public static CompleterError CreatePropertyError(IPropertySymbol property, UnfomattedMessage message) {
+            return new CompleterError(property.Node().SyntaxTree, message.Format(property.Name), property.NameToken());
         }
+        public static CompleterError CreateMethodError(IMethodSymbol method, UnfomattedMessage message) {
+            return new CompleterError(method.Node().SyntaxTree, message.Format(method.Name), method.NameToken());
+        }
+        #endregion
         public readonly SyntaxTree Tree;
         public readonly Message Message;
         public readonly FileLinePositionSpan Span;

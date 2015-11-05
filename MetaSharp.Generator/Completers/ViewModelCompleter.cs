@@ -307,9 +307,6 @@ public {propertyType} {commandName} {{ get {{ return _{commandName} ?? (_{comman
         ImmutableArray<IMethodSymbol> GetMethods(string name) {
             return methods.GetValueOrDefault(name, ImmutableArray<IMethodSymbol>.Empty);
         }
-        static CompleterError CreatePropertyError(IPropertySymbol property, UnfomattedMessage message) {
-            return CompleterError.CreateForPropertyName(property, message.Format(property.Name));
-        }
 
         #region properties
         CompleterResult GenerateProperties() {
@@ -340,11 +337,11 @@ public {propertyType} {commandName} {{ get {{ return _{commandName} ?? (_{comman
         Either<CompleterError, bool> IsBindable(IPropertySymbol property, BindableInfo bindableInfo) {
             if(bindableInfo?.IsBindable ?? false) {
                 if(!property.IsVirtual)
-                    return CreatePropertyError(property, Messages.POCO_PropertyIsNotVirual);
+                    return CompleterError.CreatePropertyError(property, Messages.POCO_PropertyIsNotVirual);
                 if(property.IsReadOnly)
-                    return CreatePropertyError(property, Messages.POCO_PropertyHasNoSetter);
+                    return CompleterError.CreatePropertyError(property, Messages.POCO_PropertyHasNoSetter);
                 if(property.GetMethod.DeclaredAccessibility != Accessibility.Public)
-                    return CreatePropertyError(property, Messages.POCO_PropertyHasNoPublicGetter);
+                    return CompleterError.CreatePropertyError(property, Messages.POCO_PropertyHasNoPublicGetter);
             }
             return property.IsVirtual
                 && (bindableInfo?.IsBindable ?? true)
@@ -358,13 +355,13 @@ public {propertyType} {commandName} {{ get {{ return _{commandName} ?? (_{comman
             //TODO ugly, diplicated code
             var onChangedMethodName = bindableInfo?.OnPropertyChangedMethodName ?? $"On{property.Name}Changed".If(x => property.IsAutoImplemented());
             if(onChangedMethodName != null && GetMethods(onChangedMethodName).Length > 1)
-                return CreatePropertyError(property, Messages.POCO_MoreThanOnePropertyChangedMethod);
+                return CompleterError.CreatePropertyError(property, Messages.POCO_MoreThanOnePropertyChangedMethod);
             var onChangedMethod = onChangedMethodName.With(x => GetMethods(x).SingleOrDefault());
             if(onChangedMethod != null) {
                 if(onChangedMethod.Parameters.Length > 1)
-                    return CreatePropertyError(property, Messages.POCO_PropertyChangedCantHaveMoreThanOneParameter);
+                    return CompleterError.CreateMethodError(onChangedMethod, Messages.POCO_PropertyChangedCantHaveMoreThanOneParameter);
                 if(!onChangedMethod.ReturnsVoid)
-                    return CreatePropertyError(property, Messages.POCO_PropertyChangedCantHaveReturnType);
+                    return CompleterError.CreateMethodError(onChangedMethod, Messages.POCO_PropertyChangedCantHaveReturnType);
             }
             var needOldValue = onChangedMethod.Return(x => x.Parameters.Length == 1, () => false);
             var oldValueStorage = needOldValue ? $"var oldValue = base.{property.Name};".AddTabs(2) : null;
