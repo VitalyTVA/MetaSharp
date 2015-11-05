@@ -24,6 +24,12 @@ namespace MetaSharp {
         }
     }
     public class CompleterError {
+        public static CompleterError CreateForTypeName(INamedTypeSymbol type, Message message) {
+            return new CompleterError(type.Node().SyntaxTree, message, type.NameToken());
+        }
+        public static CompleterError CreateForPropertyName(IPropertySymbol property, Message message) {
+            return new CompleterError(property.Node().SyntaxTree, message, property.NameToken());
+        }
         public readonly SyntaxTree Tree;
         public readonly Message Message;
         public readonly FileLinePositionSpan Span;
@@ -31,6 +37,9 @@ namespace MetaSharp {
             Tree = tree;
             Span = span;
             Message = message;
+        }
+        public CompleterError(SyntaxTree tree, Message message, SyntaxToken token)
+            : this(tree, message, tree.GetLineSpan(token.Span)) {
         }
         public CompleterError(SyntaxNode node, Message message)
             : this(node.SyntaxTree, message, node.LineSpan()) {

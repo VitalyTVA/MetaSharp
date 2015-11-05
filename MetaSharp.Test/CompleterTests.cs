@@ -475,13 +475,13 @@ namespace MetaSharp.Incomplete {
                 ),
                 errors => Assert.Collection(errors,
                         error => AssertError(error, Path.GetFullPath(name1), Messages.POCO_PropertyIsNotVirual.FullId,
-                            "Cannot make non-virtual property bindable: NotVirtualProperty.", 6, 9, 7, 55),
+                            "Cannot make non-virtual property bindable: NotVirtualProperty.", 7, 23, 7, 41),
                         error => AssertError(error, Path.GetFullPath(name1), Messages.POCO_PropertyHasNoSetter.FullId,
-                            "Cannot make property without setter bindable: NoSetterProperty.", 8, 9, 9, 72),
+                            "Cannot make property without setter bindable: NoSetterProperty.", 9, 31, 9, 47),
                         error => AssertError(error, Path.GetFullPath(name1), Messages.POCO_PropertyHasNoPublicGetter.FullId,
-                            "Cannot make property without public getter bindable: PrivateGetterProperty.", 10, 9, 11, 74),
+                            "Cannot make property without public getter bindable: PrivateGetterProperty.", 11, 31, 11, 52),
                         error => AssertError(error, Path.GetFullPath(name2), Messages.POCO_SealedClass.FullId,
-                            "Cannot create POCO implementation class for the sealed class: POCOViewModel_ClassErrors.", 5, 5, 8, 6)
+                            "Cannot create POCO implementation class for the sealed class: POCOViewModel_ClassErrors.", 5, 25, 5, 50)
                 )
             );
         }

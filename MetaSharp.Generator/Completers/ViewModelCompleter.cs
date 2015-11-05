@@ -191,7 +191,7 @@ namespace DevExpress.Mvvm.DataAnnotations {
 
         IEnumerable<CompleterError> GetClassErrors() {
             if(type.IsSealed)
-                yield return new CompleterError(type.Node(), Messages.POCO_SealedClass.Format(type.Name));
+                yield return CompleterError.CreateForTypeName(type, Messages.POCO_SealedClass.Format(type.Name));
         }
 
         string GetImplementations() {
@@ -332,7 +332,7 @@ public {propertyType} {commandName} {{ get {{ return _{commandName} ?? (_{comman
         Either<CompleterError, bool> IsBindable(IPropertySymbol property, BindableInfo bindableInfo) {
             if(bindableInfo?.IsBindable ?? false) {
                 Func<UnfomattedMessage, CompleterError> getError = message =>
-                    new CompleterError(property.Node(), message.Format(property.Name));
+                    CompleterError.CreateForPropertyName(property, message.Format(property.Name));
                 if(!property.IsVirtual)
                     return getError(Messages.POCO_PropertyIsNotVirual);
                 if(property.IsReadOnly)

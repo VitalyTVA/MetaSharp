@@ -395,6 +395,12 @@ namespace MetaSharp {
             var location = symbol.Location();
             return location.SourceTree.GetCompilationUnitRoot().FindNode(location.SourceSpan);
         }
+        public static SyntaxToken NameToken(this INamedTypeSymbol type) {
+            return ((BaseTypeDeclarationSyntax)type.Node()).Identifier;
+        }
+        public static SyntaxToken NameToken(this IPropertySymbol property) {
+            return ((PropertyDeclarationSyntax)property.Node()).Identifier;
+        }
         public static FileLinePositionSpan LineSpan(this SyntaxNode syntax) {
             return syntax.GetLocation().GetLineSpan();
         }
