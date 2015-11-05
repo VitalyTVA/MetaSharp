@@ -34,6 +34,7 @@ namespace MetaSharp {
 
     //TODO ignore POCOViewModel attribute or not??
     //TODO coerce callback for returning values
+    //TODO POCO class with errors in more than 1 place (find all .Node() usages here and in all other code)
     public class ViewModelCompleter {
         #region constants
         public static readonly Func<string, string> INPCImplemetation = typeName =>

@@ -439,7 +439,7 @@ using DevExpress.Mvvm.POCO;
 
         [Fact]
         public void CompleteViewModel_Errors() {
-            string incomplete =
+            string incomplete1 =
 @"
 using MetaSharp;
 using DevExpress.Mvvm.DataAnnotations;
@@ -452,28 +452,36 @@ namespace MetaSharp.Incomplete {
         [BindableProperty]
         public virtual string PrivateGetterProperty { private get; set; }
     }
+}";
+            string incomplete2 =
+@"
+using MetaSharp;
+using DevExpress.Mvvm.DataAnnotations;
+namespace MetaSharp.Incomplete {
     public sealed class POCOViewModel_ClassErrors {
         [BindableProperty]
         public string NotVirtualProperty { get; set; }
     }
 }";
 
-            var name = "IncompleteViewModels.cs";
-            var input = GetInput(@"IncompleteViewModels.cs".Yield(), defaultAttributes: ", new[] { new MetaCompleteViewModelAttribute() }");
+            var name1 = "IncompleteViewModels1.cs";
+            var name2 = "IncompleteViewModels2.cs";
+            var input = GetInput(new[] { name1, name2 }, defaultAttributes: ", new[] { new MetaCompleteViewModelAttribute() }");
             AssertMultipleFilesErrors(
                 ImmutableArray.Create(
                     new TestFile(SingleInputFileName, input),
-                    new TestFile(name, incomplete, isInFlow: false)
+                    new TestFile(name1, incomplete1, isInFlow: false),
+                    new TestFile(name2, incomplete2, isInFlow: false)
                 ),
                 errors => Assert.Collection(errors,
-                        error => AssertError(error, Path.GetFullPath(name), Messages.POCO_PropertyIsNotVirual.FullId,
+                        error => AssertError(error, Path.GetFullPath(name1), Messages.POCO_PropertyIsNotVirual.FullId,
                             "Cannot make non-virtual property bindable: NotVirtualProperty.", 6, 9, 7, 55),
-                        error => AssertError(error, Path.GetFullPath(name), Messages.POCO_PropertyHasNoSetter.FullId,
+                        error => AssertError(error, Path.GetFullPath(name1), Messages.POCO_PropertyHasNoSetter.FullId,
                             "Cannot make property without setter bindable: NoSetterProperty.", 8, 9, 9, 72),
-                        error => AssertError(error, Path.GetFullPath(name), Messages.POCO_PropertyHasNoPublicGetter.FullId,
+                        error => AssertError(error, Path.GetFullPath(name1), Messages.POCO_PropertyHasNoPublicGetter.FullId,
                             "Cannot make property without public getter bindable: PrivateGetterProperty.", 10, 9, 11, 74),
-                        error => AssertError(error, Path.GetFullPath(name), Messages.POCO_SealedClass.FullId,
-                            "Cannot create POCO implementation class for the sealed class: POCOViewModel_ClassErrors.", 13, 5, 16, 6)
+                        error => AssertError(error, Path.GetFullPath(name2), Messages.POCO_SealedClass.FullId,
+                            "Cannot create POCO implementation class for the sealed class: POCOViewModel_ClassErrors.", 5, 5, 8, 6)
                 )
             );
         }
