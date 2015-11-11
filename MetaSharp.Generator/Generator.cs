@@ -403,8 +403,11 @@ namespace MetaSharp {
         public static SyntaxToken NameToken(this IPropertySymbol property) {
             return ((PropertyDeclarationSyntax)property.Node()).Identifier;
         }
-        public static SyntaxToken NameToken(this IMethodSymbol property) {
-            return ((MethodDeclarationSyntax)property.Node()).Identifier;
+        public static SyntaxToken NameToken(this IMethodSymbol method) {
+            return ((MethodDeclarationSyntax)method.Node()).Identifier;
+        }
+        public static SyntaxToken NameToken(this IParameterSymbol parameter) {
+            return ((ParameterSyntax)parameter.Node()).Identifier;
         }
         #endregion
         public static FileLinePositionSpan LineSpan(this SyntaxNode syntax) {

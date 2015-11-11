@@ -97,7 +97,7 @@ namespace MetaSharp.Test.Functional {
             var viewModel = POCOViewModel_WithMetadata.Create();
             CheckNotBindableProperty(viewModel, x => x.NotBindableProperty, (vm, x) => vm.NotBindableProperty = x, "x", "y");
             CheckBindableProperty(viewModel, x => x.NotAutoImplementedProperty, (vm, x) => vm.NotAutoImplementedProperty = x, "x", "y");
-            CheckBindableProperty(viewModel, x => x.CustomProperytChanged, (vm, x) => vm.CustomProperytChanged = x, "x", "y", (x, val) => Assert.Equal(val, x.CustomProperytChangedOldValue));
+            CheckBindableProperty(viewModel, x => x.CustomPropertyChanged, (vm, x) => vm.CustomPropertyChanged = x, "x", "y", (x, val) => Assert.Equal(val, x.CustomProperytChangedOldValue));
 
             viewModel.PropertyChanging = null;
             viewModel.PropertyChanging = "x";

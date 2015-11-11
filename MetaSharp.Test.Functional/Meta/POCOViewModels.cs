@@ -130,9 +130,9 @@ namespace MetaSharp.Test.Meta.POCO {
 
         public string CustomProperytChangedOldValue;
         string customProperytChanged;
-        [BindableProperty(OnPropertyChangedMethodName = "OnCustomProperytChanged")]
-        public virtual string CustomProperytChanged { get { return customProperytChanged; } set { customProperytChanged = value; } }
-        protected void OnCustomProperytChanged(string oldValue) {
+        [BindableProperty(OnPropertyChangedMethodName = "OnCustomPropertyChanged")]
+        public virtual string CustomPropertyChanged { get { return customProperytChanged; } set { customProperytChanged = value; } }
+        protected void OnCustomPropertyChanged(string oldValue) {
             CustomProperytChangedOldValue = oldValue;
         }
 

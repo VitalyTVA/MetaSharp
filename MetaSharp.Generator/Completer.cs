@@ -35,6 +35,9 @@ namespace MetaSharp {
         public static CompleterError CreateMethodError(IMethodSymbol method, UnfomattedMessage message) {
             return new CompleterError(method.Node().SyntaxTree, message.Format(method.Name), method.NameToken());
         }
+        public static CompleterError CreateParameterError(IParameterSymbol parameter, UnfomattedMessage message) {
+            return new CompleterError(parameter.Node().SyntaxTree, message.Format(parameter.ContainingSymbol.Name), parameter.NameToken());
+        }
         #endregion
         public readonly SyntaxTree Tree;
         public readonly Message Message;

@@ -362,6 +362,8 @@ public {propertyType} {commandName} {{ get {{ return _{commandName} ?? (_{comman
                     return CompleterError.CreateMethodError(onChangedMethod, Messages.POCO_PropertyChangedCantHaveMoreThanOneParameter);
                 if(!onChangedMethod.ReturnsVoid)
                     return CompleterError.CreateMethodError(onChangedMethod, Messages.POCO_PropertyChangedCantHaveReturnType);
+                if(onChangedMethod.Parameters.Length == 1 && onChangedMethod.Parameters.Single().Type != property.Type)
+                    return CompleterError.CreateParameterError(onChangedMethod.Parameters.Single(), Messages.POCO_PropertyChangedMethodArgumentTypeShouldMatchPropertyType);
             }
             var needOldValue = onChangedMethod.Return(x => x.Parameters.Length == 1, () => false);
             var oldValueStorage = needOldValue ? $"var oldValue = base.{property.Name};".AddTabs(2) : null;
