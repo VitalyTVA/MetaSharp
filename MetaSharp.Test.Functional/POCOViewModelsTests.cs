@@ -65,6 +65,11 @@ namespace MetaSharp.Test.Functional {
             CheckBindableProperty(viewModel, x => x.InternalChangedMethodWithoutParam, (vm, x) => vm.InternalChangedMethodWithoutParam = x, 1, 2, (x, val) => Assert.Equal(val + 1, x.InternalChangedMethodWithoutParamOldValue));
             CheckBindableProperty(viewModel, x => x.PrivateChangedMethodWithoutParam, (vm, x) => vm.PrivateChangedMethodWithoutParam = x, 1, 2, (x, val) => Assert.Equal(val + 1, x.PrivateChangedMethodWithoutParamOldValue));
         }
+        [Fact]
+        public void PrivateRaisePropertyChangedMethodTest() {
+            var vm = PrivateRaisePropertyChangedMethod.Create();
+            CheckBindableProperty(vm, x => x.StringProp, (x, val) => x.StringProp = val, "x", "y");
+        }
         #endregion
 
         #region subscribe in constructor

@@ -406,4 +406,12 @@ namespace MetaSharp.Test.Meta.POCO {
     partial class PrivatePOCOViewModel {
         public virtual string StringProp { get; set; }
     }
+    partial class PrivateRaisePropertyChangedMethod : INotifyPropertyChanged {
+        public virtual string StringProp { get; set; }
+        public event PropertyChangedEventHandler PropertyChanged;
+        void RaisePropertyChanged(string propertyName) {
+            if(PropertyChanged != null)
+                PropertyChanged(this, new PropertyChangedEventArgs(propertyName));
+        }
+    }
 }
