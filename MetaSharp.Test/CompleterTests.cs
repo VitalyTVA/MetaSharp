@@ -535,6 +535,35 @@ namespace MetaSharp.Incomplete {
                 )
             );
         }
+        [Fact]
+        public void CompleteViewModel_Errors2() {
+            string incomplete1 =
+@"
+using MetaSharp;1
+using DevExpress.Mvvm.DataAnnotations;
+namespace MetaSharp.Incomplete {
+    public class POCOViewModel_SealedPropertyBase {
+        public virtual int Property { get; set; }
+    }
+    public class POCOViewModel_SealedProperty : POCOViewModel_FinalPropertyBase {
+        [BindableProperty]
+        public sealed override int Property { get; set; }
+    }
+}";
+            
+            var name1 = "IncompleteViewModels1.cs";
+            var input = GetInput(new[] { name1 }, defaultAttributes: ", new[] { new MetaCompleteViewModelAttribute() }");
+            AssertMultipleFilesErrors(
+                ImmutableArray.Create(
+                    new TestFile(SingleInputFileName, input),
+                    new TestFile(name1, incomplete1, isInFlow: false)
+                ),
+                errors => Assert.Collection(errors,
+                        error => AssertError(error, Path.GetFullPath(name1), Messages.POCO_PropertyIsSealed.FullId,
+                            "Cannot override sealed property: Property.", 10, 36, 10, 44)
+                )
+            );
+        }
         #endregion
 
         #region dependency properties

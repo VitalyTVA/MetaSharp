@@ -364,6 +364,8 @@ public {propertyType} {commandName} {{ get {{ return _{commandName} ?? (_{comman
         }
         Either<CompleterError, bool> IsBindable(IPropertySymbol property, BindableInfo bindableInfo) {
             if(bindableInfo?.IsBindable ?? false) {
+                if(property.IsSealed)
+                    return CompleterError.CreatePropertyError(property, Messages.POCO_PropertyIsSealed);
                 if(!property.IsVirtual)
                     return CompleterError.CreatePropertyError(property, Messages.POCO_PropertyIsNotVirual);
                 if(property.IsReadOnly)
