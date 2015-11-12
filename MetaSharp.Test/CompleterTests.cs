@@ -539,7 +539,7 @@ namespace MetaSharp.Incomplete {
         public void CompleteViewModel_Errors2() {
             string incomplete1 =
 @"
-using MetaSharp;1
+using MetaSharp;
 using DevExpress.Mvvm.DataAnnotations;
 namespace MetaSharp.Incomplete {
     public class POCOViewModel_SealedPropertyBase {
@@ -548,6 +548,11 @@ namespace MetaSharp.Incomplete {
     public class POCOViewModel_SealedProperty : POCOViewModel_FinalPropertyBase {
         [BindableProperty]
         public sealed override int Property { get; set; }
+    }
+    public class InvalidIPOCOViewModelImplementation : DevExpress.Mvvm.POCO.IPOCOViewModel {
+        void IPOCOViewModel.RaisePropertyChanged(string propertyName) {
+            throw new NotImplementedException();
+        }
     }
 }";
             
@@ -560,7 +565,10 @@ namespace MetaSharp.Incomplete {
                 ),
                 errors => Assert.Collection(errors,
                         error => AssertError(error, Path.GetFullPath(name1), Messages.POCO_PropertyIsSealed.FullId,
-                            "Cannot override sealed property: Property.", 10, 36, 10, 44)
+                            "Cannot override sealed property: Property.", 10, 36, 10, 44),
+                        error => AssertError(error, Path.GetFullPath(name1), Messages.POCO_TypeImplementsIPOCOViewModel.FullId,
+                            "Type should not implement IPOCOViewModel: InvalidIPOCOViewModelImplementation.", 12, 18, 12, 53)
+
                 )
             );
         }

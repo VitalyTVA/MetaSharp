@@ -88,6 +88,11 @@ namespace DevExpress.Mvvm {
     }
     public class ViewModelBase : BindableBase, ISupportParentViewModel, ISupportServices { }
 }
+namespace DevExpress.Mvvm.POCO {
+    public interface IPOCOViewModel { 
+        void RaisePropertyChanged(string propertyName);
+    }
+}
 namespace DevExpress.Mvvm.DataAnnotations {
     public class BindablePropertyAttribute : Attribute {
         public BindablePropertyAttribute()
@@ -203,6 +208,9 @@ namespace DevExpress.Mvvm.DataAnnotations {
         IEnumerable<CompleterError> GetClassErrors() {
             if(type.IsSealed)
                 yield return CompleterError.CreateForTypeName(type, Messages.POCO_SealedClass.Format(type.Name));
+            var iPOCOViewModeType = model.Compilation.GetTypeByMetadataName("DevExpress.Mvvm.POCO.IPOCOViewModel");
+            if(type.AllInterfaces.Contains(iPOCOViewModeType))
+                yield return CompleterError.CreateForTypeName(type, Messages.POCO_TypeImplementsIPOCOViewModel.Format(type.Name));
         }
 
         CompleterResult GetImplementations() {
