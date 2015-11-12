@@ -40,6 +40,8 @@ namespace MetaSharp {
     //TODO .With(x => x()) ==> .WithFunc()
     //TODO determine whether properties and methods from base classes are property overriden
     //TODO generate RaisePropertyChanged method if class implements INotifyPropertyChanged but RaisePropertyChanged doesn't exist (explicit and implicit PropertyChanged implementations)
+
+    //TODO use method matcher (all places where RefType is checked)
     public class ViewModelCompleter {
         #region constants
         public static readonly Func<string, string> INPCImplemetation = typeName =>
@@ -231,9 +233,13 @@ namespace DevExpress.Mvvm.DataAnnotations {
                 var raisePropertyChangedMethods = methods.GetValueOrDefault("RaisePropertyChanged", ImmutableArray<IMethodSymbol>.Empty);
                 if(raisePropertyChangedMethods.IsEmpty)
                     return error();
-                var raisePropertyChangedMethod = raisePropertyChangedMethods.First();
-                var parameter = raisePropertyChangedMethod.Parameters.Single();
-                if(parameter.RefKind != RefKind.None)
+                var raisePropertyChangedMethod = raisePropertyChangedMethods.FirstOrDefault(method => {
+                    if(method.Parameters.Length != 1)
+                        return false;
+                    var parameter = method.Parameters.Single();
+                    return parameter.RefKind == RefKind.None && parameter.Type.SpecialType == SpecialType.System_String;
+                });
+                if(raisePropertyChangedMethod == null)
                     return error();
                 return null;
             };

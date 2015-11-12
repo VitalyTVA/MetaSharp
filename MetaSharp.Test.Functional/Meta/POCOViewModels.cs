@@ -409,6 +409,12 @@ namespace MetaSharp.Test.Meta.POCO {
     partial class PrivateRaisePropertyChangedMethod : INotifyPropertyChanged {
         public virtual string StringProp { get; set; }
         public event PropertyChangedEventHandler PropertyChanged;
+        void RaisePropertyChanged() {
+            throw new NotImplementedException();
+        }
+        void RaisePropertyChanged(string a, string b) {
+            throw new NotImplementedException();
+        }
         void RaisePropertyChanged(string propertyName) {
             if(PropertyChanged != null)
                 PropertyChanged(this, new PropertyChangedEventArgs(propertyName));
