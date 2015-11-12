@@ -126,27 +126,31 @@ namespace MetaSharp {
             return source.Where(x => x.Match(left => true, right => filter(right)));
         }
         //TODO make Combine methods auto-generated (self hosting)
-        public static Either<IEnumerable<TLeft>, TResult> Combine<TLeft, T1, T2, T3, TResult>(
+        public static Either<IEnumerable<TLeft>, TResult> Combine<TLeft, T1, T2, T3, T4, TResult>(
             Either<TLeft, T1> x1,
             Either<TLeft, T2> x2,
             Either<TLeft, T3> x3,
-            Func<T1, T2, T3, TResult> combine
+            Either<TLeft, T4> x4,
+            Func<T1, T2, T3, T4, TResult> combine
         ) {
-            IEnumerable<TLeft> lefts = Lefts(x1, x2, x3);
+            IEnumerable<TLeft> lefts = Lefts(x1, x2, x3, x4);
             if(lefts.Any())
                 return Either<IEnumerable<TLeft>, TResult>.Left(lefts);
-            return combine(x1.ToRight(), x2.ToRight(), x3.ToRight());
+            return combine(x1.ToRight(), x2.ToRight(), x3.ToRight(), x4.ToRight());
         }
-        static IEnumerable<TLeft> Lefts<TLeft, T1, T2, T3>(
+        static IEnumerable<TLeft> Lefts<TLeft, T1, T2, T3, T4>(
             Either<TLeft, T1> x1,
             Either<TLeft, T2> x2,
-            Either<TLeft, T3> x3) {
+            Either<TLeft, T3> x3,
+            Either<TLeft, T4> x4) {
             if(x1.IsLeft())
                 yield return x1.ToLeft();
             if(x2.IsLeft())
                 yield return x2.ToLeft();
             if(x3.IsLeft())
                 yield return x3.ToLeft();
+            if(x4.IsLeft())
+                yield return x4.ToLeft();
         }
 
     }

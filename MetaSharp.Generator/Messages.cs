@@ -23,6 +23,7 @@ namespace MetaSharp {
         public static readonly UnfomattedMessage POCO_PropertyChangedCantHaveMoreThanOneParameter = new UnfomattedMessage("0009", "Property changed method cannot have more than one parameter: {0}.");
         public static readonly UnfomattedMessage POCO_PropertyChangedCantHaveReturnType = new UnfomattedMessage("0010", "Property changed method cannot have return type: {0}.");
         public static readonly UnfomattedMessage POCO_PropertyChangedMethodArgumentTypeShouldMatchPropertyType = new UnfomattedMessage("0011", "Property changed method argument type should match property type: {0}.");
+        public static readonly UnfomattedMessage POCO_RaisePropertyChangedMethodNotFound = new UnfomattedMessage("0012", "Class already supports INotifyPropertyChanged, but RaisePropertyChanged(string) method not found: {0}.");
     }
     public struct UnfomattedMessage {
         readonly string id;

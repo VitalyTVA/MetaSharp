@@ -471,11 +471,15 @@ namespace MetaSharp.Incomplete {
             string incomplete2 =
 @"
 using MetaSharp;
+using System.ComponentModel;
 using DevExpress.Mvvm.DataAnnotations;
 namespace MetaSharp.Incomplete {
     public sealed class POCOViewModel_ClassErrors {
         [BindableProperty]
         public string NotVirtualProperty { get; set; }
+    }
+    partial class NoRaisePropertyChangedMethod : INotifyPropertyChanged {
+        public event PropertyChangedEventHandler PropertyChanged;
     }
 }";
 
@@ -505,7 +509,9 @@ namespace MetaSharp.Incomplete {
                             "Property changed method argument type should match property type: MyOnInvalidChangedMethodParameterTypePropertyChanged.", 25, 84, 25, 92),
 
                         error => AssertError(error, Path.GetFullPath(name2), Messages.POCO_SealedClass.FullId,
-                            "Cannot create POCO implementation class for the sealed class: POCOViewModel_ClassErrors.", 5, 25, 5, 50)
+                            "Cannot create POCO implementation class for the sealed class: POCOViewModel_ClassErrors.", 6, 25, 6, 50),
+                        error => AssertError(error, Path.GetFullPath(name2), Messages.POCO_RaisePropertyChangedMethodNotFound.FullId,
+                            "Class already supports INotifyPropertyChanged, but RaisePropertyChanged(string) method not found: NoRaisePropertyChangedMethod.", 10, 19, 10, 47)
                 )
             );
         }

@@ -36,6 +36,10 @@ namespace MetaSharp {
     //TODO coerce callback for returning values
     //TODO POCO class with errors in more than 1 place (find all .Node() usages here and in all other code)
     //TODO allow property changed method which return value if explicitly specified in BindablePropertyAttribute??
+
+    //TODO .With(x => x()) ==> .WithFunc()
+    //TODO determine whether properties and methods from base classes are property overriden
+    //TODO generate RaisePropertyChanged method if class implements INotifyPropertyChanged but RaisePropertyChanged doesn't exist (explicit and implicit PropertyChanged implementations)
     public class ViewModelCompleter {
         #region constants
         public static readonly Func<string, string> INPCImplemetation = typeName =>
@@ -77,7 +81,9 @@ using System.ComponentModel;
 namespace DevExpress.Mvvm {
     public interface ISupportParentViewModel { }
     public interface ISupportServices { }
-    public class BindableBase : INotifyPropertyChanged { }
+    public class BindableBase : INotifyPropertyChanged {
+        void RaisePropertyChanged(string propertyName) { }
+    }
     public class ViewModelBase : BindableBase, ISupportParentViewModel, ISupportServices { }
 }
 namespace DevExpress.Mvvm.DataAnnotations {
@@ -158,7 +164,7 @@ namespace DevExpress.Mvvm.DataAnnotations {
             this.model = model;
             this.type = type;
             bindablePropertyAttributeType = model.Compilation.GetTypeByMetadataName("DevExpress.Mvvm.DataAnnotations.BindablePropertyAttribute");
-            methods = type.Methods()
+            methods = type.AllMethods()
                 .ToLookup(x => x.Name)
                 .ToImmutableDictionary(x => x.Key, x => x.ToImmutableArray());
         }
@@ -171,13 +177,14 @@ namespace DevExpress.Mvvm.DataAnnotations {
             var res = Either.Combine(
                 CompleterResult.Right(GenerateCommands()),
                 GenerateProperties(), 
-                Either<ImmutableArray<CompleterError>, Tuple<string, string>>.Right(GenerateCreateMethodsAndConstructors()), 
-                (commands, properties, createMethodsAndConstructors) => {
+                Either<ImmutableArray<CompleterError>, Tuple<string, string>>.Right(GenerateCreateMethodsAndConstructors()),
+                GetImplementations(),
+                (commands, properties, createMethodsAndConstructors, implementations) => {
                     return 
         $@"partial class {type.Name} : INotifyPropertyChanged, ISupportParentViewModel, ISupportServices {{
 {createMethodsAndConstructors.Item1.AddTabs(1)}
 {commands.AddTabs(1)}
-{GetImplementations()}
+{implementations}
     class {type.Name}Implementation : {type.Name}, IPOCOViewModel {{
 {createMethodsAndConstructors.Item2.AddTabs(2)}
 {properties.AddTabs(2)}
@@ -191,18 +198,21 @@ namespace DevExpress.Mvvm.DataAnnotations {
             return res;
 
         }
-
         IEnumerable<CompleterError> GetClassErrors() {
             if(type.IsSealed)
                 yield return CompleterError.CreateForTypeName(type, Messages.POCO_SealedClass.Format(type.Name));
         }
 
-        string GetImplementations() {
-            Func<Func<string, string>, string, string> getImplementation = (getImpl, interfaceName) => {
+        CompleterResult GetImplementations() {
+            Func<Func<string, string>, string, Func<CompleterError>, Either<CompleterError, string>> getImplementation = (getImpl, interfaceName, check) => {
                 var interfaceType = model.Compilation.GetTypeByMetadataName(interfaceName);
-                return type.AllInterfaces.Contains(interfaceType)
-                    ? string.Empty
-                    : getImpl(type.Name).AddTabs(1);
+                if(type.AllInterfaces.Contains(interfaceType)) {
+                    var error = check.With(x => x());
+                    if(error != null)
+                        return error;
+                    return string.Empty;
+                }
+                return getImpl(type.Name).AddTabs(1);
             };
             const string IDataErrorInfoName = "System.ComponentModel.IDataErrorInfo";
             Func<string, string, string> getIDataErrorInfoPropertyImplementation = (implementation, name) =>
@@ -216,12 +226,19 @@ namespace DevExpress.Mvvm.DataAnnotations {
                     +
                     getIDataErrorInfoPropertyImplementation(DataErrorInfoIndexerImplementation, "this[]")
                 ) : null;
+            Func<CompleterError> checkRaisePropertyChangedMethod = () => {
+                var raisePropertyChangedMethod = methods.GetValueOrDefault("RaisePropertyChanged");
+                if(raisePropertyChangedMethod == null)
+                    return CompleterError.CreateForTypeName(type, Messages.POCO_RaisePropertyChangedMethodNotFound.Format(type.Name));
+                return null;
+            };
             return new[] {
-                getImplementation(INPCImplemetation, "System.ComponentModel.INotifyPropertyChanged"),
-                getImplementation(ParentViewModelImplementation, "DevExpress.Mvvm.ISupportParentViewModel"),
-                getImplementation(SupportServicesImplementation, "DevExpress.Mvvm.ISupportServices"),
+                getImplementation(INPCImplemetation, "System.ComponentModel.INotifyPropertyChanged", checkRaisePropertyChangedMethod),
+                getImplementation(ParentViewModelImplementation, "DevExpress.Mvvm.ISupportParentViewModel", null),
+                getImplementation(SupportServicesImplementation, "DevExpress.Mvvm.ISupportServices", null),
                 dataErrorInfoImplementation,
-            }.ConcatStringsWithNewLines();
+            }
+            .AggregateEither(errors => errors.ToImmutableArray(), values => values.ConcatStringsWithNewLines());
         }
 
         Tuple<string, string> GenerateCreateMethodsAndConstructors() {

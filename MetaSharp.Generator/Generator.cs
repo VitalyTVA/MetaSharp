@@ -355,6 +355,9 @@ namespace MetaSharp {
         public static IEnumerable<IMethodSymbol> Methods(this INamedTypeSymbol type) {
             return type.MethodsCore(MethodKind.Ordinary);
         }
+        public static IEnumerable<IMethodSymbol> AllMethods(this INamedTypeSymbol type) {
+            return LinqExtensions.Unfold(type, x => x.BaseType).SelectMany(x => x.Methods());
+        }
         public static IEnumerable<IMethodSymbol> ExpliciImplementations(this INamedTypeSymbol type) {
             return type.MethodsCore(MethodKind.ExplicitInterfaceImplementation);
         }
