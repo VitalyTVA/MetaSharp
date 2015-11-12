@@ -17,7 +17,7 @@ using System.Windows.Input;
 using DevExpress.Mvvm;
 using DevExpress.Mvvm.POCO;
 
-    partial class ViewModel : INotifyPropertyChanged, ISupportParentViewModel {
+    partial class ViewModel : INotifyPropertyChanged, ISupportParentViewModel, ISupportServices {
         public static ViewModel Create() {
             return new ViewModelImplementation();
         }
@@ -43,7 +43,12 @@ using DevExpress.Mvvm.POCO;
             }
         }
         partial void OnParentViewModelChanged(object oldParentViewModel);
+        IServiceContainer _ServiceContainer;
+        IServiceContainer ISupportServices.ServiceContainer { get { return _ServiceContainer ?? (_ServiceContainer = new ServiceContainer(this)); } }
+
         class ViewModelImplementation : ViewModel, IPOCOViewModel {
+            public ViewModelImplementation() 
+                :base() { }
             public override string BooProperty {
                 get { return base.BooProperty; }
                 set {
