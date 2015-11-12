@@ -481,6 +481,14 @@ namespace MetaSharp.Incomplete {
     partial class NoRaisePropertyChangedMethod : INotifyPropertyChanged {
         public event PropertyChangedEventHandler PropertyChanged;
     }
+    partial class ByRefRaisePopertyChanged : INotifyPropertyChanged {
+        public event PropertyChangedEventHandler PropertyChanged;
+        void RaisePropertyChanged(ref string x) { }
+    }
+    partial class OutRaisePopertyChanged : INotifyPropertyChanged {
+        public event PropertyChangedEventHandler PropertyChanged;
+        void RaisePropertyChanged(out string x) { }
+    }
 }";
 
             var name1 = "IncompleteViewModels1.cs";
@@ -511,7 +519,9 @@ namespace MetaSharp.Incomplete {
                         error => AssertError(error, Path.GetFullPath(name2), Messages.POCO_SealedClass.FullId,
                             "Cannot create POCO implementation class for the sealed class: POCOViewModel_ClassErrors.", 6, 25, 6, 50),
                         error => AssertError(error, Path.GetFullPath(name2), Messages.POCO_RaisePropertyChangedMethodNotFound.FullId,
-                            "Class already supports INotifyPropertyChanged, but RaisePropertyChanged(string) method not found: NoRaisePropertyChangedMethod.", 10, 19, 10, 47)
+                            "Class already supports INotifyPropertyChanged, but RaisePropertyChanged(string) method not found: NoRaisePropertyChangedMethod.", 10, 19, 10, 47),
+                        error => AssertError(error, Path.GetFullPath(name2), Messages.POCO_RaisePropertyChangedMethodNotFound.FullId, 13, 19, endColumnNumber: 43),
+                        error => AssertError(error, Path.GetFullPath(name2), Messages.POCO_RaisePropertyChangedMethodNotFound.FullId, 17, 19, endColumnNumber: 41)
                 )
             );
         }

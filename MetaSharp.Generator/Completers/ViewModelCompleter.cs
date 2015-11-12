@@ -227,9 +227,14 @@ namespace DevExpress.Mvvm.DataAnnotations {
                     getIDataErrorInfoPropertyImplementation(DataErrorInfoIndexerImplementation, "this[]")
                 ) : null;
             Func<CompleterError> checkRaisePropertyChangedMethod = () => {
-                var raisePropertyChangedMethod = methods.GetValueOrDefault("RaisePropertyChanged");
-                if(raisePropertyChangedMethod == null)
-                    return CompleterError.CreateForTypeName(type, Messages.POCO_RaisePropertyChangedMethodNotFound.Format(type.Name));
+                Func<CompleterError> error = () => CompleterError.CreateForTypeName(type, Messages.POCO_RaisePropertyChangedMethodNotFound.Format(type.Name));
+                var raisePropertyChangedMethods = methods.GetValueOrDefault("RaisePropertyChanged", ImmutableArray<IMethodSymbol>.Empty);
+                if(raisePropertyChangedMethods.IsEmpty)
+                    return error();
+                var raisePropertyChangedMethod = raisePropertyChangedMethods.First();
+                var parameter = raisePropertyChangedMethod.Parameters.Single();
+                if(parameter.RefKind != RefKind.None)
+                    return error();
                 return null;
             };
             return new[] {
