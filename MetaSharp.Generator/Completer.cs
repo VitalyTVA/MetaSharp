@@ -24,11 +24,14 @@ namespace MetaSharp {
         }
     }
     public class CompleterError {
+        #region create member error
+        //TODO duplicated code
         public static CompleterError CreateForTypeName(INamedTypeSymbol type, Message message) {
             return new CompleterError(type.Node().SyntaxTree, message, type.NameToken());
         }
-        #region create member error
-        //TODO duplicated code
+        public static CompleterError CreateForPropertyName(IPropertySymbol property, Message message) {
+            return new CompleterError(property.Node().SyntaxTree, message, property.NameToken());
+        }
         public static CompleterError CreatePropertyError(IPropertySymbol property, UnformattedMessage message) {
             return new CompleterError(property.Node().SyntaxTree, message.Format(property.Name), property.NameToken());
         }
