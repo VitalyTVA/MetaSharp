@@ -551,9 +551,9 @@ namespace MetaSharp.Incomplete {
     public class POCOViewModel_SealedPropertyBase {
         public virtual int Property { get; set; }
     }
-    public class POCOViewModel_SealedProperty : POCOViewModel_FinalPropertyBase {
+    public class POCOViewModel : POCOViewModel_FinalPropertyBase {
         [BindableProperty]
-        public sealed override int Property { get; set; }
+        public sealed override int SealedProperty { get; set; }
 
         [BindableProperty(OnPropertyChangedMethodName =""Abc"")]
         public virtual int InvalidOnPropertyChangedMethod { get; set; }
@@ -563,6 +563,11 @@ namespace MetaSharp.Incomplete {
         void IPOCOViewModel.RaisePropertyChanged(string propertyName) {
             throw new NotImplementedException();
         }
+    }
+    public class POCOViewModel2 : POCOViewModel_FinalPropertyBase {
+        [BindableProperty(OnPropertyChangingMethodName =""Abc"")]
+        public virtual int InvalidOnPropertyChangingMethod { get; set; }
+        protected void OnInvalidOnPropertyChangingMethodChanging(double oldValue) { }
     }
 }";
             
@@ -575,13 +580,15 @@ namespace MetaSharp.Incomplete {
                 ),
                 errors => Assert.Collection(errors,
                         error => AssertError(error, Path.GetFullPath(name1), Messages.POCO_PropertyIsSealed.FullId,
-                            "Cannot override sealed property: Property.", 10, 36, 10, 44),
-                        error => AssertError(error, Path.GetFullPath(name1), Messages.POCO_PropertyChangedMethodNotFound.FullId,
+                            "Cannot override sealed property: SealedProperty.", 10, 36, 10, 50),
+                        error => AssertError(error, Path.GetFullPath(name1), Messages.POCO_PropertyChangedMethodNotFound(Chang.ed).FullId,
                             "Property changed method not found: Abc.", 13, 28, 13, 58),
 
                         error => AssertError(error, Path.GetFullPath(name1), Messages.POCO_TypeImplementsIPOCOViewModel.FullId,
-                            "Type should not implement IPOCOViewModel: InvalidIPOCOViewModelImplementation.", 16, 18, 16, 53)
+                            "Type should not implement IPOCOViewModel: InvalidIPOCOViewModelImplementation.", 16, 18, 16, 53),
 
+                        error => AssertError(error, Path.GetFullPath(name1), Messages.POCO_PropertyChangedMethodNotFound(Chang.ing).FullId,
+                            "Property changing method not found: Abc.", 23, 28, 23, 59)
                 )
             );
         }

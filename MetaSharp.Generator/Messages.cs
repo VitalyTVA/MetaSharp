@@ -27,7 +27,7 @@ namespace MetaSharp {
         public static readonly UnformattedMessage POCO_RaisePropertyChangedMethodNotFound = new UnformattedMessage("0012", "Class already supports INotifyPropertyChanged, but RaisePropertyChanged(string) method not found: {0}.");
         public static readonly UnformattedMessage POCO_PropertyIsSealed = new UnformattedMessage("0013", "Cannot override sealed property: {0}.");
         public static readonly UnformattedMessage POCO_TypeImplementsIPOCOViewModel = new UnformattedMessage("0014", "Type should not implement IPOCOViewModel: {0}.");
-        public static readonly UnformattedMessage POCO_PropertyChangedMethodNotFound = new UnformattedMessage("0015", "Property changed method not found: {0}.");
+        public static readonly Func<Chang, UnformattedMessage> POCO_PropertyChangedMethodNotFound = x => new UnformattedMessage("0015", $"Property chang{x} method not found: {{0}}.");
     }
     public struct UnformattedMessage {
         readonly string id;
