@@ -125,7 +125,27 @@ namespace MetaSharp {
         public static IEnumerable<Either<TLeft, TRight>> WhereEither<TLeft, TRight>(this IEnumerable<Either<TLeft, TRight>> source, Predicate<TRight> filter) {
             return source.Where(x => x.Match(left => true, right => filter(right)));
         }
+        #region combine
         //TODO make Combine methods auto-generated (self hosting)
+        //public static Either<IEnumerable<TLeft>, TResult> Combine<TLeft, T1, T2, TResult>(
+        //    Either<TLeft, T1> x1,
+        //    Either<TLeft, T2> x2,
+        //    Func<T1, T2, TResult> combine
+        //) {
+        //    IEnumerable<TLeft> lefts = Lefts(x1, x2);
+        //    if(lefts.Any())
+        //        return Either<IEnumerable<TLeft>, TResult>.Left(lefts);
+        //    return combine(x1.ToRight(), x2.ToRight());
+        //}
+        //static IEnumerable<TLeft> Lefts<TLeft, T1, T2>(
+        //    Either<TLeft, T1> x1,
+        //    Either<TLeft, T2> x2) {
+        //    if(x1.IsLeft())
+        //        yield return x1.ToLeft();
+        //    if(x2.IsLeft())
+        //        yield return x2.ToLeft();
+        //}
+
         public static Either<IEnumerable<TLeft>, TResult> Combine<TLeft, T1, T2, T3, T4, TResult>(
             Either<TLeft, T1> x1,
             Either<TLeft, T2> x2,
@@ -153,5 +173,6 @@ namespace MetaSharp {
                 yield return x4.ToLeft();
         }
 
+        #endregion
     }
 }

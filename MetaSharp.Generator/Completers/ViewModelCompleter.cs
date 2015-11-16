@@ -387,60 +387,60 @@ public {propertyType} {commandName} {{ get {{ return _{commandName} ?? (_{comman
                 && property.GetMethod.DeclaredAccessibility == Accessibility.Public
                 && property.IsAutoImplemented() || bindableInfo.Return(bi => bi.IsBindable, () => false);
         }
+        struct MethodCallInfo {
+            public readonly string MethodCall;
+            public readonly bool NeedParameter;
+
+            public MethodCallInfo(string methodCall, bool needParameter) {
+                MethodCall = methodCall;
+                NeedParameter = needParameter;
+            }
+        }
         Either<CompleterError, string> GenerateProperty(IPropertySymbol property, BindableInfo bindableInfo) {
             var setterModifier = property.SetMethod.DeclaredAccessibility.ToAccessibilityModifier(property.DeclaredAccessibility);
 
-            //TODO ugly, diplicated code
-            var onChangedMethodName = bindableInfo?.OnPropertyChangedMethodName ?? $"On{property.Name}Changed".If(x => property.IsAutoImplemented());
-            if(onChangedMethodName != null && GetMethods(onChangedMethodName).Length > 1)
-                return CompleterError.CreatePropertyError(property, Messages.POCO_MoreThanOnePropertyChangedMethod(Chang.ed));
-            var onChangedMethod = onChangedMethodName.With(x => GetMethods(x).SingleOrDefault()); //TODO multiple methods with On*Changed name
-            if(onChangedMethod == null && bindableInfo?.OnPropertyChangedMethodName != null)
-                return CompleterError.CreateForPropertyName(property, Messages.POCO_PropertyChangedMethodNotFound(Chang.ed).Format(bindableInfo.OnPropertyChangedMethodName));
-            if(onChangedMethod != null) {
-                if(onChangedMethod.Parameters.Length > 1)
-                    return CompleterError.CreateMethodError(onChangedMethod, Messages.POCO_PropertyChangedCantHaveMoreThanOneParameter(Chang.ed));
-                if(!onChangedMethod.ReturnsVoid)
-                    return CompleterError.CreateMethodError(onChangedMethod, Messages.POCO_PropertyChangedCantHaveReturnType(Chang.ed));
-                if(onChangedMethod.Parameters.Length == 1 && onChangedMethod.Parameters.Single().Type != property.Type)
-                    return CompleterError.CreateParameterError(onChangedMethod.Parameters.Single(), Messages.POCO_PropertyChangedMethodArgumentTypeShouldMatchPropertyType(Chang.ed));
-            }
-            var needOldValue = onChangedMethod.Return(x => x.Parameters.Length == 1, () => false);
-            var oldValueStorage = needOldValue ? $"var oldValue = base.{property.Name};".AddTabs(2) : null;
-            var oldValueName = needOldValue ? "oldValue" : null;
-            var onChangedMethodCall = onChangedMethod.With(x => $"{x.Name}({oldValueName});".AddTabs(2));
+            Func<Chang, string, Either<CompleterError, MethodCallInfo>> getCallInfo = (chang, attributeMethodName) => {
+                var methodName = attributeMethodName ?? $"On{property.Name}Chang{chang}".If(x => property.IsAutoImplemented());
+                if(methodName != null && GetMethods(methodName).Length > 1)
+                    return CompleterError.CreatePropertyError(property, Messages.POCO_MoreThanOnePropertyChangedMethod(chang));
+                var method = methodName.With(x => GetMethods(x).SingleOrDefault());
+                if(method == null && attributeMethodName != null)
+                    return CompleterError.CreateForPropertyName(property, Messages.POCO_PropertyChangedMethodNotFound(chang).Format(attributeMethodName));
+                if(method != null) {
+                    if(method.Parameters.Length > 1)
+                        return CompleterError.CreateMethodError(method, Messages.POCO_PropertyChangedCantHaveMoreThanOneParameter(chang));
+                    if(!method.ReturnsVoid)
+                        return CompleterError.CreateMethodError(method, Messages.POCO_PropertyChangedCantHaveReturnType(chang));
+                    if(method.Parameters.Length == 1 && method.Parameters.Single().Type != property.Type)
+                        return CompleterError.CreateParameterError(method.Parameters.Single(), Messages.POCO_PropertyChangedMethodArgumentTypeShouldMatchPropertyType(chang));
+                }
+                var needParameter = method.Return(x => x.Parameters.Length == 1, () => false);
+                var valueName = needParameter ? (chang == Chang.ed ? "oldValue" : "value") : null;
+                var methodCall = method.With(x => $"{x.Name}({valueName});".AddTabs(2));
+                return new MethodCallInfo(methodCall, needParameter);
+            };
 
-            var onChangingMethodName = bindableInfo?.OnPropertyChangingMethodName ?? $"On{property.Name}Changing".If(x => property.IsAutoImplemented());
-            if(onChangingMethodName != null && GetMethods(onChangingMethodName).Length > 1)
-                return CompleterError.CreatePropertyError(property, Messages.POCO_MoreThanOnePropertyChangedMethod(Chang.ing));
-            var onChangingMethod = onChangingMethodName.With(x => GetMethods(x).SingleOrDefault());
-            if(onChangingMethod == null && bindableInfo?.OnPropertyChangingMethodName != null)
-                return CompleterError.CreateForPropertyName(property, Messages.POCO_PropertyChangedMethodNotFound(Chang.ing).Format(bindableInfo.OnPropertyChangingMethodName));
-            if(onChangingMethod != null) {
-                if(onChangingMethod.Parameters.Length > 1)
-                    return CompleterError.CreateMethodError(onChangingMethod, Messages.POCO_PropertyChangedCantHaveMoreThanOneParameter(Chang.ing));
-                if(!onChangingMethod.ReturnsVoid)
-                    return CompleterError.CreateMethodError(onChangingMethod, Messages.POCO_PropertyChangedCantHaveReturnType(Chang.ing));
-                if(onChangingMethod.Parameters.Length == 1 && onChangingMethod.Parameters.Single().Type != property.Type)
-                    return CompleterError.CreateParameterError(onChangingMethod.Parameters.Single(), Messages.POCO_PropertyChangedMethodArgumentTypeShouldMatchPropertyType(Chang.ing));
-            }
-            var needNewValue = onChangingMethod.Return(x => x.Parameters.Length == 1, () => false);
-            var newValueName = needNewValue ? "value" : null;
-            var onChangingMethodCall = onChangingMethod.With(x => $"{x.Name}({newValueName});".AddTabs(2));
-
-            return
+            var result = getCallInfo(Chang.ed, bindableInfo?.OnPropertyChangedMethodName)
+                .SelectMany(changed => {
+                    return getCallInfo(Chang.ing, bindableInfo?.OnPropertyChangingMethodName)
+                        .Select(changing => {
+                    var oldValueStorage = changed.NeedParameter ? $"var oldValue = base.{property.Name};".AddTabs(2) : null;
+                    return
 $@"public override {property.TypeDisplayString(model)} {property.Name} {{
     get {{ return base.{property.Name}; }}
     {setterModifier}set {{
         if(base.{property.Name} == value)
             return;
-{onChangingMethodCall}
+{changing.MethodCall}
 {oldValueStorage}
         base.{property.Name} = value;
         RaisePropertyChanged(""{property.Name}"");
-{onChangedMethodCall}
+{changed.MethodCall}
     }}
 }}";
+                        });
+                });
+            return result;
         }
         #endregion
     }
