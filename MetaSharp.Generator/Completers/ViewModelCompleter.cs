@@ -420,12 +420,23 @@ public {propertyType} {commandName} {{ get {{ return _{commandName} ?? (_{comman
                 return new MethodCallInfo(methodCall, needParameter);
             };
 
-            var result = getCallInfo(Chang.ed, bindableInfo?.OnPropertyChangedMethodName)
-                .SelectMany(changed => {
-                    return getCallInfo(Chang.ing, bindableInfo?.OnPropertyChangingMethodName)
-                        .Select(changing => {
-                    var oldValueStorage = changed.NeedParameter ? $"var oldValue = base.{property.Name};".AddTabs(2) : null;
-                    return
+            return from changed in getCallInfo(Chang.ed, bindableInfo?.OnPropertyChangedMethodName)
+                   from changing in getCallInfo(Chang.ing, bindableInfo?.OnPropertyChangingMethodName)
+                   select GenerateProperty(property, changed, changing, setterModifier);
+
+            //var result = getCallInfo(Chang.ed, bindableInfo?.OnPropertyChangedMethodName)
+            //    .SelectMany(changed => {
+            //        return getCallInfo(Chang.ing, bindableInfo?.OnPropertyChangingMethodName)
+            //            .Select(changing => {
+            //                return GenerateProperty(property, changed, changing, setterModifier);
+            //            });
+            //    });
+            //return result;
+        }
+
+        string GenerateProperty(IPropertySymbol property, MethodCallInfo changed, MethodCallInfo changing, string setterModifier) {
+            var oldValueStorage = changed.NeedParameter ? $"var oldValue = base.{property.Name};".AddTabs(2) : null;
+            return
 $@"public override {property.TypeDisplayString(model)} {property.Name} {{
     get {{ return base.{property.Name}; }}
     {setterModifier}set {{
@@ -438,9 +449,6 @@ $@"public override {property.TypeDisplayString(model)} {property.Name} {{
 {changed.MethodCall}
     }}
 }}";
-                        });
-                });
-            return result;
         }
         #endregion
     }
