@@ -419,8 +419,8 @@ public {propertyType} {commandName} {{ get {{ return _{commandName} ?? (_{comman
             if(onChangingMethod != null) {
                 if(onChangingMethod.Parameters.Length > 1)
                     return CompleterError.CreateMethodError(onChangingMethod, Messages.POCO_PropertyChangedCantHaveMoreThanOneParameter(Chang.ing));
-                //if(!onChangedMethod.ReturnsVoid)
-                //    return CompleterError.CreateMethodError(onChangedMethod, Messages.POCO_PropertyChangedCantHaveReturnType(Chang.ed));
+                if(!onChangingMethod.ReturnsVoid)
+                    return CompleterError.CreateMethodError(onChangingMethod, Messages.POCO_PropertyChangedCantHaveReturnType(Chang.ing));
                 //if(onChangedMethod.Parameters.Length == 1 && onChangedMethod.Parameters.Single().Type != property.Type)
                 //    return CompleterError.CreateParameterError(onChangedMethod.Parameters.Single(), Messages.POCO_PropertyChangedMethodArgumentTypeShouldMatchPropertyType(Chang.ed));
             }

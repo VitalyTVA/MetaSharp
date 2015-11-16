@@ -472,6 +472,13 @@ namespace MetaSharp.Incomplete {
 
         public virtual string TwoParametersChanging { get; set; }
         protected void OnTwoParametersChangingChanging(string a, string b) { }
+
+        public virtual string FuncChanging { get; set; }
+        protected int OnFuncChangingChanging() { return 0; }
+
+        [BindableProperty(OnPropertyChangingMethodName = ""MyOnInvalidChangungMethodParameterTypePropertyChanging"")]
+        public virtual int InvalidChangingMethodParameterTypeProperty { get; set; }
+        protected void MyOnInvalidChangungMethodParameterTypePropertyChanging(double oldValue) { }
     }
 }";
             string incomplete2 =
@@ -533,7 +540,8 @@ namespace MetaSharp.Incomplete {
                             "More than one property changing method: MultiplePropertyChanging.", 27, 31, 27, 55),
                         error => AssertError(error, Path.GetFullPath(name1), Messages.POCO_PropertyChangedCantHaveMoreThanOneParameter(Chang.ed).FullId,
                             "Property changing method cannot have more than one parameter: OnTwoParametersChangingChanging.", 32, 24, 32, 55),
-
+                        error => AssertError(error, Path.GetFullPath(name1), Messages.POCO_PropertyChangedCantHaveReturnType(Chang.ed).FullId,
+                            "Property changing method cannot have return type: OnFuncChangingChanging.", 35, 23, 35, 45),
 
                         error => AssertError(error, Path.GetFullPath(name2), Messages.POCO_SealedClass.FullId,
                             "Cannot create POCO implementation class for the sealed class: POCOViewModel_ClassErrors.", 6, 25, 6, 50),
