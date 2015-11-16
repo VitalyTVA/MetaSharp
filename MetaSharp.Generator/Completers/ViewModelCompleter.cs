@@ -423,15 +423,6 @@ public {propertyType} {commandName} {{ get {{ return _{commandName} ?? (_{comman
             return from changed in getCallInfo(Chang.ed, bindableInfo?.OnPropertyChangedMethodName)
                    from changing in getCallInfo(Chang.ing, bindableInfo?.OnPropertyChangingMethodName)
                    select GenerateProperty(property, changed, changing, setterModifier);
-
-            //var result = getCallInfo(Chang.ed, bindableInfo?.OnPropertyChangedMethodName)
-            //    .SelectMany(changed => {
-            //        return getCallInfo(Chang.ing, bindableInfo?.OnPropertyChangingMethodName)
-            //            .Select(changing => {
-            //                return GenerateProperty(property, changed, changing, setterModifier);
-            //            });
-            //    });
-            //return result;
         }
 
         string GenerateProperty(IPropertySymbol property, MethodCallInfo changed, MethodCallInfo changing, string setterModifier) {
