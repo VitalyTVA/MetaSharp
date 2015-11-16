@@ -476,9 +476,9 @@ namespace MetaSharp.Incomplete {
         public virtual string FuncChanging { get; set; }
         protected int OnFuncChangingChanging() { return 0; }
 
-        [BindableProperty(OnPropertyChangingMethodName = ""MyOnInvalidChangungMethodParameterTypePropertyChanging"")]
+        [BindableProperty(OnPropertyChangingMethodName = ""MyOnInvalidChangingMethodParameterTypePropertyChanging"")]
         public virtual int InvalidChangingMethodParameterTypeProperty { get; set; }
-        protected void MyOnInvalidChangungMethodParameterTypePropertyChanging(double oldValue) { }
+        protected void MyOnInvalidChangingMethodParameterTypePropertyChanging(double oldValue) { }
     }
 }";
             string incomplete2 =
@@ -530,18 +530,20 @@ namespace MetaSharp.Incomplete {
                             "Cannot make property without public getter bindable: PrivateGetterProperty.", 11, 31, 11, 52),
                         error => AssertError(error, Path.GetFullPath(name1), Messages.POCO_MoreThanOnePropertyChangedMethod(default(Chang)).FullId,
                             "More than one property changed method: MultiplePropertyChanged.", 13, 31, 13, 54),
-                        error => AssertError(error, Path.GetFullPath(name1), Messages.POCO_PropertyChangedCantHaveMoreThanOneParameter(Chang.ed).FullId,
+                        error => AssertError(error, Path.GetFullPath(name1), Messages.POCO_PropertyChangedCantHaveMoreThanOneParameter(default(Chang)).FullId,
                             "Property changed method cannot have more than one parameter: OnTwoParametersChangedChanged.", 18, 24, 18, 53),
-                        error => AssertError(error, Path.GetFullPath(name1), Messages.POCO_PropertyChangedCantHaveReturnType(Chang.ed).FullId,
+                        error => AssertError(error, Path.GetFullPath(name1), Messages.POCO_PropertyChangedCantHaveReturnType(default(Chang)).FullId,
                             "Property changed method cannot have return type: OnFuncChangedChanged.", 21, 23, 21, 43),
-                        error => AssertError(error, Path.GetFullPath(name1), Messages.POCO_PropertyChangedMethodArgumentTypeShouldMatchPropertyType(Chang.ed).FullId,
+                        error => AssertError(error, Path.GetFullPath(name1), Messages.POCO_PropertyChangedMethodArgumentTypeShouldMatchPropertyType(default(Chang)).FullId,
                             "Property changed method argument type should match property type: MyOnInvalidChangedMethodParameterTypePropertyChanged.", 25, 84, 25, 92),
                         error => AssertError(error, Path.GetFullPath(name1), Messages.POCO_MoreThanOnePropertyChangedMethod(default(Chang)).FullId,
                             "More than one property changing method: MultiplePropertyChanging.", 27, 31, 27, 55),
-                        error => AssertError(error, Path.GetFullPath(name1), Messages.POCO_PropertyChangedCantHaveMoreThanOneParameter(Chang.ed).FullId,
+                        error => AssertError(error, Path.GetFullPath(name1), Messages.POCO_PropertyChangedCantHaveMoreThanOneParameter(default(Chang)).FullId,
                             "Property changing method cannot have more than one parameter: OnTwoParametersChangingChanging.", 32, 24, 32, 55),
-                        error => AssertError(error, Path.GetFullPath(name1), Messages.POCO_PropertyChangedCantHaveReturnType(Chang.ed).FullId,
+                        error => AssertError(error, Path.GetFullPath(name1), Messages.POCO_PropertyChangedCantHaveReturnType(default(Chang)).FullId,
                             "Property changing method cannot have return type: OnFuncChangingChanging.", 35, 23, 35, 45),
+                        error => AssertError(error, Path.GetFullPath(name1), Messages.POCO_PropertyChangedMethodArgumentTypeShouldMatchPropertyType(default(Chang)).FullId,
+                            "Property changing method argument type should match property type: MyOnInvalidChangingMethodParameterTypePropertyChanging.", 39, 86, 39, 94),
 
                         error => AssertError(error, Path.GetFullPath(name2), Messages.POCO_SealedClass.FullId,
                             "Cannot create POCO implementation class for the sealed class: POCOViewModel_ClassErrors.", 6, 25, 6, 50),

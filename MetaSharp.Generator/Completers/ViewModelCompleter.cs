@@ -421,8 +421,8 @@ public {propertyType} {commandName} {{ get {{ return _{commandName} ?? (_{comman
                     return CompleterError.CreateMethodError(onChangingMethod, Messages.POCO_PropertyChangedCantHaveMoreThanOneParameter(Chang.ing));
                 if(!onChangingMethod.ReturnsVoid)
                     return CompleterError.CreateMethodError(onChangingMethod, Messages.POCO_PropertyChangedCantHaveReturnType(Chang.ing));
-                //if(onChangedMethod.Parameters.Length == 1 && onChangedMethod.Parameters.Single().Type != property.Type)
-                //    return CompleterError.CreateParameterError(onChangedMethod.Parameters.Single(), Messages.POCO_PropertyChangedMethodArgumentTypeShouldMatchPropertyType(Chang.ed));
+                if(onChangingMethod.Parameters.Length == 1 && onChangingMethod.Parameters.Single().Type != property.Type)
+                    return CompleterError.CreateParameterError(onChangingMethod.Parameters.Single(), Messages.POCO_PropertyChangedMethodArgumentTypeShouldMatchPropertyType(Chang.ing));
             }
             var needNewValue = onChangingMethod.Return(x => x.Parameters.Length == 1, () => false);
             var newValueName = needNewValue ? "value" : null;
