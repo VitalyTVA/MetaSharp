@@ -21,9 +21,9 @@ namespace MetaSharp {
         public static readonly UnformattedMessage POCO_PropertyHasNoPublicGetter = new UnformattedMessage("0006", "Cannot make property without public getter bindable: {0}.");
         public static readonly UnformattedMessage POCO_SealedClass = new UnformattedMessage("0007", "Cannot create POCO implementation class for the sealed class: {0}.");
         public static readonly Func<Chang, UnformattedMessage> POCO_MoreThanOnePropertyChangedMethod = x => new UnformattedMessage("0008", $"More than one property chang{x} method: {{0}}.");
-        public static readonly UnformattedMessage POCO_PropertyChangedCantHaveMoreThanOneParameter = new UnformattedMessage("0009", "Property changed method cannot have more than one parameter: {0}.");
-        public static readonly UnformattedMessage POCO_PropertyChangedCantHaveReturnType = new UnformattedMessage("0010", "Property changed method cannot have return type: {0}.");
-        public static readonly UnformattedMessage POCO_PropertyChangedMethodArgumentTypeShouldMatchPropertyType = new UnformattedMessage("0011", "Property changed method argument type should match property type: {0}.");
+        public static readonly Func<Chang, UnformattedMessage> POCO_PropertyChangedCantHaveMoreThanOneParameter = x => new UnformattedMessage("0009", $"Property chang{x} method cannot have more than one parameter: {{0}}.");
+        public static readonly Func<Chang, UnformattedMessage> POCO_PropertyChangedCantHaveReturnType = x => new UnformattedMessage("0010", $"Property chang{x} method cannot have return type: {{0}}.");
+        public static readonly Func<Chang, UnformattedMessage> POCO_PropertyChangedMethodArgumentTypeShouldMatchPropertyType = x => new UnformattedMessage("0011", $"Property chang{x} method argument type should match property type: {{0}}.");
         public static readonly UnformattedMessage POCO_RaisePropertyChangedMethodNotFound = new UnformattedMessage("0012", "Class already supports INotifyPropertyChanged, but RaisePropertyChanged(string) method not found: {0}.");
         public static readonly UnformattedMessage POCO_PropertyIsSealed = new UnformattedMessage("0013", "Cannot override sealed property: {0}.");
         public static readonly UnformattedMessage POCO_TypeImplementsIPOCOViewModel = new UnformattedMessage("0014", "Type should not implement IPOCOViewModel: {0}.");

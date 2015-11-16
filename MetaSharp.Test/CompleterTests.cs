@@ -469,6 +469,9 @@ namespace MetaSharp.Incomplete {
         public virtual string MultiplePropertyChanging { get; set; }
         protected void OnMultiplePropertyChangingChanging() { }
         protected void OnMultiplePropertyChangingChanging(string oldValue) { }
+
+        public virtual string TwoParametersChanging { get; set; }
+        protected void OnTwoParametersChangingChanging(string a, string b) { }
     }
 }";
             string incomplete2 =
@@ -520,14 +523,16 @@ namespace MetaSharp.Incomplete {
                             "Cannot make property without public getter bindable: PrivateGetterProperty.", 11, 31, 11, 52),
                         error => AssertError(error, Path.GetFullPath(name1), Messages.POCO_MoreThanOnePropertyChangedMethod(default(Chang)).FullId,
                             "More than one property changed method: MultiplePropertyChanged.", 13, 31, 13, 54),
-                        error => AssertError(error, Path.GetFullPath(name1), Messages.POCO_PropertyChangedCantHaveMoreThanOneParameter.FullId,
+                        error => AssertError(error, Path.GetFullPath(name1), Messages.POCO_PropertyChangedCantHaveMoreThanOneParameter(Chang.ed).FullId,
                             "Property changed method cannot have more than one parameter: OnTwoParametersChangedChanged.", 18, 24, 18, 53),
-                        error => AssertError(error, Path.GetFullPath(name1), Messages.POCO_PropertyChangedCantHaveReturnType.FullId,
+                        error => AssertError(error, Path.GetFullPath(name1), Messages.POCO_PropertyChangedCantHaveReturnType(Chang.ed).FullId,
                             "Property changed method cannot have return type: OnFuncChangedChanged.", 21, 23, 21, 43),
-                        error => AssertError(error, Path.GetFullPath(name1), Messages.POCO_PropertyChangedMethodArgumentTypeShouldMatchPropertyType.FullId,
+                        error => AssertError(error, Path.GetFullPath(name1), Messages.POCO_PropertyChangedMethodArgumentTypeShouldMatchPropertyType(Chang.ed).FullId,
                             "Property changed method argument type should match property type: MyOnInvalidChangedMethodParameterTypePropertyChanged.", 25, 84, 25, 92),
                         error => AssertError(error, Path.GetFullPath(name1), Messages.POCO_MoreThanOnePropertyChangedMethod(default(Chang)).FullId,
                             "More than one property changing method: MultiplePropertyChanging.", 27, 31, 27, 55),
+                        error => AssertError(error, Path.GetFullPath(name1), Messages.POCO_PropertyChangedCantHaveMoreThanOneParameter(Chang.ed).FullId,
+                            "Property changing method cannot have more than one parameter: OnTwoParametersChangingChanging.", 32, 24, 32, 55),
 
 
                         error => AssertError(error, Path.GetFullPath(name2), Messages.POCO_SealedClass.FullId,

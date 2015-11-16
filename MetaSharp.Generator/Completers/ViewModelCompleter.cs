@@ -399,11 +399,11 @@ public {propertyType} {commandName} {{ get {{ return _{commandName} ?? (_{comman
                 return CompleterError.CreateForPropertyName(property, Messages.POCO_PropertyChangedMethodNotFound(Chang.ed).Format(bindableInfo.OnPropertyChangedMethodName));
             if(onChangedMethod != null) {
                 if(onChangedMethod.Parameters.Length > 1)
-                    return CompleterError.CreateMethodError(onChangedMethod, Messages.POCO_PropertyChangedCantHaveMoreThanOneParameter);
+                    return CompleterError.CreateMethodError(onChangedMethod, Messages.POCO_PropertyChangedCantHaveMoreThanOneParameter(Chang.ed));
                 if(!onChangedMethod.ReturnsVoid)
-                    return CompleterError.CreateMethodError(onChangedMethod, Messages.POCO_PropertyChangedCantHaveReturnType);
+                    return CompleterError.CreateMethodError(onChangedMethod, Messages.POCO_PropertyChangedCantHaveReturnType(Chang.ed));
                 if(onChangedMethod.Parameters.Length == 1 && onChangedMethod.Parameters.Single().Type != property.Type)
-                    return CompleterError.CreateParameterError(onChangedMethod.Parameters.Single(), Messages.POCO_PropertyChangedMethodArgumentTypeShouldMatchPropertyType);
+                    return CompleterError.CreateParameterError(onChangedMethod.Parameters.Single(), Messages.POCO_PropertyChangedMethodArgumentTypeShouldMatchPropertyType(Chang.ed));
             }
             var needOldValue = onChangedMethod.Return(x => x.Parameters.Length == 1, () => false);
             var oldValueStorage = needOldValue ? $"var oldValue = base.{property.Name};".AddTabs(2) : null;
@@ -416,6 +416,14 @@ public {propertyType} {commandName} {{ get {{ return _{commandName} ?? (_{comman
             var onChangingMethod = onChangingMethodName.With(x => GetMethods(x).SingleOrDefault());
             if(onChangingMethod == null && bindableInfo?.OnPropertyChangingMethodName != null)
                 return CompleterError.CreateForPropertyName(property, Messages.POCO_PropertyChangedMethodNotFound(Chang.ing).Format(bindableInfo.OnPropertyChangingMethodName));
+            if(onChangingMethod != null) {
+                if(onChangingMethod.Parameters.Length > 1)
+                    return CompleterError.CreateMethodError(onChangingMethod, Messages.POCO_PropertyChangedCantHaveMoreThanOneParameter(Chang.ing));
+                //if(!onChangedMethod.ReturnsVoid)
+                //    return CompleterError.CreateMethodError(onChangedMethod, Messages.POCO_PropertyChangedCantHaveReturnType(Chang.ed));
+                //if(onChangedMethod.Parameters.Length == 1 && onChangedMethod.Parameters.Single().Type != property.Type)
+                //    return CompleterError.CreateParameterError(onChangedMethod.Parameters.Single(), Messages.POCO_PropertyChangedMethodArgumentTypeShouldMatchPropertyType(Chang.ed));
+            }
             var needNewValue = onChangingMethod.Return(x => x.Parameters.Length == 1, () => false);
             var newValueName = needNewValue ? "value" : null;
             var onChangingMethodCall = onChangingMethod.With(x => $"{x.Name}({newValueName});".AddTabs(2));
