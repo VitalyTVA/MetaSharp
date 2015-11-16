@@ -393,7 +393,7 @@ public {propertyType} {commandName} {{ get {{ return _{commandName} ?? (_{comman
             //TODO ugly, diplicated code
             var onChangedMethodName = bindableInfo?.OnPropertyChangedMethodName ?? $"On{property.Name}Changed".If(x => property.IsAutoImplemented());
             if(onChangedMethodName != null && GetMethods(onChangedMethodName).Length > 1)
-                return CompleterError.CreatePropertyError(property, Messages.POCO_MoreThanOnePropertyChangedMethod);
+                return CompleterError.CreatePropertyError(property, Messages.POCO_MoreThanOnePropertyChangedMethod(Chang.ed));
             var onChangedMethod = onChangedMethodName.With(x => GetMethods(x).SingleOrDefault()); //TODO multiple methods with On*Changed name
             if(onChangedMethod == null && bindableInfo?.OnPropertyChangedMethodName != null)
                 return CompleterError.CreateForPropertyName(property, Messages.POCO_PropertyChangedMethodNotFound.Format(bindableInfo.OnPropertyChangedMethodName));
@@ -411,6 +411,8 @@ public {propertyType} {commandName} {{ get {{ return _{commandName} ?? (_{comman
             var onChangedMethodCall = onChangedMethod.With(x => $"{x.Name}({oldValueName});".AddTabs(2));
 
             var onChangingMethodName = bindableInfo?.OnPropertyChangingMethodName ?? $"On{property.Name}Changing".If(x => property.IsAutoImplemented());
+            if(onChangingMethodName != null && GetMethods(onChangingMethodName).Length > 1)
+                return CompleterError.CreatePropertyError(property, Messages.POCO_MoreThanOnePropertyChangedMethod(Chang.ing));
             var onChangingMethod = onChangingMethodName.With(x => GetMethods(x).SingleOrDefault());
             var needNewValue = onChangingMethod.Return(x => x.Parameters.Length == 1, () => false);
             var newValueName = needNewValue ? "value" : null;

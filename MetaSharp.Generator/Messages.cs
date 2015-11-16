@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace MetaSharp {
+    public enum Chang { ing, ed }
     public static class Messages {
         //TODO check all messages
         //TODO write test checking id's are not repeated
@@ -19,7 +20,7 @@ namespace MetaSharp {
         public static readonly UnformattedMessage POCO_PropertyHasNoSetter = new UnformattedMessage("0005", "Cannot make property without setter bindable: {0}.");
         public static readonly UnformattedMessage POCO_PropertyHasNoPublicGetter = new UnformattedMessage("0006", "Cannot make property without public getter bindable: {0}.");
         public static readonly UnformattedMessage POCO_SealedClass = new UnformattedMessage("0007", "Cannot create POCO implementation class for the sealed class: {0}.");
-        public static readonly UnformattedMessage POCO_MoreThanOnePropertyChangedMethod = new UnformattedMessage("0008", "More than one property changed method: {0}.");
+        public static readonly Func<Chang, UnformattedMessage> POCO_MoreThanOnePropertyChangedMethod = x => new UnformattedMessage("0008", $"More than one property chang{x} method: {{0}}.");
         public static readonly UnformattedMessage POCO_PropertyChangedCantHaveMoreThanOneParameter = new UnformattedMessage("0009", "Property changed method cannot have more than one parameter: {0}.");
         public static readonly UnformattedMessage POCO_PropertyChangedCantHaveReturnType = new UnformattedMessage("0010", "Property changed method cannot have return type: {0}.");
         public static readonly UnformattedMessage POCO_PropertyChangedMethodArgumentTypeShouldMatchPropertyType = new UnformattedMessage("0011", "Property changed method argument type should match property type: {0}.");
