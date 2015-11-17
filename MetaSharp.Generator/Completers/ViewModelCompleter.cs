@@ -302,15 +302,18 @@ $@"public {type.Name}Implementation({info.parameters})
                     var commandInfo = GetCommandInfo(method);
                     return new { method, commandInfo };
                 })
-                .Where(info => (info.commandInfo?.IsCommand ?? (info.method.DeclaredAccessibility == Accessibility.Public))
-                    && info.method.MethodKind == MethodKind.Ordinary
-                    && !info.method.IsStatic
-                    && (info.method.ReturnsVoid || info.method.ReturnType == taskType || (info.commandInfo?.IsCommand ?? false))
-                    && (!info.method.Parameters.Any() || (info.method.Parameters.Length == 1 && info.method.Parameters.Single().RefKind == RefKind.None)))
+                .Where(info => IsCommandMethod(info.method, info.commandInfo))
                 .Select(info => {
                     return GenerateCommand(info.method, info.commandInfo);
                 })
                 .ConcatStringsWithNewLines();
+        }
+        bool IsCommandMethod(IMethodSymbol method, CommandInfo commandInfo) {
+            return (commandInfo?.IsCommand ?? (method.DeclaredAccessibility == Accessibility.Public))
+                && method.MethodKind == MethodKind.Ordinary
+                && !method.IsStatic
+                && (method.ReturnsVoid || method.ReturnType == taskType || (commandInfo?.IsCommand ?? false))
+                && (!method.Parameters.Any() || (method.Parameters.Length == 1 && method.Parameters.Single().RefKind == RefKind.None));
         }
         CommandInfo GetCommandInfo(IMethodSymbol method) {
             return method.GetAttributes()
