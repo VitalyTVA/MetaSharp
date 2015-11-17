@@ -556,6 +556,7 @@ namespace MetaSharp.Incomplete {
                 )
             );
         }
+
         [Fact]
         public void CompleteViewModel_Errors2() {
             string incomplete1 =
@@ -607,6 +608,34 @@ namespace MetaSharp.Incomplete {
                 )
             );
         }
+
+        [Fact]
+        public void CompleteViewModel_Errors3() {
+            string incomplete1 =
+@"
+using MetaSharp;
+using DevExpress.Mvvm.DataAnnotations;
+namespace MetaSharp.Incomplete {
+    public class POCOViewModel {{
+        public void Show() {{ }}
+        int ShowCommand = 0;
+    }}
+}";
+
+            var name1 = "IncompleteViewModels1.cs";
+            var input = GetInput(new[] { name1 }, defaultAttributes: ", new[] { new MetaCompleteViewModelAttribute() }");
+            AssertMultipleFilesErrors(
+                ImmutableArray.Create(
+                    new TestFile(SingleInputFileName, input),
+                    new TestFile(name1, incomplete1, isInFlow: false)
+                ),
+                errors => Assert.Collection(errors,
+                        error => AssertError(error, Path.GetFullPath(name1), Messages.Error_MemberWithSameCommandNameAlreadyExists.FullId,
+                            "Member with the same command name already exists: Show.", 6, 21, 6, 25)
+                )
+            );
+        }
+
         #endregion
 
         #region dependency properties

@@ -42,6 +42,7 @@ namespace MetaSharp {
     //TODO generate RaisePropertyChanged method if class implements INotifyPropertyChanged but RaisePropertyChanged doesn't exist (explicit and implicit PropertyChanged implementations)
 
     //TODO use method matcher (all places where RefType is checked)
+    //TODO allow to define own commands (do not show error when there are customer-defined ShowCommand and Show method)
     public class ViewModelCompleter {
         #region constants
         public static readonly Func<string, string> INPCImplemetation = typeName =>
@@ -166,6 +167,7 @@ namespace DevExpress.Mvvm.DataAnnotations {
         readonly SemanticModel model; 
         readonly INamedTypeSymbol type, bindablePropertyAttributeType, asyncCommandAttributeType, commandAttributeType, taskType;
         readonly ImmutableDictionary<string, ImmutableArray<IMethodSymbol>> methods;
+        readonly ImmutableDictionary<string, ImmutableArray<ISymbol>> members;
 
         ViewModelCompleter(SemanticModel model, INamedTypeSymbol type) {
             this.model = model;
@@ -185,7 +187,7 @@ namespace DevExpress.Mvvm.DataAnnotations {
                 return classErrors;
 
             var res = Either.Combine(
-                CompleterResult.Right(GenerateCommands()),
+                GenerateCommands(),
                 GenerateProperties(), 
                 Either<ImmutableArray<CompleterError>, Tuple<string, string>>.Right(GenerateCreateMethodsAndConstructors()),
                 GetImplementations(),
@@ -296,19 +298,20 @@ $@"public {type.Name}Implementation({info.parameters})
         }
 
         #region commands
-        string GenerateCommands() {
-            return type.Methods()
+        CompleterResult GenerateCommands() {
+            var result = type.Methods()
                 .Select(method => {
                     var commandInfo = GetCommandInfo(method);
                     return new { method, commandInfo };
                 })
-                .Where(info => IsCommandMethod(info.method, info.commandInfo))
-                .Select(info => {
+                .WhereEither(info => IsCommandMethod(info.method, info.commandInfo))
+                .Select(x => x.SelectMany(info => {
                     return GenerateCommand(info.method, info.commandInfo);
-                })
-                .ConcatStringsWithNewLines();
+                }))
+                .AggregateEither(errors => errors.ToImmutableArray(), values => values.ConcatStringsWithNewLines());
+            return result;
         }
-        bool IsCommandMethod(IMethodSymbol method, CommandInfo commandInfo) {
+        Either<CompleterError, bool> IsCommandMethod(IMethodSymbol method, CommandInfo commandInfo) {
             return (commandInfo?.IsCommand ?? (method.DeclaredAccessibility == Accessibility.Public))
                 && method.MethodKind == MethodKind.Ordinary
                 && !method.IsStatic
@@ -329,9 +332,12 @@ $@"public {type.Name}Implementation({info.parameters})
                                 canExecuteMethodName: (string)namedArgs.GetValueOrDefault("CanExecuteMethodName"));
                         });
         }
-        string GenerateCommand(IMethodSymbol method, CommandInfo commandInfo) {
+        Either<CompleterError, string> GenerateCommand(IMethodSymbol method, CommandInfo commandInfo) {
             var isAsync = method.ReturnType == taskType;
             var commandName = commandInfo?.Name ?? (method.Name + "Command");
+            if(type.GetMembers(commandName).Any())
+                return CompleterError.CreateMethodError(method, Messages.Error_MemberWithSameCommandNameAlreadyExists);
+
             var methodName = method.Name;
             var genericParameter = method.Parameters.SingleOrDefault()
                 .With(x => "<" + x.Type.DisplayString(model, x.Location()) + ">");

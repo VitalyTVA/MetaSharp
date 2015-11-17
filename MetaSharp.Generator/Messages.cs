@@ -28,6 +28,7 @@ namespace MetaSharp {
         public static readonly UnformattedMessage POCO_PropertyIsSealed = new UnformattedMessage("0013", "Cannot override sealed property: {0}.");
         public static readonly UnformattedMessage POCO_TypeImplementsIPOCOViewModel = new UnformattedMessage("0014", "Type should not implement IPOCOViewModel: {0}.");
         public static readonly Func<Chang, UnformattedMessage> POCO_PropertyChangedMethodNotFound = x => new UnformattedMessage("0015", $"Property chang{x} method not found: {{0}}.");
+        public static readonly UnformattedMessage Error_MemberWithSameCommandNameAlreadyExists = new UnformattedMessage("0015", "Member with the same command name already exists: {0}.");
     }
     public struct UnformattedMessage {
         readonly string id;
