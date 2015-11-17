@@ -362,10 +362,7 @@ public {propertyType} {commandName} {{ get {{ return _{commandName} ?? (_{comman
                     var bindableInfo = GetBindableInfo(property);
                     return new { property, bindableInfo };
                 })
-                .Select(info => IsBindable(info.property, info.bindableInfo)
-                    .Select(isBindableValue => isBindableValue ? info : null)
-                 )
-                .WhereEither(x => x != null)
+                .WhereEither(info => IsBindable(info.property, info.bindableInfo))
                 .Select(x => x.SelectMany(info => GenerateProperty(info.property, info.bindableInfo)))
                 .AggregateEither(errors => errors.ToImmutableArray(), values => values.ConcatStringsWithNewLines());
             return properties;

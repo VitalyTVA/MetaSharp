@@ -122,8 +122,14 @@ namespace MetaSharp {
             );
         }
 
-        public static IEnumerable<Either<TLeft, TRight>> WhereEither<TLeft, TRight>(this IEnumerable<Either<TLeft, TRight>> source, Predicate<TRight> filter) {
-            return source.Where(x => x.Match(left => true, right => filter(right)));
+        //public static IEnumerable<Either<TLeft, TRight>> WhereEither<TLeft, TRight>(this IEnumerable<Either<TLeft, TRight>> source, Predicate<TRight> filter) {
+        //    return source.Where(x => x.Match(left => true, right => filter(right)));
+        //}
+        public static IEnumerable<Either<TLeft, TRight>> WhereEither<TLeft, TRight>(this IEnumerable<TRight> source, Func<TRight, Either<TLeft, bool>> filter) {
+            return source
+                .Select(value => new { value, either = filter(value) })
+                .Where(x => x.either.Match(error => true, value => value))
+                .Select(x => x.either.Select(value => x.value));
         }
         #region combine
         //TODO make Combine methods auto-generated (self hosting)
