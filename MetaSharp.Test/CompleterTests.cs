@@ -616,10 +616,14 @@ namespace MetaSharp.Incomplete {
 using MetaSharp;
 using DevExpress.Mvvm.DataAnnotations;
 namespace MetaSharp.Incomplete {
-    public class POCOViewModel {{
-        public void Show() {{ }}
+    public class POCOViewModel {
+        public void Show() { }
         int ShowCommand = 0;
-    }}
+
+        public void Show2() { }
+        public static event EventHandler Show2Command;
+
+    }
 }";
 
             var name1 = "IncompleteViewModels1.cs";
@@ -631,7 +635,9 @@ namespace MetaSharp.Incomplete {
                 ),
                 errors => Assert.Collection(errors,
                         error => AssertError(error, Path.GetFullPath(name1), Messages.Error_MemberWithSameCommandNameAlreadyExists.FullId,
-                            "Member with the same command name already exists: Show.", 6, 21, 6, 25)
+                            "Member with the same command name already exists: Show.", 6, 21, 6, 25),
+                        error => AssertError(error, Path.GetFullPath(name1), Messages.Error_MemberWithSameCommandNameAlreadyExists.FullId,
+                            "Member with the same command name already exists: Show2.", 9, 21, 9, 26)
                 )
             );
         }
