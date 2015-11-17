@@ -164,13 +164,15 @@ namespace DevExpress.Mvvm.DataAnnotations {
         }
 
         readonly SemanticModel model; 
-        readonly INamedTypeSymbol type, bindablePropertyAttributeType, taskType;
+        readonly INamedTypeSymbol type, bindablePropertyAttributeType, asyncCommandAttributeType, commandAttributeType, taskType;
         readonly ImmutableDictionary<string, ImmutableArray<IMethodSymbol>> methods;
 
         ViewModelCompleter(SemanticModel model, INamedTypeSymbol type) {
             this.model = model;
             this.type = type;
             bindablePropertyAttributeType = model.Compilation.GetTypeByMetadataName("DevExpress.Mvvm.DataAnnotations.BindablePropertyAttribute");
+            asyncCommandAttributeType = model.Compilation.GetTypeByMetadataName("DevExpress.Mvvm.DataAnnotations.AsyncCommandAttribute");
+            commandAttributeType = model.Compilation.GetTypeByMetadataName("DevExpress.Mvvm.DataAnnotations.CommandAttribute");
             methods = type.AllMethods()
                 .ToLookup(x => x.Name)
                 .ToImmutableDictionary(x => x.Key, x => x.ToImmutableArray());
@@ -295,23 +297,9 @@ $@"public {type.Name}Implementation({info.parameters})
 
         #region commands
         string GenerateCommands() {
-            var asyncCommandAttributeType = model.Compilation.GetTypeByMetadataName("DevExpress.Mvvm.DataAnnotations.AsyncCommandAttribute");
-            var commandAttributeType = model.Compilation.GetTypeByMetadataName("DevExpress.Mvvm.DataAnnotations.CommandAttribute");
-
             return type.Methods()
                 .Select(method => {
-                    var commandInfo = method.GetAttributes()
-                        .FirstOrDefault(x => x.AttributeClass == asyncCommandAttributeType || x.AttributeClass == commandAttributeType)
-                        .With(x => {
-                            var args = x.ConstructorArguments.Select(arg => arg.Value).ToArray(); //TODO dup code
-                            var namedArgs = x.NamedArguments.ToImmutableDictionary(p => p.Key, p => p.Value.Value); //TODO error if names are not recognizable
-                            return new CommandInfo(
-                                isCommand: args.Length > 0 ? (bool)args[0] : true,
-                                allowMultipleExecution: (bool)namedArgs.GetValueOrDefault("AllowMultipleExecution", false),
-                                useCommandManager: (bool)namedArgs.GetValueOrDefault("UseCommandManager", true),
-                                name: (string)namedArgs.GetValueOrDefault("Name"),
-                                canExecuteMethodName: (string)namedArgs.GetValueOrDefault("CanExecuteMethodName"));
-                        });
+                    var commandInfo = GetCommandInfo(method);
                     return new { method, commandInfo };
                 })
                 .Where(info => (info.commandInfo?.IsCommand ?? (info.method.DeclaredAccessibility == Accessibility.Public))
@@ -323,6 +311,20 @@ $@"public {type.Name}Implementation({info.parameters})
                     return GenerateCommand(info.method, info.commandInfo);
                 })
                 .ConcatStringsWithNewLines();
+        }
+        CommandInfo GetCommandInfo(IMethodSymbol method) {
+            return method.GetAttributes()
+                        .FirstOrDefault(x => x.AttributeClass == asyncCommandAttributeType || x.AttributeClass == commandAttributeType)
+                        .With(x => {
+                            var args = x.ConstructorArguments.Select(arg => arg.Value).ToArray(); //TODO dup code
+                            var namedArgs = x.NamedArguments.ToImmutableDictionary(p => p.Key, p => p.Value.Value); //TODO error if names are not recognizable
+                            return new CommandInfo(
+                                isCommand: args.Length > 0 ? (bool)args[0] : true,
+                                allowMultipleExecution: (bool)namedArgs.GetValueOrDefault("AllowMultipleExecution", false),
+                                useCommandManager: (bool)namedArgs.GetValueOrDefault("UseCommandManager", true),
+                                name: (string)namedArgs.GetValueOrDefault("Name"),
+                                canExecuteMethodName: (string)namedArgs.GetValueOrDefault("CanExecuteMethodName"));
+                        });
         }
         string GenerateCommand(IMethodSymbol method, CommandInfo commandInfo) {
             var isAsync = method.ReturnType == taskType;
