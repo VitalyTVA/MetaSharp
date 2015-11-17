@@ -312,6 +312,10 @@ $@"public {type.Name}Implementation({info.parameters})
             return result;
         }
         Either<CompleterError, bool> IsCommandMethod(IMethodSymbol method, CommandInfo commandInfo) {
+            if(commandInfo?.IsCommand ?? false) {
+                if(method.Parameters.Length > 1)
+                    return CompleterError.CreateMethodError(method, Messages.POCO_MethodCannotHaveMoreThanOneParameter);
+            }
             return (commandInfo?.IsCommand ?? (method.DeclaredAccessibility == Accessibility.Public))
                 && method.MethodKind == MethodKind.Ordinary
                 && !method.IsStatic
@@ -336,7 +340,7 @@ $@"public {type.Name}Implementation({info.parameters})
             var isAsync = method.ReturnType == taskType;
             var commandName = commandInfo?.Name ?? (method.Name + "Command");
             if(type.GetMembers(commandName).Any())
-                return CompleterError.CreateMethodError(method, Messages.Error_MemberWithSameCommandNameAlreadyExists);
+                return CompleterError.CreateMethodError(method, Messages.POCO_MemberWithSameCommandNameAlreadyExists);
 
             var methodName = method.Name;
             var genericParameter = method.Parameters.SingleOrDefault()

@@ -623,6 +623,8 @@ namespace MetaSharp.Incomplete {
         public void Show2() { }
         public static event EventHandler Show2Command;
 
+        [Command]
+        public void TooMuchArgumentsMethod(int a, int b) { }
     }
 }";
 
@@ -634,10 +636,12 @@ namespace MetaSharp.Incomplete {
                     new TestFile(name1, incomplete1, isInFlow: false)
                 ),
                 errors => Assert.Collection(errors,
-                        error => AssertError(error, Path.GetFullPath(name1), Messages.Error_MemberWithSameCommandNameAlreadyExists.FullId,
+                        error => AssertError(error, Path.GetFullPath(name1), Messages.POCO_MemberWithSameCommandNameAlreadyExists.FullId,
                             "Member with the same command name already exists: Show.", 6, 21, 6, 25),
-                        error => AssertError(error, Path.GetFullPath(name1), Messages.Error_MemberWithSameCommandNameAlreadyExists.FullId,
-                            "Member with the same command name already exists: Show2.", 9, 21, 9, 26)
+                        error => AssertError(error, Path.GetFullPath(name1), Messages.POCO_MemberWithSameCommandNameAlreadyExists.FullId,
+                            "Member with the same command name already exists: Show2.", 9, 21, 9, 26),
+                        error => AssertError(error, Path.GetFullPath(name1), Messages.POCO_MethodCannotHaveMoreThanOneParameter.FullId,
+                            "Method cannot have more than one parameter: TooMuchArgumentsMethod.", 13, 21, 13, 43)
                 )
             );
         }
