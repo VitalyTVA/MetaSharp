@@ -145,11 +145,11 @@ namespace DevExpress.Mvvm.DataAnnotations {
                 OnPropertyChangingMethodName = onPropertyChangingMethodName;
             }
         }
-        class AsyncCommandInfo { //TODO make struct, auto-completed (self-hosting)
+        class CommandInfo { //TODO make struct, auto-completed (self-hosting)
             public readonly bool IsCommand, AllowMultipleExecution, UseCommandManager;
             public readonly string Name, CanExecuteMethodName;
 
-            public AsyncCommandInfo(bool isCommand, bool allowMultipleExecution, bool useCommandManager, string name, string canExecuteMethodName) {
+            public CommandInfo(bool isCommand, bool allowMultipleExecution, bool useCommandManager, string name, string canExecuteMethodName) {
                 IsCommand = isCommand;
                 AllowMultipleExecution = allowMultipleExecution;
                 UseCommandManager = useCommandManager;
@@ -164,7 +164,7 @@ namespace DevExpress.Mvvm.DataAnnotations {
         }
 
         readonly SemanticModel model; 
-        readonly INamedTypeSymbol type, bindablePropertyAttributeType;
+        readonly INamedTypeSymbol type, bindablePropertyAttributeType, taskType;
         readonly ImmutableDictionary<string, ImmutableArray<IMethodSymbol>> methods;
 
         ViewModelCompleter(SemanticModel model, INamedTypeSymbol type) {
@@ -174,6 +174,7 @@ namespace DevExpress.Mvvm.DataAnnotations {
             methods = type.AllMethods()
                 .ToLookup(x => x.Name)
                 .ToImmutableDictionary(x => x.Key, x => x.ToImmutableArray());
+            taskType = model.Compilation.GetTypeByMetadataName(typeof(Task).FullName);
         }
 
         CompleterResult GenerateCore() {
@@ -288,61 +289,66 @@ $@"public {type.Name}Implementation({info.parameters})
             return Tuple.Create(createMethods, constructors);
         }
 
+        ImmutableArray<IMethodSymbol> GetMethods(string name) {
+            return methods.GetValueOrDefault(name, ImmutableArray<IMethodSymbol>.Empty);
+        }
+
+        #region commands
         string GenerateCommands() {
             var asyncCommandAttributeType = model.Compilation.GetTypeByMetadataName("DevExpress.Mvvm.DataAnnotations.AsyncCommandAttribute");
             var commandAttributeType = model.Compilation.GetTypeByMetadataName("DevExpress.Mvvm.DataAnnotations.CommandAttribute");
 
-            var taskType = model.Compilation.GetTypeByMetadataName(typeof(Task).FullName);
             return type.Methods()
                 .Select(method => {
-                    var asyncCommandInfo = method.GetAttributes()
+                    var commandInfo = method.GetAttributes()
                         .FirstOrDefault(x => x.AttributeClass == asyncCommandAttributeType || x.AttributeClass == commandAttributeType)
                         .With(x => {
                             var args = x.ConstructorArguments.Select(arg => arg.Value).ToArray(); //TODO dup code
                             var namedArgs = x.NamedArguments.ToImmutableDictionary(p => p.Key, p => p.Value.Value); //TODO error if names are not recognizable
-                            return new AsyncCommandInfo(
+                            return new CommandInfo(
                                 isCommand: args.Length > 0 ? (bool)args[0] : true,
                                 allowMultipleExecution: (bool)namedArgs.GetValueOrDefault("AllowMultipleExecution", false),
                                 useCommandManager: (bool)namedArgs.GetValueOrDefault("UseCommandManager", true),
-                                name: (string)namedArgs.GetValueOrDefault("Name"), 
+                                name: (string)namedArgs.GetValueOrDefault("Name"),
                                 canExecuteMethodName: (string)namedArgs.GetValueOrDefault("CanExecuteMethodName"));
                         });
-                    return new { method, asyncCommandInfo };
+                    return new { method, commandInfo };
                 })
-                .Where(info => (info.asyncCommandInfo?.IsCommand ?? (info.method.DeclaredAccessibility == Accessibility.Public))
+                .Where(info => (info.commandInfo?.IsCommand ?? (info.method.DeclaredAccessibility == Accessibility.Public))
                     && info.method.MethodKind == MethodKind.Ordinary
                     && !info.method.IsStatic
-                    && (info.method.ReturnsVoid || info.method.ReturnType == taskType || (info.asyncCommandInfo?.IsCommand ?? false))
-                    && (!info.method.Parameters.Any() || (info.method.Parameters.Length == 1  && info.method.Parameters.Single().RefKind == RefKind.None)))
+                    && (info.method.ReturnsVoid || info.method.ReturnType == taskType || (info.commandInfo?.IsCommand ?? false))
+                    && (!info.method.Parameters.Any() || (info.method.Parameters.Length == 1 && info.method.Parameters.Single().RefKind == RefKind.None)))
                 .Select(info => {
-                    var isAsync = info.method.ReturnType == taskType;
-                    var commandName = info.asyncCommandInfo?.Name ?? (info.method.Name + "Command");
-                    var methodName = info.method.Name;
-                    var genericParameter = info.method.Parameters.SingleOrDefault()
-                        .With(x => "<" + x.Type.DisplayString(model, x.Location()) + ">");
-                    if(!info.method.ReturnsVoid && info.method.ReturnType != taskType) {
-                        if(genericParameter == null)
-                            methodName = $"() => {methodName}()";
-                        else
-                            methodName = $"x => {methodName}(x)";
-                    }
-                    var commandTypeName = (isAsync ? "AsyncCommand" : "DelegateCommand") + genericParameter;
-                    var propertyType = isAsync 
-                        ? "AsyncCommand" + genericParameter
-                        : (genericParameter.With(x => $"DelegateCommand{x}") ?? "ICommand");
-                    var canExecuteMethodName = ", " + (info.asyncCommandInfo?.CanExecuteMethodName ?? (GetMethods("Can" + methodName).SingleOrDefault()?.Name ?? "null"));
-                    var allowMultipleExecution = (info.asyncCommandInfo?.AllowMultipleExecution ?? false) ? ", allowMultipleExecution: true" : null;
-                    var useCommandManager = !(info.asyncCommandInfo?.UseCommandManager ?? true) ? ", useCommandManager: false" : null;
-                    return
-$@"{commandTypeName} _{commandName};
-public {propertyType} {commandName} {{ get {{ return _{commandName} ?? (_{commandName} = new {commandTypeName}({methodName}{canExecuteMethodName}{allowMultipleExecution}{useCommandManager})); }} }}";
+                    return GenerateCommand(info.method, info.commandInfo);
                 })
                 .ConcatStringsWithNewLines();
         }
-
-        ImmutableArray<IMethodSymbol> GetMethods(string name) {
-            return methods.GetValueOrDefault(name, ImmutableArray<IMethodSymbol>.Empty);
+        string GenerateCommand(IMethodSymbol method, CommandInfo commandInfo) {
+            var isAsync = method.ReturnType == taskType;
+            var commandName = commandInfo?.Name ?? (method.Name + "Command");
+            var methodName = method.Name;
+            var genericParameter = method.Parameters.SingleOrDefault()
+                .With(x => "<" + x.Type.DisplayString(model, x.Location()) + ">");
+            if(!method.ReturnsVoid && method.ReturnType != taskType) {
+                if(genericParameter == null)
+                    methodName = $"() => {methodName}()";
+                else
+                    methodName = $"x => {methodName}(x)";
+            }
+            var commandTypeName = (isAsync ? "AsyncCommand" : "DelegateCommand") + genericParameter;
+            var propertyType = isAsync
+                ? "AsyncCommand" + genericParameter
+                : (genericParameter.With(x => $"DelegateCommand{x}") ?? "ICommand");
+            var canExecuteMethodName = ", " + (commandInfo?.CanExecuteMethodName ?? (GetMethods("Can" + methodName).SingleOrDefault()?.Name ?? "null"));
+            var allowMultipleExecution = (commandInfo?.AllowMultipleExecution ?? false) ? ", allowMultipleExecution: true" : null;
+            var useCommandManager = !(commandInfo?.UseCommandManager ?? true) ? ", useCommandManager: false" : null;
+            return
+$@"{commandTypeName} _{commandName};
+public {propertyType} {commandName} {{ get {{ return _{commandName} ?? (_{commandName} = new {commandTypeName}({methodName}{canExecuteMethodName}{allowMultipleExecution}{useCommandManager})); }} }}";
         }
+        #endregion
+
 
         #region properties
         CompleterResult GenerateProperties() {
@@ -397,7 +403,6 @@ public {propertyType} {commandName} {{ get {{ return _{commandName} ?? (_{comman
             }
         }
         Either<CompleterError, string> GenerateProperty(IPropertySymbol property, BindableInfo bindableInfo) {
-            var setterModifier = property.SetMethod.DeclaredAccessibility.ToAccessibilityModifier(property.DeclaredAccessibility);
 
             Func<Chang, string, Either<CompleterError, MethodCallInfo>> getCallInfo = (chang, attributeMethodName) => {
                 var methodName = attributeMethodName ?? $"On{property.Name}Chang{chang}".If(x => property.IsAutoImplemented());
@@ -422,10 +427,11 @@ public {propertyType} {commandName} {{ get {{ return _{commandName} ?? (_{comman
 
             return from changed in getCallInfo(Chang.ed, bindableInfo?.OnPropertyChangedMethodName)
                    from changing in getCallInfo(Chang.ing, bindableInfo?.OnPropertyChangingMethodName)
-                   select GenerateProperty(property, changed, changing, setterModifier);
+                   select GenerateProperty(property, changed, changing);
         }
 
-        string GenerateProperty(IPropertySymbol property, MethodCallInfo changed, MethodCallInfo changing, string setterModifier) {
+        string GenerateProperty(IPropertySymbol property, MethodCallInfo changed, MethodCallInfo changing) {
+            var setterModifier = property.SetMethod.DeclaredAccessibility.ToAccessibilityModifier(property.DeclaredAccessibility);
             var oldValueStorage = changed.NeedParameter ? $"var oldValue = base.{property.Name};".AddTabs(2) : null;
             return
 $@"public override {property.TypeDisplayString(model)} {property.Name} {{
