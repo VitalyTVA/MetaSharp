@@ -674,8 +674,8 @@ using System;
                 .RegisterReadOnly(x => x.Prop2, out Prop2PropertyKey, out Prop2Property, 3)
             ;
             DependencyPropertyRegistrator<DObject>.New()
-                .RegisterAttached(x => x.Prop3, out Prop3Property, string.Empty)
-                .RegisterAttachedReadOnly<string>(x => x.Prop4, out Prop4PropertyKey, out Prop4Property, 5)
+                .RegisterAttached((FrameworkElement x) => GetProp3(x), out Prop3Property, string.Empty)
+                .RegisterAttachedReadOnly<UIElement, string>(x => GetProp4(x), out Prop4PropertyKey, out Prop4Property, 5)
                 .Register(x => x.Prop5, out Prop5Property, default(Some))
                 .Register(x => x.Prop6, out Prop6Property, (string)GetSome())
             ;
@@ -722,18 +722,18 @@ using System;
             private set { SetValue(Prop2PropertyKey, value); }
         }
         public static readonly DependencyProperty Prop3Property;
-        public string GetProp3(DependencyObject d) {
+        public string GetProp3(FrameworkElement d) {
             return (string)d.GetValue(Prop3Property);
         }
-        public void SetProp3(DependencyObject d, string value) {
+        public void SetProp3(FrameworkElement d, string value) {
             d.SetValue(Prop3Property, value);
         }
         public static readonly DependencyProperty Prop4Property;
         static readonly DependencyPropertyKey Prop4PropertyKey;
-        public string GetProp4(DependencyObject d) {
+        public string GetProp4(UIElement d) {
             return (string)d.GetValue(Prop4Property);
         }
-        void SetProp4(DependencyObject d, string value) {
+        void SetProp4(UIElement d, string value) {
             d.SetValue(Prop4PropertyKey, value);
         }
         public static readonly DependencyProperty Prop5Property;

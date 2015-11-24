@@ -30,6 +30,7 @@ namespace MetaSharp {
         public static readonly Func<Chang, UnformattedMessage> POCO_PropertyChangedMethodNotFound = x => new UnformattedMessage("0015", $"Property chang{x} method not found: {{0}}.");
         public static readonly UnformattedMessage POCO_MemberWithSameCommandNameAlreadyExists = new UnformattedMessage("0016", "Member with the same command name already exists: {0}.");
         public static readonly UnformattedMessage POCO_MethodCannotHaveMoreThanOneParameter = new UnformattedMessage("0017", "Method cannot have more than one parameter: {0}.");
+        public static readonly UnformattedMessage DependecyProperty_IncorrectAttachedPropertyGetterName = new UnformattedMessage("0018", "Attached dependency property dedicated accessor method name should starts with 'Get' prefix: {0}.");
     }
     public struct UnformattedMessage {
         readonly string id;

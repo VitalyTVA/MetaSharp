@@ -60,34 +60,37 @@ $@"partial class {type.Name} {{
                 return new CompleterError(ownerTypeSyntax, Messages.DependecyProperty_IncorrectOwnerType).YieldToImmutable();
             var properties = chain
                 .Take(chain.Length - 1)
-                .Select(x => {
-                    var memberAccess = (MemberAccessExpressionSyntax)x.Expression;
+                .Select(property => {
+                    var memberAccess = (MemberAccessExpressionSyntax)property.Expression;
                     var methodName = memberAccess.Name.Identifier.ValueText;
                     if(!methodName.StartsWith("Register"))
                         return null;
                     var readOnly = methodName == "RegisterReadOnly" || methodName == "RegisterAttachedReadOnly";
                     var attached = methodName == "RegisterAttached" || methodName == "RegisterAttachedReadOnly";
 
-                    var arguments = x.ArgumentList.Arguments;
+                    var arguments = property.ArgumentList.Arguments;
 
-
-                    var propertyType = (memberAccess.Name as GenericNameSyntax)?.TypeArgumentList.Arguments.Single().ToString();
-                    if(propertyType == null) {
+                    var propertySignature = (memberAccess.Name as GenericNameSyntax)?.TypeArgumentList.Arguments.Select(x => x.ToString()).ToArray();
+                    if(propertySignature == null) {
                         var defaultValueArgument = arguments[readOnly ? 3 : 2].Expression;
                         var defaultExpressionTypeInfo = model.GetTypeInfo(defaultValueArgument);
-                        propertyType = defaultExpressionTypeInfo.Type?.DisplayString(model, defaultValueArgument.GetLocation());
+                        propertySignature = defaultExpressionTypeInfo.Type?.DisplayString(model, defaultValueArgument.GetLocation()).With(propertyType =>
+                            !attached
+                                ? new string[] { propertyType }
+                                : (arguments[0].Expression as ParenthesizedLambdaExpressionSyntax).With(x => new string[] { x.ParameterList.Parameters.Single().Type.ToString(), propertyType })
+                        );
                     }
-                    if(propertyType == null) {
+                    if(propertySignature == null) {
                         var span = memberAccess.Name.LineSpan();
                         return new CompleterError(memberAccess.SyntaxTree, Messages.DependecyProperty_PropertyTypeMissed, new FileLinePositionSpan(string.Empty, span.EndLinePosition, span.EndLinePosition));
                     }
 
-                    var propertyName = GetPropertyName(arguments, readOnly, memberAccess.Name.SyntaxTree);
+                    var propertyName = GetPropertyName(arguments, attached, readOnly, memberAccess.Name.SyntaxTree);
 
                     return propertyName.Select(name => {
                         return GenerateFields(name, readOnly) + System.Environment.NewLine + (attached
-                        ? GenerateAttachedProperty(propertyType, name, readOnly)
-                        : GenerateProperty(propertyType, name, readOnly));
+                        ? GenerateAttachedProperty(propertySignature[0], propertySignature[1], name, readOnly)
+                        : GenerateProperty(propertySignature.Single(), name, readOnly));
                     });
                 })
                 .Where(x => x != null)
@@ -97,8 +100,18 @@ $@"partial class {type.Name} {{
                 .AggregateEither(errors => errors.ToImmutableArray(), values => values.ConcatStringsWithNewLines());
         }
 
-        static Either<CompleterError, string> GetPropertyName(SeparatedSyntaxList<ArgumentSyntax> arguments, bool readOnly, SyntaxTree tree) {
-            var propertyName = ((MemberAccessExpressionSyntax)((SimpleLambdaExpressionSyntax)arguments[0].Expression).Body).Name.ToString();
+        static Either<CompleterError, string> GetPropertyName(SeparatedSyntaxList<ArgumentSyntax> arguments, bool attached, bool readOnly, SyntaxTree tree) {
+            string propertyName;
+            if(!attached) {
+                propertyName = ((MemberAccessExpressionSyntax)((SimpleLambdaExpressionSyntax)arguments[0].Expression).Body).Name.ToString();
+            } else {
+                var getterName = ((InvocationExpressionSyntax)((LambdaExpressionSyntax)arguments[0].Expression).Body).Expression.ToString();
+                if(getterName.Length <= "Get".Length || !getterName.StartsWith("Get", StringComparison.Ordinal)) {
+                    var message = Messages.DependecyProperty_IncorrectAttachedPropertyGetterName.Format(getterName);
+                    return new CompleterError(arguments[0].Expression, message);
+                }
+                propertyName = getterName.Substring("Get".Length);
+            }
 
             Func<int, string, CompleterError> getError = (index, suffix) => {
                 var fieldName = ((IdentifierNameSyntax)arguments[index].Expression).ToString();
@@ -134,21 +147,21 @@ $@"public {propertyType} {propertyName} {{
 }}
 ";
         }
-        static string GenerateAttachedProperty(string propertyType, string propertyName, bool readOnly) {
+        static string GenerateAttachedProperty(string componentType, string propertyType, string propertyName, bool readOnly) {
             return readOnly
 ?
-$@"public {propertyType} Get{propertyName}(DependencyObject d) {{
+$@"public {propertyType} Get{propertyName}({componentType} d) {{
     return ({propertyType})d.GetValue({propertyName}Property);
 }}
-void Set{propertyName}(DependencyObject d, {propertyType} value) {{
+void Set{propertyName}({componentType} d, {propertyType} value) {{
     d.SetValue({propertyName}PropertyKey, value);
 }}
 "
 :
-$@"public {propertyType} Get{propertyName}(DependencyObject d) {{
+$@"public {propertyType} Get{propertyName}({componentType} d) {{
     return ({propertyType})d.GetValue({propertyName}Property);
 }}
-public void Set{propertyName}(DependencyObject d, {propertyType} value) {{
+public void Set{propertyName}({componentType} d, {propertyType} value) {{
     d.SetValue({propertyName}Property, value);
 }}
 ";
