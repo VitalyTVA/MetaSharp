@@ -828,6 +828,37 @@ using System;
             );
         }
         [Fact]
+        public void AttachedDependencyProperties_InvalidDedicatedAccessorMethodName() {
+            string incomplete =
+@"
+using MetaSharp;
+namespace MetaSharp.Incomplete {
+using System;
+    [MetaCompleteDependencyProperties]
+    public partial class DObject {
+        static DObject() {
+            DependencyPropertyRegistrator<DObject>.New()
+                .RegisterAttached((DependencyObject x) => Get(x), out Property, string.Empty)
+                .RegisterAttachedReadOnly((DependencyObject x) => GeProp2(x), out Prop2PropertyKey, out Prop2Property, 5)
+            ;
+        }
+    }
+}";
+            var name = "IncompleteDObjects.cs";
+            AssertMultipleFilesErrors(
+                ImmutableArray.Create(
+                    new TestFile(SingleInputFileName, GetInput(@"IncompleteDObjects.cs".Yield())),
+                    new TestFile(name, incomplete, isInFlow: false)
+                ),
+                errors => Assert.Collection(errors,
+                        error => AssertError(error, Path.GetFullPath(name), Messages.DependecyProperty_IncorrectAttachedPropertyGetterName.FullId,
+                            "Attached dependency property dedicated accessor method name should starts with 'Get' prefix: Get.", 9, 35, 9, 65),
+                        error => AssertError(error, Path.GetFullPath(name), Messages.DependecyProperty_IncorrectAttachedPropertyGetterName.FullId,
+                            "Attached dependency property dedicated accessor method name should starts with 'Get' prefix: GeProp2.", 10, 43, 10, 77)
+                )
+            );
+        }
+        [Fact]
         public void DependencyProperties_InvalidType() {
             string incomplete =
 @"
