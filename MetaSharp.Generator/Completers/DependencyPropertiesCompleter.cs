@@ -150,18 +150,18 @@ $@"public {propertyType} {propertyName} {{
         static string GenerateAttachedProperty(string componentType, string propertyType, string propertyName, bool readOnly) {
             return readOnly
 ?
-$@"public {propertyType} Get{propertyName}({componentType} d) {{
+$@"public static {propertyType} Get{propertyName}({componentType} d) {{
     return ({propertyType})d.GetValue({propertyName}Property);
 }}
-void Set{propertyName}({componentType} d, {propertyType} value) {{
+static void Set{propertyName}({componentType} d, {propertyType} value) {{
     d.SetValue({propertyName}PropertyKey, value);
 }}
 "
 :
-$@"public {propertyType} Get{propertyName}({componentType} d) {{
+$@"public static {propertyType} Get{propertyName}({componentType} d) {{
     return ({propertyType})d.GetValue({propertyName}Property);
 }}
-public void Set{propertyName}({componentType} d, {propertyType} value) {{
+public static void Set{propertyName}({componentType} d, {propertyType} value) {{
     d.SetValue({propertyName}Property, value);
 }}
 ";

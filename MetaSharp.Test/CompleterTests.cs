@@ -722,18 +722,18 @@ using System;
             private set { SetValue(Prop2PropertyKey, value); }
         }
         public static readonly DependencyProperty Prop3Property;
-        public string GetProp3(FrameworkElement d) {
+        public static string GetProp3(FrameworkElement d) {
             return (string)d.GetValue(Prop3Property);
         }
-        public void SetProp3(FrameworkElement d, string value) {
+        public static void SetProp3(FrameworkElement d, string value) {
             d.SetValue(Prop3Property, value);
         }
         public static readonly DependencyProperty Prop4Property;
         static readonly DependencyPropertyKey Prop4PropertyKey;
-        public string GetProp4(UIElement d) {
+        public static string GetProp4(UIElement d) {
             return (string)d.GetValue(Prop4Property);
         }
-        void SetProp4(UIElement d, string value) {
+        static void SetProp4(UIElement d, string value) {
             d.SetValue(Prop4PropertyKey, value);
         }
         public static readonly DependencyProperty Prop5Property;
