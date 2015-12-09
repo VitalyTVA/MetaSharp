@@ -373,6 +373,9 @@ namespace MetaSharp.Test.Functional {
             };
             CommandManager.InvalidateRequerySuggested();
             DispatcherHelper.DoEvents();
+
+            viewModel.PrivateMethodCommand.Execute(null);
+            Assert.Equal(1, viewModel.PrivateMethodCallCount);
         }
 
         [Fact]

@@ -23,6 +23,7 @@ namespace MetaSharp.Test.Meta.POCO {
         public int MethodWithParameterCallCount;
         public int MethodWithParameterLastParameter;
         public bool MethodWithCustomCanExecuteCanExcute = false;
+        public int PrivateMethodCallCount;
     }
     public abstract class CommandAttributeViewModelBase : CommandAttributeViewModelBaseCounters {
         public void BaseClass() { BaseClassCommandCallCount++; }

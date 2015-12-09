@@ -314,6 +314,9 @@ namespace MetaSharp.Test.Meta.POCO {
 )]
         public void MethodWithCustomCanExecute() { }
         public bool CanMethodWithCustomCanExecute_() { return MethodWithCustomCanExecuteCanExcute; }
+
+        [Command]
+        void PrivateMethod() { PrivateMethodCallCount++; }
     }
 
     public partial class CustomParentViewModelImplementation : ISupportParentViewModel {
