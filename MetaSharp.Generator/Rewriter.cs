@@ -14,6 +14,10 @@ namespace MetaSharp {
         public static ImmutableArray<TreeReplacement> GetReplacements(CSharpCompilation compilation, IEnumerable<SyntaxTree> trees) {
             //TODO remove trees argument (need add included files to trees dictionary in generator and rewrite code in them as well)
             return trees
+                .Where(tree => {
+                    return tree.GetText().Lines.First().ToString() == "#define META_REWRITE"; //TODO correct META_REWRITE check including meta project-level constants
+
+                })
                 .Select(tree => {
                     var root = tree.GetRoot();
                     var rewriter = new MetaRewriter(compilation.GetSemanticModel(tree));

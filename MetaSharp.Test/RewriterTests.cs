@@ -9,8 +9,27 @@ using Xunit;
 namespace MetaSharp.Test {
     public class RewriterTests : GeneratorTestsBase {
         [Fact]
+        public void NoRewritingWithoutDirective() {
+            var input = @"
+using  MetaSharp;
+namespace MetaSharp.HelloWorld {
+    public static class HelloWorldGenerator {
+        public static string MakeFoo(MetaContext context) {
+             return ClassGenerator.Class<Foo>().Generate();
+        }
+    }
+}
+";
+            AssertSingleFileErrors(
+                input,
+                errors => {
+                    AssertError(errors.Single(), SingleInputFileName, "CS0246");
+                }
+            );
+        }
+        [Fact]
         public void RewriteClassName() {
-            var input1 = @"
+            var input1 = @"#define META_REWRITE
 using   MetaSharp;
 namespace MetaSharp.HelloWorld {
     public static class HelloWorldGenerator {
@@ -26,7 +45,7 @@ namespace MetaSharp.HelloWorld {
     }
 }
 ";
-            var input2 = @"
+            var input2 = @"#define META_REWRITE
 using MetaSharp;
 namespace MetaSharp.HelloWorld {
     public static class HelloWorldGenerator2 {
@@ -70,7 +89,7 @@ namespace MetaSharp.HelloWorld {
         }
         [Fact]
         public void RewriteProperties() {
-            var input = @"
+            var input = @"#define META_REWRITE
 using MetaSharp;
 namespace MetaSharp.HelloWorld {
 using System;
@@ -111,7 +130,7 @@ namespace MetaSharp.HelloWorld {
         }
         [Fact]
         public void RewriteOnlyMethodsWithAttributes_RewriteMultypleTypeArgs() {
-            var input = @"
+            var input = @"#define META_REWRITE
 namespace MetaSharp.HelloWorld {
     using System;
     public static class HelloWorldGenerator {
@@ -164,7 +183,7 @@ namespace MetaSharp.HelloWorld {
         }
         [Fact]
         public void MissingTypeArguments_TooManyTypeArguments() {
-            var input = @"
+            var input = @"#define META_REWRITE
 namespace MetaSharp.HelloWorld {
     using System;
     public static class HelloWorldGenerator {
@@ -191,7 +210,7 @@ namespace MetaSharp.HelloWorld {
         }
         [Fact]
         public void UnexistingMethodWithArgument() {
-            var input = @"
+            var input = @"#define META_REWRITE
 namespace MetaSharp.HelloWorld {
     using System;
     public static class HelloWorldGenerator {

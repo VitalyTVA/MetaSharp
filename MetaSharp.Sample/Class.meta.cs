@@ -1,4 +1,5 @@
-﻿using MetaSharp;
+﻿#define META_REWRITE
+using MetaSharp;
 using System.Collections.Immutable;
 using System.Collections.Generic;
 
