@@ -315,6 +315,8 @@ $@"public {type.Name}Implementation({info.parameters})
             if(commandInfo?.IsCommand ?? false) {
                 if(method.Parameters.Length > 1)
                     return CompleterError.CreateMethodError(method, Messages.POCO_MethodCannotHaveMoreThanOneParameter);
+                if(method.Parameters.Length == 1 && method.Parameters.Single().RefKind != RefKind.None)
+                    return CompleterError.CreateMethodError(method, Messages.POCO_MethodCannotHaveOutORRefParameters);
             }
             return (commandInfo?.IsCommand ?? (method.DeclaredAccessibility == Accessibility.Public))
                 && method.MethodKind == MethodKind.Ordinary

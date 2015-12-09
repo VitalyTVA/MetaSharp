@@ -625,6 +625,12 @@ namespace MetaSharp.Incomplete {
 
         [Command]
         public void TooMuchArgumentsMethod(int a, int b) { }
+
+        [Command]
+        public void OutParameter(out int a) { a = 0; }
+
+        [Command]
+        public void RefParameter(ref int a) { }
     }
 }";
 
@@ -641,7 +647,11 @@ namespace MetaSharp.Incomplete {
                         error => AssertError(error, Path.GetFullPath(name1), Messages.POCO_MemberWithSameCommandNameAlreadyExists.FullId,
                             "Member with the same command name already exists: Show2.", 9, 21, 9, 26),
                         error => AssertError(error, Path.GetFullPath(name1), Messages.POCO_MethodCannotHaveMoreThanOneParameter.FullId,
-                            "Method cannot have more than one parameter: TooMuchArgumentsMethod.", 13, 21, 13, 43)
+                            "Method cannot have more than one parameter: TooMuchArgumentsMethod.", 13, 21, 13, 43),
+                        error => AssertError(error, Path.GetFullPath(name1), Messages.POCO_MethodCannotHaveOutORRefParameters.FullId,
+                            "Method cannot have out or reference parameter: OutParameter.", 16, 21, 16, 33),
+                        error => AssertError(error, Path.GetFullPath(name1), Messages.POCO_MethodCannotHaveOutORRefParameters.FullId,
+                            "Method cannot have out or reference parameter: RefParameter.", 19, 21, 19, 33)
                 )
             );
         }
