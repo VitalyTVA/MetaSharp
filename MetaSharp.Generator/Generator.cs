@@ -13,6 +13,14 @@ using System.Text;
 using GeneratorResult = MetaSharp.Either<System.Collections.Immutable.ImmutableArray<MetaSharp.MetaError>, System.Collections.Immutable.ImmutableArray<string>>;
 
 namespace MetaSharp {
+    //var p = default(Point);
+    //private Point p = default(Point);
+    //private Point p;
+    //public Point P { get; set; } ??
+    //void X(Point p = default(Point))
+    //X(); //where void X<T>(T p = default(T))
+    //var x = new Point[10];
+
     //TODO CLSCompliant
     //TODO different exception messages for console and task mode (no need to format task message at all - simply use to string)
     //TODO wrap output classes into regions (class/method names as region names)
