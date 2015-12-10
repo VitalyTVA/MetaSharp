@@ -10,6 +10,7 @@ using System.Text;
 using System.Threading.Tasks;
 using MetaSharp.Utils;
 using CompleterResult = MetaSharp.Either<System.Collections.Immutable.ImmutableArray<MetaSharp.CompleterError>, string>;
+using System.Collections;
 
 namespace MetaSharp {
     //TODO GENERIC TYPES
@@ -167,7 +168,7 @@ namespace DevExpress.Mvvm.DataAnnotations {
         readonly SemanticModel model; 
         readonly INamedTypeSymbol type, bindablePropertyAttributeType, asyncCommandAttributeType, commandAttributeType, taskType;
         readonly ImmutableDictionary<string, ImmutableArray<IMethodSymbol>> methods;
-        readonly ImmutableDictionary<string, ImmutableArray<ISymbol>> members;
+        //readonly ImmutableDictionary<string, ImmutableArray<ISymbol>> members;
 
         ViewModelCompleter(SemanticModel model, INamedTypeSymbol type) {
             this.model = model;
@@ -360,7 +361,7 @@ $@"public {type.Name}Implementation({info.parameters})
             var canExecuteMethodName = (commandInfo?.CanExecuteMethodName ?? (GetMethods("Can" + methodName).SingleOrDefault()?.Name ?? "null"));
             var canExecuteMethod = canExecuteMethodName.With(x => GetMethods(x).SingleOrDefault());
             if(canExecuteMethod != null) {
-                if(canExecuteMethod.Parameters.Length != method.Parameters.Length)
+                if(!Enumerable.SequenceEqual(canExecuteMethod.Parameters.Select(x => x.Type), method.Parameters.Select(x => x.Type)))
                     return CompleterError.CreateMethodError(canExecuteMethod, Messages.POCO_CanExecuteMethodHasIncorrectParameters);
             }
             var allowMultipleExecution = (commandInfo?.AllowMultipleExecution ?? false) ? ", allowMultipleExecution: true" : null;
