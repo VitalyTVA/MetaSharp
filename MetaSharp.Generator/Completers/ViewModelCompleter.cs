@@ -361,7 +361,8 @@ $@"public {type.Name}Implementation({info.parameters})
             var canExecuteMethodName = (commandInfo?.CanExecuteMethodName ?? (GetMethods("Can" + methodName).SingleOrDefault()?.Name ?? "null"));
             var canExecuteMethod = canExecuteMethodName.With(x => GetMethods(x).SingleOrDefault());
             if(canExecuteMethod != null) {
-                if(!Enumerable.SequenceEqual(canExecuteMethod.Parameters.Select(x => x.Type), method.Parameters.Select(x => x.Type)))
+                if(!Enumerable.SequenceEqual(canExecuteMethod.Parameters.Select(x => x.Type), method.Parameters.Select(x => x.Type))
+                    || !canExecuteMethod.Parameters.All(x => x.RefKind == RefKind.None))
                     return CompleterError.CreateMethodError(canExecuteMethod, Messages.POCO_CanExecuteMethodHasIncorrectParameters);
             }
             var allowMultipleExecution = (commandInfo?.AllowMultipleExecution ?? false) ? ", allowMultipleExecution: true" : null;
