@@ -360,6 +360,9 @@ $@"public {type.Name}Implementation({info.parameters})
                 : (genericParameter.With(x => $"DelegateCommand{x}") ?? "ICommand");
             var canExecuteMethodName = (commandInfo?.CanExecuteMethodName ?? (GetMethods("Can" + methodName).SingleOrDefault()?.Name ?? "null"));
             var canExecuteMethod = canExecuteMethodName.With(x => GetMethods(x).SingleOrDefault());
+            if(commandInfo?.CanExecuteMethodName != null && canExecuteMethod == null) {
+                return CompleterError.CreateMethodError(method, Messages.POCO_MethodNotFound, commandInfo.CanExecuteMethodName);
+            }
             if(canExecuteMethod != null) {
                 if(!Enumerable.SequenceEqual(canExecuteMethod.Parameters.Select(x => x.Type), method.Parameters.Select(x => x.Type))
                     || !canExecuteMethod.Parameters.All(x => x.RefKind == RefKind.None))

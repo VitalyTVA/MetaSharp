@@ -33,6 +33,7 @@ namespace MetaSharp {
         public static readonly UnformattedMessage DependecyProperty_IncorrectAttachedPropertyGetterName = new UnformattedMessage("0018", "Attached dependency property dedicated accessor method name should starts with 'Get' prefix: {0}.");
         public static readonly UnformattedMessage POCO_MethodCannotHaveOutORRefParameters = new UnformattedMessage("0019", "Method cannot have out or reference parameter: {0}.");
         public static readonly UnformattedMessage POCO_CanExecuteMethodHasIncorrectParameters = new UnformattedMessage("0020", "CanExecute method has incorrect parameters: {0}.");
+        public static readonly UnformattedMessage POCO_MethodNotFound = new UnformattedMessage("0021", "Method not found: {0}.");
     }
     public struct UnformattedMessage {
         readonly string id;

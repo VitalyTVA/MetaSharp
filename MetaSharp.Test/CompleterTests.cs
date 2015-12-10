@@ -643,6 +643,9 @@ namespace MetaSharp.Incomplete {
         [Command]
         public void CanExecuteParameterTypeMismatch2(int a) { }
         public bool CanCanExecuteParameterTypeMismatch2(ref int a) { return true; }
+
+        [Command(CanExecuteMethodName = ""Abc"")]
+        public void InvalidCanExecuteName() { }
     }
 }";
 
@@ -669,7 +672,10 @@ namespace MetaSharp.Incomplete {
                         error => AssertError(error, Path.GetFullPath(name1), Messages.POCO_CanExecuteMethodHasIncorrectParameters.FullId,
                             "CanExecute method has incorrect parameters: CanCanExecuteParameterTypeMismatch.", 27, 21, 27, 55),
                         error => AssertError(error, Path.GetFullPath(name1), Messages.POCO_CanExecuteMethodHasIncorrectParameters.FullId,
-                            "CanExecute method has incorrect parameters: CanCanExecuteParameterTypeMismatch2.", 31, 21, 31, 56)
+                            "CanExecute method has incorrect parameters: CanCanExecuteParameterTypeMismatch2.", 31, 21, 31, 56),
+                        error => AssertError(error, Path.GetFullPath(name1), Messages.POCO_MethodNotFound.FullId,
+                            "Method not found: Abc.", 34, 21, 34, 42)
+
                 )
             );
         }

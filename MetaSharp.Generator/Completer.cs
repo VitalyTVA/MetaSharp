@@ -35,8 +35,8 @@ namespace MetaSharp {
         public static CompleterError CreatePropertyError(IPropertySymbol property, UnformattedMessage message) {
             return new CompleterError(property.Node().SyntaxTree, message.Format(property.Name), property.NameToken());
         }
-        public static CompleterError CreateMethodError(IMethodSymbol method, UnformattedMessage message) {
-            return new CompleterError(method.Node().SyntaxTree, message.Format(method.Name), method.NameToken());
+        public static CompleterError CreateMethodError(IMethodSymbol method, UnformattedMessage message, string methodName = null) {
+            return new CompleterError(method.Node().SyntaxTree, message.Format(methodName ?? method.Name), method.NameToken());
         }
         public static CompleterError CreateParameterError(IParameterSymbol parameter, UnformattedMessage message) {
             return new CompleterError(parameter.Node().SyntaxTree, message.Format(parameter.ContainingSymbol.Name), parameter.NameToken());
