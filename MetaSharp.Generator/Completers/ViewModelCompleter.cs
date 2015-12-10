@@ -357,12 +357,17 @@ $@"public {type.Name}Implementation({info.parameters})
             var propertyType = isAsync
                 ? "AsyncCommand" + genericParameter
                 : (genericParameter.With(x => $"DelegateCommand{x}") ?? "ICommand");
-            var canExecuteMethodName = ", " + (commandInfo?.CanExecuteMethodName ?? (GetMethods("Can" + methodName).SingleOrDefault()?.Name ?? "null"));
+            var canExecuteMethodName = (commandInfo?.CanExecuteMethodName ?? (GetMethods("Can" + methodName).SingleOrDefault()?.Name ?? "null"));
+            var canExecuteMethod = canExecuteMethodName.With(x => GetMethods(x).SingleOrDefault());
+            if(canExecuteMethod != null) {
+                if(canExecuteMethod.Parameters.Length != method.Parameters.Length)
+                    return CompleterError.CreateMethodError(canExecuteMethod, Messages.POCO_CanExecuteMethodHasIncorrectParameters);
+            }
             var allowMultipleExecution = (commandInfo?.AllowMultipleExecution ?? false) ? ", allowMultipleExecution: true" : null;
             var useCommandManager = !(commandInfo?.UseCommandManager ?? true) ? ", useCommandManager: false" : null;
             return
 $@"{commandTypeName} _{commandName};
-public {propertyType} {commandName} {{ get {{ return _{commandName} ?? (_{commandName} = new {commandTypeName}({methodName}{canExecuteMethodName}{allowMultipleExecution}{useCommandManager})); }} }}";
+public {propertyType} {commandName} {{ get {{ return _{commandName} ?? (_{commandName} = new {commandTypeName}({methodName}{canExecuteMethodName.With(x => ", " + x)}{allowMultipleExecution}{useCommandManager})); }} }}";
         }
         #endregion
 
