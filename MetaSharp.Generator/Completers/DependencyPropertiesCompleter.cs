@@ -87,10 +87,12 @@ $@"partial class {type.Name} {{
 
                     var propertyName = GetPropertyName(arguments, attached, readOnly, memberAccess.Name.SyntaxTree);
 
+
                     return propertyName.Select(name => {
-                        return GenerateFields(name, readOnly) + System.Environment.NewLine + (attached
-                        ? GenerateAttachedProperty(propertySignature[0], propertySignature[1], name, readOnly)
-                        : GenerateProperty(propertySignature.Single(), name, readOnly));
+                        var overridedPropertyVisibility = GetOverridedPropertyVisibility(type, name);
+                        return GenerateFields(name, readOnly, overridedPropertyVisibility == null) + (attached
+                        ? GenerateAttachedProperty(propertySignature[0], propertySignature[1], name, readOnly, overridedPropertyVisibility)
+                        : GenerateProperty(propertySignature.Single(), name, readOnly, overridedPropertyVisibility));
                     });
                 })
                 .Where(x => x != null)
@@ -99,7 +101,15 @@ $@"partial class {type.Name} {{
             return properties
                 .AggregateEither(errors => errors.ToImmutableArray(), values => values.ConcatStringsWithNewLines());
         }
-
+        static Tuple<MemberVisibility, MemberVisibility> GetOverridedPropertyVisibility(INamedTypeSymbol type, string propertyName) {
+            var field = type.GetMembers(propertyName + "Property");
+            if(field.Length != 1) return null;
+            var attr = field[0].GetAttributes().Where(x => x.AttributeClass.Name == "DPAccessModifierAttribute" || x.AttributeClass.Name == "DPAccessModifier").FirstOrDefault();
+            if(attr == null) return null;
+            var setterVisibility = (MemberVisibility)Enum.Parse(typeof(MemberVisibility), attr.ConstructorArguments[0].Value.ToString());
+            var getterVisibility = attr.ConstructorArguments.Length == 1 ? MemberVisibility.Public : (MemberVisibility)Enum.Parse(typeof(MemberVisibility), attr.ConstructorArguments[1].Value.ToString());
+            return Tuple.Create(setterVisibility, getterVisibility);
+        }
         static Either<CompleterError, string> GetPropertyName(SeparatedSyntaxList<ArgumentSyntax> arguments, bool attached, bool readOnly, SyntaxTree tree) {
             string propertyName;
             if(!attached) {
@@ -124,45 +134,38 @@ $@"partial class {type.Name} {{
             return (getError(1, "Property" + (readOnly ? "Key" : string.Empty)) ?? (readOnly ? getError(2, "Property") : null))
                 .Return(x => Either<CompleterError, string>.Left(x), () => propertyName);
         }
-        static string GenerateFields(string propertyName, bool readOnly) {
-            return readOnly
+        static string GenerateFields(string propertyName, bool readOnly, bool generatePropertyField) {
+            string propertyField =
+                generatePropertyField
 ?
-$@"public static readonly DependencyProperty {propertyName}Property;
-static readonly DependencyPropertyKey {propertyName}PropertyKey;"
+$@"public static readonly DependencyProperty {propertyName}Property;" + System.Environment.NewLine
 :
-$@"public static readonly DependencyProperty {propertyName}Property;";
+"";
+            if(!readOnly) return propertyField;
+            return propertyField +
+$@"static readonly DependencyPropertyKey {propertyName}PropertyKey;" + System.Environment.NewLine;
         }
-        static string GenerateProperty(string propertyType, string propertyName, bool readOnly) {
-            return readOnly
-?
-$@"public {propertyType} {propertyName} {{
+        static string GenerateProperty(string propertyType, string propertyName, bool readOnly, Tuple<MemberVisibility, MemberVisibility> overridedPropertyVisibility) {
+            string getterModifier = overridedPropertyVisibility == null ? "public " : overridedPropertyVisibility.Item2.ToCSharp(MemberVisibility.Private);
+            string setterModifier = overridedPropertyVisibility == null ? (readOnly ? "private " : "") : overridedPropertyVisibility.Item1.ToCSharp(overridedPropertyVisibility.Item2);
+            string keySuffix = readOnly ? "Key" : "";
+            return
+$@"{getterModifier}{propertyType} {propertyName} {{
     get {{ return ({propertyType})GetValue({propertyName}Property); }}
-    private set {{ SetValue({propertyName}PropertyKey, value); }}
-}}
-"
-:
-$@"public {propertyType} {propertyName} {{
-    get {{ return ({propertyType})GetValue({propertyName}Property); }}
-    set {{ SetValue({propertyName}Property, value); }}
+    {setterModifier}set {{ SetValue({propertyName}Property{keySuffix}, value); }}
 }}
 ";
         }
-        static string GenerateAttachedProperty(string componentType, string propertyType, string propertyName, bool readOnly) {
-            return readOnly
-?
-$@"public static {propertyType} Get{propertyName}({componentType} d) {{
+        static string GenerateAttachedProperty(string componentType, string propertyType, string propertyName, bool readOnly, Tuple<MemberVisibility, MemberVisibility> overridedPropertyVisibility) {
+            string getterModifier = overridedPropertyVisibility == null ? "public " : overridedPropertyVisibility.Item2.ToCSharp(MemberVisibility.Private);
+            string setterModifier = overridedPropertyVisibility == null ? (readOnly ? "" : "public ") : overridedPropertyVisibility.Item1.ToCSharp(MemberVisibility.Private);
+            string keySuffix = readOnly ? "Key" : "";
+            return
+$@"{getterModifier}static {propertyType} Get{propertyName}({componentType} d) {{
     return ({propertyType})d.GetValue({propertyName}Property);
 }}
-static void Set{propertyName}({componentType} d, {propertyType} value) {{
-    d.SetValue({propertyName}PropertyKey, value);
-}}
-"
-:
-$@"public static {propertyType} Get{propertyName}({componentType} d) {{
-    return ({propertyType})d.GetValue({propertyName}Property);
-}}
-public static void Set{propertyName}({componentType} d, {propertyType} value) {{
-    d.SetValue({propertyName}Property, value);
+{setterModifier}static void Set{propertyName}({componentType} d, {propertyType} value) {{
+    d.SetValue({propertyName}Property{keySuffix}, value);
 }}
 ";
         }

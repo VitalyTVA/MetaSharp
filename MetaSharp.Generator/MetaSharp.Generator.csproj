@@ -42,6 +42,8 @@
     <Compile Include="Completers\ViewModelCompleter.cs" />
     <Compile Include="Generator.cs" />
     <Compile Include="LinqExtensions.cs" />
+    <Compile Include="MemberVisibilityExtensions.cs" />
+    <Compile Include="MemberVisibility.cs" />
     <Compile Include="Messages.cs" />
     <Compile Include="MethodProcessor.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
