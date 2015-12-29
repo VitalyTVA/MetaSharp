@@ -7,8 +7,8 @@ using System.Threading.Tasks;
 namespace MetaSharp {
     enum MemberVisibility {
         Public,
-        Private,
         Protected,
+        Private,
         Internal,
         ProtectedInternal
     }

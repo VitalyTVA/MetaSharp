@@ -956,8 +956,8 @@ using System;
     }
     enum MemberVisibility {
         Public,
-        Private,
         Protected,
+        Private,
         Internal,
         ProtectedInternal
     }
