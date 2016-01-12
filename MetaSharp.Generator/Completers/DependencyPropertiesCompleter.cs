@@ -18,7 +18,7 @@ namespace MetaSharp {
         public static CompleterResult Generate(SemanticModel model, INamedTypeSymbol type) {
             //TODO error or skip if null
             var cctor = type.StaticConstructor();
-            if(cctor == null)
+            if(cctor == null || cctor.IsImplicitlyDeclared)
                 return default(string);
             var syntax = (ConstructorDeclarationSyntax)cctor.Node();
             var properties = syntax.Body.Statements

@@ -1005,6 +1005,34 @@ using System;
             );
             //AssertCompiles(input, incomplete, output, additionalClasses);
         }
+        [Fact]
+        public void DependencyProperties_SimpleClassWithImplicitlyDeclaredStaticConstructor() {
+            string incomplete =
+@"
+using System;
+using MetaSharp;
+namespace MetaSharp.Incomplete {
+    [MetaCompleteDependencyProperties]
+    public class SimpleObject {
+        public static readonly SimpleObject Default = new SimpleObject();
+    }
+}";
+
+            string output =
+@"";
+            var name = "IncompleteDObjects.cs";
+            AssertMultipleFilesOutput(
+                ImmutableArray.Create(
+                    new TestFile(SingleInputFileName, GetInput(@"IncompleteDObjects.cs".Yield())),
+                    new TestFile(name, incomplete, isInFlow: false)
+                ),
+                ImmutableArray.Create(
+                    new TestFile(Path.Combine(DefaultIntermediateOutputPath, "IncompleteDObjects.g.i.cs"), output)
+                ),
+                ignoreEmptyLines: true
+            );
+            //AssertCompiles(input, incomplete, output, additionalClasses);
+        }
         #endregion
 
         static string GetInput(IEnumerable<string> protoFiles, string methodAttributes = null, string defaultAttributes = null, string assemblyAttributes = null) {
