@@ -1033,6 +1033,70 @@ namespace MetaSharp.Incomplete {
             );
             //AssertCompiles(input, incomplete, output, additionalClasses);
         }
+        [Fact]
+        public void DependencyProperties_GenericClass() {
+            string incomplete =
+@"
+using MetaSharp;
+namespace MetaSharp.Incomplete {
+using System;
+    [MetaCompleteDependencyProperties]
+    public partial class DObject<T> where T : class, IClonable {
+        static DObject() {
+            DependencyPropertyRegistrator<DObject<T>>.New()
+                .RegisterAttached((FrameworkElement x) => GetProp3(x), out Prop3Property, string.Empty)
+                .RegisterAttachedReadOnly<UIElement, string>(x => GetProp4(x), out Prop4PropertyKey, out Prop4Property, 5)
+                .Register(x => x.Prop5, out Prop5Property, default(Some))
+                .Register(x => x.Prop6, out Prop6Property, (string)GetSome())
+            ;
+        }
+    }
+}";
+
+            string output =
+@"namespace MetaSharp.Incomplete {
+using System;
+    partial class DObject<T> {
+        public static readonly DependencyProperty Prop3Property;
+        public static string GetProp3(FrameworkElement d) {
+            return (string)d.GetValue(Prop3Property);
+        }
+        public static void SetProp3(FrameworkElement d, string value) {
+            d.SetValue(Prop3Property, value);
+        }
+        public static readonly DependencyProperty Prop4Property;
+        static readonly DependencyPropertyKey Prop4PropertyKey;
+        public static string GetProp4(UIElement d) {
+            return (string)d.GetValue(Prop4Property);
+        }
+        static void SetProp4(UIElement d, string value) {
+            d.SetValue(Prop4PropertyKey, value);
+        }
+        public static readonly DependencyProperty Prop5Property;
+        public Some Prop5 {
+            get { return (Some)GetValue(Prop5Property); }
+            set { SetValue(Prop5Property, value); }
+        }
+        public static readonly DependencyProperty Prop6Property;
+        public string Prop6 {
+            get { return (string)GetValue(Prop6Property); }
+            set { SetValue(Prop6Property, value); }
+        }
+    }
+}";
+            var name = "IncompleteDObjects.cs";
+            AssertMultipleFilesOutput(
+                ImmutableArray.Create(
+                    new TestFile(SingleInputFileName, GetInput(@"IncompleteDObjects.cs".Yield())),
+                    new TestFile(name, incomplete, isInFlow: false)
+                ),
+                ImmutableArray.Create(
+                    new TestFile(Path.Combine(DefaultIntermediateOutputPath, "IncompleteDObjects.g.i.cs"), output)
+                ),
+                ignoreEmptyLines: true
+            );
+            //AssertCompiles(input, incomplete, output, additionalClasses);
+        }
         #endregion
 
         static string GetInput(IEnumerable<string> protoFiles, string methodAttributes = null, string defaultAttributes = null, string assemblyAttributes = null) {

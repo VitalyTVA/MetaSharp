@@ -46,7 +46,7 @@ namespace MetaSharp {
                         if(string.IsNullOrEmpty(conctenated))
                             return null;
                         return
-$@"partial class {type.Name} {{
+$@"partial class {type.ToString().Split('.').Last()} {{
 {conctenated.AddTabs(1)}
 }}";
                     });
