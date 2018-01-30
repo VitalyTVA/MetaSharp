@@ -8,6 +8,7 @@ MetaSharp.Test.Functional/Meta/*.designer.cs
 *.user
 *.userosscache
 *.sln.docstates
+/.vs/
 
 # Build results
 [Dd]ebug/

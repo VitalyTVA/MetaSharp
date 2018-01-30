@@ -67,18 +67,20 @@ $@"partial class {type.ToString().Split('.').Last()} {{
                         return null;
                     var readOnly = methodName == "RegisterReadOnly" || methodName == "RegisterAttachedReadOnly";
                     var attached = methodName == "RegisterAttached" || methodName == "RegisterAttachedReadOnly";
+                    var service = methodName == "RegisterServiceTemplateProperty";
 
                     var arguments = property.ArgumentList.Arguments;
 
                     var propertySignature = (memberAccess.Name as GenericNameSyntax)?.TypeArgumentList.Arguments.Select(x => x.ToString()).ToArray();
                     if(propertySignature == null) {
-                        var defaultValueArgument = arguments[readOnly ? 3 : 2].Expression;
-                        var defaultExpressionTypeInfo = model.GetTypeInfo(defaultValueArgument);
-                        propertySignature = defaultExpressionTypeInfo.Type?.DisplayString(model, defaultValueArgument.GetLocation()).With(propertyType =>
-                            !attached
-                                ? new string[] { propertyType }
-                                : (arguments[0].Expression as ParenthesizedLambdaExpressionSyntax).With(x => new string[] { x.ParameterList.Parameters.Single().Type.ToString(), propertyType })
-                        );
+                        var defaultValueArgument = service ? null : arguments[readOnly ? 3 : 2].Expression;
+                        propertySignature = service
+                            ? new[] { "DataTemplate" }
+                            : model.GetTypeInfo(defaultValueArgument).Type?.DisplayString(model, defaultValueArgument.GetLocation()).With(propertyType =>
+                                !attached
+                                    ? new string[] { propertyType }
+                                    : (arguments[0].Expression as ParenthesizedLambdaExpressionSyntax).With(x => new string[] { x.ParameterList.Parameters.Single().Type.ToString(), propertyType })
+                            );
                     }
                     if(propertySignature == null) {
                         var span = memberAccess.Name.LineSpan();

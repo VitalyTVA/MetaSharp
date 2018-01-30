@@ -796,6 +796,47 @@ using System;
             //AssertCompiles(input, incomplete, output, additionalClasses);
         }
         [Fact]
+        public void ServiceTemplateProperty() {
+            string incomplete =
+@"
+using MetaSharp;
+namespace MetaSharp.Incomplete {
+using System;
+    [MetaCompleteDependencyProperties]
+    public partial class DObject {
+        static DObject() {
+            DependencyPropertyRegistrator<DObject>.New()
+                .RegisterServiceTemplateProperty(x => x.XServiceTemplate, out XServiceTemplateProperty, out xServiceAccessor)
+            ;
+        }
+    }
+}";
+
+            string output =
+@"namespace MetaSharp.Incomplete {
+using System;
+    partial class DObject {
+        public static readonly DependencyProperty XServiceTemplateProperty;
+        public DataTemplate XServiceTemplate {
+            get { return (DataTemplate)GetValue(XServiceTemplateProperty); }
+            set { SetValue(XServiceTemplateProperty, value); }
+        }
+    }
+}";
+            var name = "IncompleteDObjects.cs";
+            AssertMultipleFilesOutput(
+                ImmutableArray.Create(
+                    new TestFile(SingleInputFileName, GetInput(@"IncompleteDObjects.cs".Yield())),
+                    new TestFile(name, incomplete, isInFlow: false)
+                ),
+                ImmutableArray.Create(
+                    new TestFile(Path.Combine(DefaultIntermediateOutputPath, "IncompleteDObjects.g.i.cs"), output)
+                ),
+                ignoreEmptyLines: true
+            );
+            //AssertCompiles(input, incomplete, output, additionalClasses);
+        }
+        [Fact]
         public void DependencyProperties_MissingPropertyType() {
             string incomplete =
 @"
