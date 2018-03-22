@@ -834,7 +834,47 @@ using System;
                 ),
                 ignoreEmptyLines: true
             );
-            //AssertCompiles(input, incomplete, output, additionalClasses);
+        }
+        [Fact]
+        public void BindableReadOnlyProperty() {
+            string incomplete =
+@"
+using MetaSharp;
+namespace MetaSharp.Incomplete {
+using System;
+    [MetaCompleteDependencyProperties]
+    public partial class DObject {
+        static DObject() {
+            DependencyPropertyRegistrator<DObject>.New()
+                .RegisterBindableReadOnly(x => x.Result, out setResult, out ResultProperty, default(Some))
+            ;
+        }
+    }
+}";
+
+            string output =
+@"namespace MetaSharp.Incomplete {
+using System;
+    partial class DObject {
+        public static readonly DependencyProperty ResultProperty;
+        public Some Result {
+            get { return (Some)GetValue(ResultProperty); }
+            [Browsable(false), EditorBrowsable(EditorBrowsableState.Never)]
+            set { SetValue(ResultProperty, value); }
+        }
+    }
+}";
+            var name = "IncompleteDObjects.cs";
+            AssertMultipleFilesOutput(
+                ImmutableArray.Create(
+                    new TestFile(SingleInputFileName, GetInput(@"IncompleteDObjects.cs".Yield())),
+                    new TestFile(name, incomplete, isInFlow: false)
+                ),
+                ImmutableArray.Create(
+                    new TestFile(Path.Combine(DefaultIntermediateOutputPath, "IncompleteDObjects.g.i.cs"), output)
+                ),
+                ignoreEmptyLines: true
+            );
         }
         [Fact]
         public void DependencyProperties_MissingPropertyType() {

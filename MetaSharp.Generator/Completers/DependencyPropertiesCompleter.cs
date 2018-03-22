@@ -68,12 +68,13 @@ $@"partial class {type.ToString().Split('.').Last()} {{
                     var readOnly = methodName == "RegisterReadOnly" || methodName == "RegisterAttachedReadOnly";
                     var attached = methodName == "RegisterAttached" || methodName == "RegisterAttachedReadOnly";
                     var service = methodName == "RegisterServiceTemplateProperty";
+                    var bindableReadOnly = methodName == "RegisterBindableReadOnly";
 
                     var arguments = property.ArgumentList.Arguments;
 
                     var propertySignature = (memberAccess.Name as GenericNameSyntax)?.TypeArgumentList.Arguments.Select(x => x.ToString()).ToArray();
                     if(propertySignature == null) {
-                        var defaultValueArgument = service ? null : arguments[readOnly ? 3 : 2].Expression;
+                        var defaultValueArgument = service ? null : arguments[readOnly || bindableReadOnly ? 3 : 2].Expression;
                         propertySignature = service
                             ? new[] { "DataTemplate" }
                             : model.GetTypeInfo(defaultValueArgument).Type?.DisplayString(model, defaultValueArgument.GetLocation()).With(propertyType =>
@@ -87,14 +88,14 @@ $@"partial class {type.ToString().Split('.').Last()} {{
                         return new CompleterError(memberAccess.SyntaxTree, Messages.DependecyProperty_PropertyTypeMissed, new FileLinePositionSpan(string.Empty, span.EndLinePosition, span.EndLinePosition));
                     }
 
-                    var propertyName = GetPropertyName(arguments, attached, readOnly, memberAccess.Name.SyntaxTree);
+                    var propertyName = GetPropertyName(arguments, attached, readOnly, bindableReadOnly, memberAccess.Name.SyntaxTree);
 
 
                     return propertyName.Select(name => {
                         var overridedPropertyVisibility = GetOverridedPropertyVisibility(type, name);
                         return GenerateFields(name, readOnly, overridedPropertyVisibility == null) + (attached
                         ? GenerateAttachedProperty(propertySignature[0], propertySignature[1], name, readOnly, overridedPropertyVisibility)
-                        : GenerateProperty(propertySignature.Single(), name, readOnly, overridedPropertyVisibility));
+                        : GenerateProperty(propertySignature.Single(), name, readOnly, bindableReadOnly, overridedPropertyVisibility));
                     });
                 })
                 .Where(x => x != null)
@@ -112,7 +113,7 @@ $@"partial class {type.ToString().Split('.').Last()} {{
             var getterVisibility = attr.ConstructorArguments.Length == 1 ? MemberVisibility.Public : (MemberVisibility)Enum.Parse(typeof(MemberVisibility), attr.ConstructorArguments[1].Value.ToString());
             return Tuple.Create(setterVisibility, getterVisibility);
         }
-        static Either<CompleterError, string> GetPropertyName(SeparatedSyntaxList<ArgumentSyntax> arguments, bool attached, bool readOnly, SyntaxTree tree) {
+        static Either<CompleterError, string> GetPropertyName(SeparatedSyntaxList<ArgumentSyntax> arguments, bool attached, bool readOnly, bool bindableReadOnly, SyntaxTree tree) {
             string propertyName;
             if(!attached) {
                 propertyName = ((MemberAccessExpressionSyntax)((SimpleLambdaExpressionSyntax)arguments[0].Expression).Body).Name.ToString();
@@ -125,15 +126,15 @@ $@"partial class {type.ToString().Split('.').Last()} {{
                 propertyName = getterName.Substring("Get".Length);
             }
 
-            Func<int, string, CompleterError> getError = (index, suffix) => {
+            Func<int, string, string, CompleterError> getError = (index, prefix, suffix) => {
                 var fieldName = ((IdentifierNameSyntax)arguments[index].Expression).ToString();
-                if(propertyName + suffix != fieldName) {
-                    var message = Messages.DependecyProperty_IncorrectPropertyName.Format(propertyName, propertyName + suffix);
+                if(prefix + propertyName + suffix != fieldName) {
+                    var message = Messages.DependecyProperty_IncorrectPropertyName.Format(propertyName, prefix + propertyName + suffix);
                     return new CompleterError(arguments[index].Expression, message);
                 }
                 return null;
             };
-            return (getError(1, "Property" + (readOnly ? "Key" : string.Empty)) ?? (readOnly ? getError(2, "Property") : null))
+            return (getError(1, bindableReadOnly ? "set" : string.Empty, bindableReadOnly ? "" : "Property" + (readOnly ? "Key" : string.Empty)) ?? (bindableReadOnly || readOnly ? getError(2, string.Empty, "Property") : null))
                 .Return(x => Either<CompleterError, string>.Left(x), () => propertyName);
         }
         static string GenerateFields(string propertyName, bool readOnly, bool generatePropertyField) {
@@ -147,14 +148,15 @@ $@"public static readonly DependencyProperty {propertyName}Property;" + System.E
             return propertyField +
 $@"static readonly DependencyPropertyKey {propertyName}PropertyKey;" + System.Environment.NewLine;
         }
-        static string GenerateProperty(string propertyType, string propertyName, bool readOnly, Tuple<MemberVisibility, MemberVisibility> overridedPropertyVisibility) {
+        static string GenerateProperty(string propertyType, string propertyName, bool readOnly, bool bindableReadOnly, Tuple<MemberVisibility, MemberVisibility> overridedPropertyVisibility) {
             string getterModifier = overridedPropertyVisibility == null ? "public " : overridedPropertyVisibility.Item2.ToCSharp(MemberVisibility.Private);
             string setterModifier = overridedPropertyVisibility == null ? (readOnly ? "private " : "") : overridedPropertyVisibility.Item1.ToCSharp(overridedPropertyVisibility.Item2);
+            string setterAttributes = bindableReadOnly ? "[Browsable(false), EditorBrowsable(EditorBrowsableState.Never)]\r\n    " : string.Empty;
             string keySuffix = readOnly ? "Key" : "";
             return
 $@"{getterModifier}{propertyType} {propertyName} {{
     get {{ return ({propertyType})GetValue({propertyName}Property); }}
-    {setterModifier}set {{ SetValue({propertyName}Property{keySuffix}, value); }}
+    {setterAttributes}{setterModifier}set {{ SetValue({propertyName}Property{keySuffix}, value); }}
 }}
 ";
         }
