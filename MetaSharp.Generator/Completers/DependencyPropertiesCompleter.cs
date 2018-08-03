@@ -93,7 +93,7 @@ $@"partial class {type.ToString().Split('.').Last()} {{
 
                     return propertyName.Select(name => {
                         var overridedPropertyVisibility = GetOverridedPropertyVisibility(type, name);
-                        return GenerateFields(name, readOnly, overridedPropertyVisibility == null) + (attached
+                        return GenerateFields(ownerType.DisplayString(model, memberAccess.GetLocation()), propertySignature[0], name, readOnly, bindableReadOnly, overridedPropertyVisibility == null) + (attached
                         ? GenerateAttachedProperty(propertySignature[0], propertySignature[1], name, readOnly, overridedPropertyVisibility)
                         : GenerateProperty(propertySignature.Single(), name, readOnly, bindableReadOnly, overridedPropertyVisibility));
                     });
@@ -137,16 +137,22 @@ $@"partial class {type.ToString().Split('.').Last()} {{
             return (getError(1, bindableReadOnly ? "set" : string.Empty, bindableReadOnly ? "" : "Property" + (readOnly ? "Key" : string.Empty)) ?? (bindableReadOnly || readOnly ? getError(2, string.Empty, "Property") : null))
                 .Return(x => Either<CompleterError, string>.Left(x), () => propertyName);
         }
-        static string GenerateFields(string propertyName, bool readOnly, bool generatePropertyField) {
+        static string GenerateFields(string ownerType, string propertyType, string propertyName, bool readOnly, bool bindableReadOnly, bool generatePropertyField) {
             string propertyField =
                 generatePropertyField
 ?
 $@"public static readonly DependencyProperty {propertyName}Property;" + System.Environment.NewLine
 :
 "";
-            if(!readOnly) return propertyField;
-            return propertyField +
+            if(readOnly) {
+                return propertyField +
 $@"static readonly DependencyPropertyKey {propertyName}PropertyKey;" + System.Environment.NewLine;
+            }
+            if(bindableReadOnly) {
+                return propertyField +
+$@"static readonly Action<{ownerType}, {propertyType}> set{propertyName};" + System.Environment.NewLine;
+            }
+            return propertyField;
         }
         static string GenerateProperty(string propertyType, string propertyName, bool readOnly, bool bindableReadOnly, Tuple<MemberVisibility, MemberVisibility> overridedPropertyVisibility) {
             string getterModifier = overridedPropertyVisibility == null ? "public " : overridedPropertyVisibility.Item2.ToCSharp(MemberVisibility.Private);

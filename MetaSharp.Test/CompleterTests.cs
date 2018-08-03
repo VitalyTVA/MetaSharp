@@ -857,6 +857,7 @@ using System;
 using System;
     partial class DObject {
         public static readonly DependencyProperty ResultProperty;
+        static readonly Action<DObject, Some> setResult;
         public Some Result {
             get { return (Some)GetValue(ResultProperty); }
             [Browsable(false), EditorBrowsable(EditorBrowsableState.Never)]
