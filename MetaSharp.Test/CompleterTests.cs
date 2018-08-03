@@ -1017,6 +1017,8 @@ using System;
         public static readonly DependencyProperty Prop4Property;
         [DPAccessModifierAttribute(MemberVisibility.Private, MemberVisibility.Private)]
         static readonly DependencyProperty Prop6Property;
+        [DPAccessModifier(NonBrowsable = true)]
+        public static readonly DependencyProperty Prop7Property;
 
         static DObject() {
             DependencyPropertyRegistrator<DObject>.New()
@@ -1024,18 +1026,21 @@ using System;
                 .RegisterAttachedReadOnly<UIElement, string>(x => GetProp4(x), out Prop4PropertyKey, out Prop4Property, 5)
                 .Register(x => x.Prop5, out Prop5Property, default(Some))
                 .Register(x => x.Prop6, out Prop6Property, (string)GetSome())
+                .RegisterReadOnly(x => x.Prop7, out Prop7PropertyKey, out Prop7Property, default(Some))
             ;
         }
     }
     [AttributeUsage(AttributeTargets.Field)]
     sealed class DPAccessModifierAttribute : Attribute {
-        public DPAccessModifierAttribute(MemberVisibility setterVisibility, MemberVisibility getterVisibility = MemberVisibility.Public) {
+       public DPAccessModifierAttribute(MemberVisibility setterVisibility = MemberVisibility.Public, MemberVisibility getterVisibility = MemberVisibility.Public, bool nonBrowsable = false) {
             SetterVisibility = setterVisibility;
             GetterVisibility = getterVisibility;
+            NonBrowsable = nonBrowsable;
         }
         public MemberVisibility SetterVisibility { get; set; }
         public MemberVisibility GetterVisibility { get; set; }
-    }
+        public bool NonBrowsable { get; set; }
+     }
     enum MemberVisibility {
         Public,
         Protected,
@@ -1071,6 +1076,12 @@ using System;
         string Prop6 {
             get { return (string)GetValue(Prop6Property); }
             set { SetValue(Prop6Property, value); }
+        }
+        static readonly DependencyPropertyKey Prop7PropertyKey;
+        [Browsable(false), EditorBrowsable(EditorBrowsableState.Never)]
+        public Some Prop7 {
+            get { return (Some)GetValue(Prop7Property); }
+            set { SetValue(Prop7PropertyKey, value); }
         }
     }
 }";

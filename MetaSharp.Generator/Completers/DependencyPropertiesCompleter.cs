@@ -104,14 +104,30 @@ $@"partial class {type.ToString().Split('.').Last()} {{
             return properties
                 .AggregateEither(errors => errors.ToImmutableArray(), values => values.ConcatStringsWithNewLines());
         }
-        static Tuple<MemberVisibility, MemberVisibility> GetOverridedPropertyVisibility(INamedTypeSymbol type, string propertyName) {
+        static Tuple<MemberVisibility, MemberVisibility, bool> GetOverridedPropertyVisibility(INamedTypeSymbol type, string propertyName) {
             var field = type.GetMembers(propertyName + "Property");
             if(field.Length != 1) return null;
             var attr = field[0].GetAttributes().Where(x => x.AttributeClass.Name == "DPAccessModifierAttribute" || x.AttributeClass.Name == "DPAccessModifier").FirstOrDefault();
             if(attr == null) return null;
-            var setterVisibility = (MemberVisibility)Enum.Parse(typeof(MemberVisibility), attr.ConstructorArguments[0].Value.ToString());
-            var getterVisibility = attr.ConstructorArguments.Length == 1 ? MemberVisibility.Public : (MemberVisibility)Enum.Parse(typeof(MemberVisibility), attr.ConstructorArguments[1].Value.ToString());
-            return Tuple.Create(setterVisibility, getterVisibility);
+            var setterVisibility = attr.ConstructorArguments.Length < 1 ? MemberVisibility.Public : (MemberVisibility)Enum.Parse(typeof(MemberVisibility), attr.ConstructorArguments[0].Value.ToString());
+            var getterVisibility = attr.ConstructorArguments.Length < 2 ? MemberVisibility.Public : (MemberVisibility)Enum.Parse(typeof(MemberVisibility), attr.ConstructorArguments[1].Value.ToString());
+            var nonBrowsable = attr.ConstructorArguments.Length < 3 ? false : bool.Parse(attr.ConstructorArguments[2].Value.ToString());
+            foreach(var parameter in attr.NamedArguments) {
+                switch(parameter.Key) {
+                case "SetterVisibility":
+                    setterVisibility = (MemberVisibility)Enum.Parse(typeof(MemberVisibility), parameter.Value.Value.ToString());
+                    break;
+                case "GetterVisibility":
+                    getterVisibility = (MemberVisibility)Enum.Parse(typeof(MemberVisibility), parameter.Value.Value.ToString());
+                    break;
+                case "NonBrowsable":
+                    nonBrowsable = bool.Parse(parameter.Value.Value.ToString());
+                    break;
+                default:
+                    throw new InvalidOperationException();
+                }
+            }
+            return Tuple.Create(setterVisibility, getterVisibility, nonBrowsable);
         }
         static Either<CompleterError, string> GetPropertyName(SeparatedSyntaxList<ArgumentSyntax> arguments, bool attached, bool readOnly, bool bindableReadOnly, SyntaxTree tree) {
             string propertyName;
@@ -154,19 +170,21 @@ $@"static readonly Action<{ownerType}, {propertyType}> set{propertyName};" + Sys
             }
             return propertyField;
         }
-        static string GenerateProperty(string propertyType, string propertyName, bool readOnly, bool bindableReadOnly, Tuple<MemberVisibility, MemberVisibility> overridedPropertyVisibility) {
+        static string GenerateProperty(string propertyType, string propertyName, bool readOnly, bool bindableReadOnly, Tuple<MemberVisibility, MemberVisibility, bool> overridedPropertyVisibility) {
             string getterModifier = overridedPropertyVisibility == null ? "public " : overridedPropertyVisibility.Item2.ToCSharp(MemberVisibility.Private);
             string setterModifier = overridedPropertyVisibility == null ? (readOnly ? "private " : "") : overridedPropertyVisibility.Item1.ToCSharp(overridedPropertyVisibility.Item2);
-            string setterAttributes = bindableReadOnly ? "[Browsable(false), EditorBrowsable(EditorBrowsableState.Never)]\r\n    " : string.Empty;
+            var nonBrowsable = overridedPropertyVisibility != null && overridedPropertyVisibility.Item3;
+            string attributes = nonBrowsable ? "[Browsable(false), EditorBrowsable(EditorBrowsableState.Never)]\r\n" : "";
+            string setterAttributes = bindableReadOnly & !nonBrowsable ? "[Browsable(false), EditorBrowsable(EditorBrowsableState.Never)]\r\n    " : string.Empty;
             string keySuffix = readOnly ? "Key" : "";
             return
-$@"{getterModifier}{propertyType} {propertyName} {{
+$@"{attributes}{getterModifier}{propertyType} {propertyName} {{
     get {{ return ({propertyType})GetValue({propertyName}Property); }}
     {setterAttributes}{setterModifier}set {{ SetValue({propertyName}Property{keySuffix}, value); }}
 }}
 ";
         }
-        static string GenerateAttachedProperty(string componentType, string propertyType, string propertyName, bool readOnly, Tuple<MemberVisibility, MemberVisibility> overridedPropertyVisibility) {
+        static string GenerateAttachedProperty(string componentType, string propertyType, string propertyName, bool readOnly, Tuple<MemberVisibility, MemberVisibility, bool> overridedPropertyVisibility) {
             string getterModifier = overridedPropertyVisibility == null ? "public " : overridedPropertyVisibility.Item2.ToCSharp(MemberVisibility.Private);
             string setterModifier = overridedPropertyVisibility == null ? (readOnly ? "" : "public ") : overridedPropertyVisibility.Item1.ToCSharp(MemberVisibility.Private);
             string keySuffix = readOnly ? "Key" : "";
