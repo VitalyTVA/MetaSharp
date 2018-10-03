@@ -712,6 +712,7 @@ using System;
                 .RegisterAttachedReadOnly<UIElement, string>(x => GetProp4(x), out Prop4PropertyKey, out Prop4Property, 5)
                 .Register(x => x.Prop5, out Prop5Property, default(Some))
                 .Register(x => x.Prop6, out Prop6Property, (string)GetSome())
+                .AddOwner(x => x.Prop7, out Prop7Property, SomeExternalControl.Prop7Property, (string)GetSome())
             ;
             DoAfter();
         }
@@ -779,6 +780,11 @@ using System;
         public string Prop6 {
             get { return (string)GetValue(Prop6Property); }
             set { SetValue(Prop6Property, value); }
+        }
+        public static readonly DependencyProperty Prop7Property;
+        public string Prop7 {
+            get { return (string)GetValue(Prop7Property); }
+            set { SetValue(Prop7Property, value); }
         }
     }
 }";

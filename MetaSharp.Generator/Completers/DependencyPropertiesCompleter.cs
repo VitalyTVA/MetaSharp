@@ -11,7 +11,6 @@ using System.Threading.Tasks;
 using CompleterResult = MetaSharp.Either<System.Collections.Immutable.ImmutableArray<MetaSharp.CompleterError>, string>;
 
 namespace MetaSharp {
-    //TODO AddOwner support
     //TODO output errors when too few parameters
     public static class DependencyPropertiesCompleter {
 
@@ -63,18 +62,21 @@ $@"partial class {type.ToString().Split('.').Last()} {{
                 .Select(property => {
                     var memberAccess = (MemberAccessExpressionSyntax)property.Expression;
                     var methodName = memberAccess.Name.Identifier.ValueText;
-                    if(!methodName.StartsWith("Register"))
+                    var arguments = property.ArgumentList.Arguments;
+
+                    if(!methodName.StartsWith("Register") && (methodName != "AddOwner" || arguments.Count <= 3)) // AddOwner completion requires default value argument
                         return null;
+
+                    var addOwner = methodName == "AddOwner";
                     var readOnly = methodName == "RegisterReadOnly" || methodName == "RegisterAttachedReadOnly";
                     var attached = methodName == "RegisterAttached" || methodName == "RegisterAttachedReadOnly";
                     var service = methodName == "RegisterServiceTemplateProperty";
                     var bindableReadOnly = methodName == "RegisterBindableReadOnly";
 
-                    var arguments = property.ArgumentList.Arguments;
 
                     var propertySignature = (memberAccess.Name as GenericNameSyntax)?.TypeArgumentList.Arguments.Select(x => x.ToString()).ToArray();
                     if(propertySignature == null) {
-                        var defaultValueArgument = service ? null : arguments[readOnly || bindableReadOnly ? 3 : 2].Expression;
+                        var defaultValueArgument = service ? null : arguments[addOwner || readOnly || bindableReadOnly ? 3 : 2].Expression;
                         propertySignature = service
                             ? new[] { "DataTemplate" }
                             : model.GetTypeInfo(defaultValueArgument).Type?.DisplayString(model, defaultValueArgument.GetLocation()).With(propertyType =>
