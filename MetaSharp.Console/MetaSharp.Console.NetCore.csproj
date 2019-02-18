@@ -1,0 +1,35 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>netcoreapp3.0</TargetFramework>
+    <AssemblyName>MetaSharp.Console</AssemblyName>
+    <RootNamespace>MetaSharp.Console</RootNamespace>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <OutputPath>..\bin\</OutputPath>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+    <OutputPath>..\bin\</OutputPath>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Remove="obj\**" />
+    <EmbeddedResource Remove="obj\**" />
+    <None Remove="obj\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Remove="Properties\AssemblyInfo.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="FluentCommandLineParser" Version="1.5.0.20-commands" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\MetaSharp.Generator\MetaSharp.Generator.NetCore.csproj" />
+    <ProjectReference Include="..\MetaSharp\MetaSharp.NetCore.csproj" />
+  </ItemGroup>
+</Project>
