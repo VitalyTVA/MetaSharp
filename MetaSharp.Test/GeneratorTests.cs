@@ -713,6 +713,7 @@ using System.Collections.Immutable;
 using System.Windows.Media;
 using System.Windows.Forms;
 using System.Drawing;
+using Point = System.Windows.Point;
 
 [assembly: MetaReference(""System.Collections.Immutable.dll"")]
 [assembly: MetaReference(""bin\\Xunit.Assert.dll"", ReferenceRelativeLocation.TargetPath)]
@@ -723,6 +724,7 @@ using System.Drawing;
 namespace MetaSharp.HelloWorld {
     public static class HelloWorldGenerator {
         public static string SayHello(MetaContext context) {
+            new Point(50, 50);
             new SolidColorBrush();
             new PointF();
             Assert.Equal(""MetaSharp.HelloWorld"", context.Namespace);
@@ -769,12 +771,16 @@ namespace MetaSharp.HelloWorld {
         }
         protected static void AssertMultipleFilesOutput(ImmutableArray<TestFile> input, ImmutableArray<TestFile> output, BuildConstants buildConstants = null, bool ignoreEmptyLines = false) {
             AssertMultipleFilesResult(input, (result, testEnvironment) => {
-                Assert.Equal<string>(
-                    output
-                        .Where(x => x.IsInFlow)
-                        .Select(x => x.Name)
-                        .OrderBy(x => x), 
-                    result.ToRight().OrderBy(x => x));
+                result.Match(errors => {
+                    Assert.False(errors.Any(), string.Join(System.Environment.NewLine, errors.Select(x => $"{x.Id}: {x.Message}")));
+                }, msgs => {
+                    Assert.Equal<string>(
+                        output
+                            .Where(x => x.IsInFlow)
+                            .Select(x => x.Name)
+                            .OrderBy(x => x),
+                        msgs.OrderBy(x => x));
+                });
                 Assert.Equal(input.Length + output.Length, testEnvironment.FileCount);
                 AssertFiles(output, testEnvironment, ignoreEmptyLines);
             }, buildConstants);

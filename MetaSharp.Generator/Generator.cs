@@ -123,13 +123,15 @@ namespace MetaSharp {
                 syntaxTrees: trees.Keys
             );
             var metaReferences = compilation.GetMetaReferences(environment.BuildConstants);
+            var references = metaReferences.Values.Where(x => File.Exists(x) && !DefaultReferences.Any(reference => string.Equals(reference.FilePath, x)))
+                    .Select(x => MetadataReference.CreateFromFile(x));
             compilation = compilation
                 .AddSyntaxTrees(
                     compilation
                         .GetAttributeValues<MetaIncludeAttribute, string>(values => values.ToValue<string>())
                         .Select(x => ParseFile(environment, x))
                 )
-                .AddReferences(metaReferences.Values.Select(x => MetadataReference.CreateFromFile(x)));
+                .AddReferences(references);
 
             var replacements = Rewriter.GetReplacements(compilation, trees.Keys);
             replacements
@@ -404,7 +406,7 @@ namespace MetaSharp {
         public static IEnumerable<IMethodSymbol> AllMethods(this INamedTypeSymbol type) {
             return LinqExtensions.Unfold(type, x => x.BaseType).SelectMany(x => x.Methods());
         }
-        public static IEnumerable<IMethodSymbol> ExpliciImplementations(this INamedTypeSymbol type) {
+        public static IEnumerable<IMethodSymbol> ExplicitImplementations(this INamedTypeSymbol type) {
             return type.MethodsCore(MethodKind.ExplicitInterfaceImplementation);
         }
         public static IEnumerable<IMethodSymbol> Constructors(this INamedTypeSymbol type) {
@@ -416,19 +418,19 @@ namespace MetaSharp {
         public static IMethodSymbol StaticConstructor(this INamedTypeSymbol type) {
             return type.MethodsCore(MethodKind.StaticConstructor).FirstOrDefault();
         }
-        public static string ToAccessibilityModifier(this Accessibility accessibility, Accessibility? containingAccessibility) {
+        public static string ToAccessibilityModifier(this Microsoft.CodeAnalysis.Accessibility accessibility, Microsoft.CodeAnalysis.Accessibility? containingAccessibility) {
             if(containingAccessibility != null && containingAccessibility.Value == accessibility)
                 return string.Empty;
             switch(accessibility) {
-            case Accessibility.Private:
+            case Microsoft.CodeAnalysis.Accessibility.Private:
                 return string.Empty;
-            case Accessibility.Protected:
+            case Microsoft.CodeAnalysis.Accessibility.Protected:
                 return "protected ";
-            case Accessibility.Internal:
+            case Microsoft.CodeAnalysis.Accessibility.Internal:
                 return "internal ";
-            case Accessibility.ProtectedOrInternal:
+            case Microsoft.CodeAnalysis.Accessibility.ProtectedOrInternal:
                 return "protected internal ";
-            case Accessibility.Public:
+            case Microsoft.CodeAnalysis.Accessibility.Public:
                 return "public ";
             default:
                 throw new InvalidOperationException();
