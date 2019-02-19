@@ -1,4 +1,6 @@
-﻿using MetaSharp.Tasks;
+﻿#if !NETCORE
+using MetaSharp.Tasks;
+#endif
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;

@@ -20,8 +20,11 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Remove="obj\**" />
+    <Compile Remove="obj_netFW\**" />
     <EmbeddedResource Remove="obj\**" />
+    <EmbeddedResource Remove="obj_netFW\**" />
     <None Remove="obj\**" />
+    <None Remove="obj_netFW\**" />
   </ItemGroup>
 
   <ItemGroup>

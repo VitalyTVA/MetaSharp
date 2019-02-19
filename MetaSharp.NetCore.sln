@@ -9,6 +9,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MetaSharp.Generator.NetCore
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MetaSharp.Console.NetCore", "MetaSharp.Console\MetaSharp.Console.NetCore.csproj", "{41BBFDEC-B408-4889-98CD-D25A475A2BC2}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MetaSharp.Test.NetCore", "MetaSharp.Test\MetaSharp.Test.NetCore.csproj", "{10CCDACD-89A9-4CA1-B984-A8F6DE22A51F}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -27,6 +29,10 @@ Global
 		{41BBFDEC-B408-4889-98CD-D25A475A2BC2}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{41BBFDEC-B408-4889-98CD-D25A475A2BC2}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{41BBFDEC-B408-4889-98CD-D25A475A2BC2}.Release|Any CPU.Build.0 = Release|Any CPU
+		{10CCDACD-89A9-4CA1-B984-A8F6DE22A51F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{10CCDACD-89A9-4CA1-B984-A8F6DE22A51F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{10CCDACD-89A9-4CA1-B984-A8F6DE22A51F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{10CCDACD-89A9-4CA1-B984-A8F6DE22A51F}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
