@@ -76,13 +76,19 @@ namespace MetaSharp {
         public static readonly ImmutableArray<PortableExecutableReference> DefaultReferences;
         static readonly string FrameworkPath = Path.GetDirectoryName(typeof(object).Assembly.Location);
         static Generator() {
-            DefaultReferences = new[] {
+            DefaultReferences =
+#if NETCORE
+            AppContext.GetData("TRUSTED_PLATFORM_ASSEMBLIES").ToString().Split(";")
+                .Where(x => !string.IsNullOrEmpty(x)).Concat(typeof(MetaContext).Assembly.Location.Yield())
+#else
+            new[] {
                 Path.Combine(FrameworkPath, "mscorlib.dll"),
                 Path.Combine(FrameworkPath, "System.dll"),
                 Path.Combine(FrameworkPath, "System.Core.dll"),
                 Path.Combine(FrameworkPath, "System.Runtime.dll"),
                 typeof(MetaContext).Assembly.Location,
             }
+#endif
             .Select(x => MetadataReference.CreateFromFile(x))
             .ToImmutableArray();
         }
