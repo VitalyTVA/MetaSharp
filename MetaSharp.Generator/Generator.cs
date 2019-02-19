@@ -11,6 +11,9 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 using GeneratorResult = MetaSharp.Either<System.Collections.Immutable.ImmutableArray<MetaSharp.MetaError>, System.Collections.Immutable.ImmutableArray<string>>;
+#if NETCORE
+using System.Runtime.Loader;
+#endif
 
 namespace MetaSharp {
     //var p = default(Point);
@@ -84,11 +87,11 @@ namespace MetaSharp {
             .ToImmutableArray();
         }
         const string DefaultSuffix = "meta";
-        public const string CShaprFileExtension = ".cs";
-        public const string DefaultInputFileEnd = DefaultSuffix + CShaprFileExtension;
-        public const string DefaultOutputFileEnd = ".g.i" + CShaprFileExtension;
-        public const string DefaultOutputFileEnd_IntellisenseInvisible = ".g" + CShaprFileExtension;
-        public const string ProjectOutputFileEnd = ".designer" + CShaprFileExtension;
+        public const string CSharpFileExtension = ".cs";
+        public const string DefaultInputFileEnd = DefaultSuffix + CSharpFileExtension;
+        public const string DefaultOutputFileEnd = ".g.i" + CSharpFileExtension;
+        public const string DefaultOutputFileEnd_IntellisenseInvisible = ".g" + CSharpFileExtension;
+        public const string ProjectOutputFileEnd = ".designer" + CSharpFileExtension;
 
         const string DefaultAssemblyName = "meta.dll";
         const string NewLine = "\r\n";
@@ -166,12 +169,20 @@ namespace MetaSharp {
                     method => new MethodId(method.Name, method.ContainingType.FullName()),
                     method => method
                 );
+#if NETCORE
+            Func<AssemblyLoadContext, AssemblyName, Assembly> resolveHandler = (o, e) => {
+#else
             ResolveEventHandler resolveHandler = (o, e) => {
+#endif
                 var name = new AssemblyName(e.Name);
                 var fileName = metaReferences.GetValueOrDefault(name.Name);
                 return fileName != null ? Assembly.LoadFrom(fileName) : null;
             };
+#if NETCORE
+            System.Runtime.Loader.AssemblyLoadContext.Default.Resolving += resolveHandler;
+#else
             AppDomain.CurrentDomain.AssemblyResolve += resolveHandler;
+#endif
             try {
                 var outputs = compiledAssembly.GetTypes()
                     .SelectMany(type => type
@@ -207,7 +218,12 @@ namespace MetaSharp {
                     .ToImmutableArray();
                 return outputFiles;
             } finally {
+#if NETCORE
+                System.Runtime.Loader.AssemblyLoadContext.Default.Resolving -= resolveHandler;
+#else
                 AppDomain.CurrentDomain.AssemblyResolve -= resolveHandler;
+
+#endif
             }
         }
         static ImmutableDictionary<string, string> GetMetaReferences(this CSharpCompilation compilation, BuildConstants buildConsants) {
@@ -271,8 +287,11 @@ namespace MetaSharp {
             BuildConstants buildConstants, 
             Action<MetaError> reportError, 
             Action<ImmutableArray<string>> reportOutputFiles) {
-
+#if NETCORE
+            System.Runtime.Loader.AssemblyLoadContext.Default.Resolving += AssemblyResolving;
+#else
             AppDomain.CurrentDomain.AssemblyResolve += CurrentDomain_AssemblyResolve;
+#endif
             try {
                 var result = Generator.Generate(files, CreateEnvironment(buildConstants));
                 return result.Match(
@@ -288,7 +307,11 @@ namespace MetaSharp {
                     }
                 );
             } finally {
+#if NETCORE
+                AssemblyLoadContext.Default.Resolving -= AssemblyResolving;
+#else
                 AppDomain.CurrentDomain.AssemblyResolve -= CurrentDomain_AssemblyResolve;
+#endif
             }
         }
         static Environment CreateEnvironment(BuildConstants buildConstants) {
@@ -297,11 +320,19 @@ namespace MetaSharp {
                 writeText: (fileName, text) => File.WriteAllText(fileName, text),
                 buildConstants: buildConstants);
         }
+#if NETCORE
+        static Assembly AssemblyResolving(AssemblyLoadContext arg1, AssemblyName args) {
+            if(args.Name == typeof(MetaContext).Assembly.FullName)
+                return typeof(MetaContext).Assembly;
+            return null;
+        }
+#else
         static Assembly CurrentDomain_AssemblyResolve(object sender, ResolveEventArgs args) {
             if(args.Name == typeof(MetaContext).Assembly.FullName)
                 return typeof(MetaContext).Assembly;
             return null;
         }
+#endif
     }
 
     public class MethodContext {
@@ -407,7 +438,7 @@ namespace MetaSharp {
             var location = symbol.Location();
             return location.SourceTree.GetCompilationUnitRoot().FindNode(location.SourceSpan);
         }
-        #region NameToken  
+#region NameToken  
         //TODO duplicated code
         public static SyntaxToken NameToken(this INamedTypeSymbol type) {
             return ((BaseTypeDeclarationSyntax)type.Node()).Identifier;
@@ -421,7 +452,7 @@ namespace MetaSharp {
         public static SyntaxToken NameToken(this IParameterSymbol parameter) {
             return ((ParameterSyntax)parameter.Node()).Identifier;
         }
-        #endregion
+#endregion
         public static FileLinePositionSpan LineSpan(this SyntaxNode syntax) {
             return syntax.GetLocation().GetLineSpan();
         }
