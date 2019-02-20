@@ -102,8 +102,14 @@ namespace MetaSharp {
         const string DefaultAssemblyName = "meta.dll";
         const string NewLine = "\r\n";
         const string ConditionalConstant = "METASHARP";
+        const string ConditionalConstant_NETCORE = ConditionalConstant + "_NETCORE";
 
-        static readonly CSharpParseOptions ParseOptions = CSharpParseOptions.Default.WithPreprocessorSymbols(ConditionalConstant);
+        static readonly CSharpParseOptions ParseOptions = CSharpParseOptions.Default.WithPreprocessorSymbols(
+            ConditionalConstant,
+#if NETCORE
+            ConditionalConstant_NETCORE
+#endif
+            );
 
         public static bool IsMetaSharpFile(string fileName) {
             return fileName.EndsWith(DefaultInputFileEnd);
