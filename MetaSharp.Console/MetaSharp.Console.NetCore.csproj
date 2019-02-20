@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk.WindowsDesktop">
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
@@ -16,12 +16,19 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Remove="obj\**" />
+    <Compile Remove="obj_netFW\**" />
     <EmbeddedResource Remove="obj\**" />
+    <EmbeddedResource Remove="obj_netFW\**" />
     <None Remove="obj\**" />
+    <None Remove="obj_netFW\**" />
   </ItemGroup>
 
   <ItemGroup>
     <Compile Remove="Properties\AssemblyInfo.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Remove="packages.config" />
   </ItemGroup>
 
   <ItemGroup>
