@@ -8,6 +8,7 @@
     <UseWPF>true</UseWPF>
     <AssemblyName>MetaSharp.Generator</AssemblyName>
     <RootNamespace>MetaSharp.Generator</RootNamespace>
+    <AssemblyOriginatorKeyFile>..\Key\StrongKey.snk</AssemblyOriginatorKeyFile>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
