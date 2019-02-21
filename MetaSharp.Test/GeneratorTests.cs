@@ -1,4 +1,6 @@
-﻿using MetaSharp.Tasks;
+﻿#if !NETCORE
+using MetaSharp.Tasks;
+#endif
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
@@ -703,6 +705,19 @@ namespace MetaSharp.HelloWorld {
         }
         [Fact]
         public void Reference() {
+            var references =
+#if NETCORE
+                string.Empty
+#else
+@"[assembly: MetaReference(""bin\\Xunit.Assert.dll"", ReferenceRelativeLocation.TargetPath)]
+[assembly: MetaReference(""WPF\\WindowsBase.dll"", ReferenceRelativeLocation.Framework)]
+[assembly: MetaReference(""WPF\\PresentationCore.dll"", ReferenceRelativeLocation.Framework)]
+[assembly: MetaReference(""System.Windows.Forms.dll"", ReferenceRelativeLocation.Framework)]
+[assembly: MetaReference(""System.Collections.Immutable.dll"")]
+[assembly: MetaReference(""System.Drawing.dll"", ReferenceRelativeLocation.Framework)]"
+#endif
+            ;
+
             var input = @"
 using MetaSharp;
 using Xunit;
@@ -711,16 +726,15 @@ using System.Collections.Immutable;
 using System.Windows.Media;
 using System.Windows.Forms;
 using System.Drawing;
+using Point = System.Windows.Point;
 
-[assembly: MetaReference(""System.Collections.Immutable.dll"")]
-[assembly: MetaReference(""bin\\Xunit.Assert.dll"", ReferenceRelativeLocation.TargetPath)]
-[assembly: MetaReference(""WPF\\WindowsBase.dll"", ReferenceRelativeLocation.Framework)]
-[assembly: MetaReference(""WPF\\PresentationCore.dll"", ReferenceRelativeLocation.Framework)]
-[assembly: MetaReference(""System.Drawing.dll"", ReferenceRelativeLocation.Framework)]
-[assembly: MetaReference(""System.Windows.Forms.dll"", ReferenceRelativeLocation.Framework)]
+" + references + 
+@"
+
 namespace MetaSharp.HelloWorld {
     public static class HelloWorldGenerator {
         public static string SayHello(MetaContext context) {
+            new Point(50, 50);
             new SolidColorBrush();
             new PointF();
             Assert.Equal(""MetaSharp.HelloWorld"", context.Namespace);
@@ -767,12 +781,16 @@ namespace MetaSharp.HelloWorld {
         }
         protected static void AssertMultipleFilesOutput(ImmutableArray<TestFile> input, ImmutableArray<TestFile> output, BuildConstants buildConstants = null, bool ignoreEmptyLines = false) {
             AssertMultipleFilesResult(input, (result, testEnvironment) => {
-                Assert.Equal<string>(
-                    output
-                        .Where(x => x.IsInFlow)
-                        .Select(x => x.Name)
-                        .OrderBy(x => x), 
-                    result.ToRight().OrderBy(x => x));
+                result.Match(errors => {
+                    Assert.False(errors.Any(), string.Join(System.Environment.NewLine, errors));
+                }, msgs => {
+                    Assert.Equal<string>(
+                        output
+                            .Where(x => x.IsInFlow)
+                            .Select(x => x.Name)
+                            .OrderBy(x => x),
+                        msgs.OrderBy(x => x));
+                });
                 Assert.Equal(input.Length + output.Length, testEnvironment.FileCount);
                 AssertFiles(output, testEnvironment, ignoreEmptyLines);
             }, buildConstants);

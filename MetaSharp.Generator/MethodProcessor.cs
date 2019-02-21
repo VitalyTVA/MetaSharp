@@ -105,9 +105,9 @@ namespace MetaSharp {
         static string GetOutputFileNameCore(MetaLocation location, string fileName) {
             switch(location) {
             case MetaLocation.IntermediateOutput:
-                return fileName.ReplaceEnd(Generator.CShaprFileExtension, Generator.DefaultOutputFileEnd);
+                return fileName.ReplaceEnd(Generator.CSharpFileExtension, Generator.DefaultOutputFileEnd);
             case MetaLocation.Project:
-                return fileName.ReplaceEnd(Generator.CShaprFileExtension, Generator.ProjectOutputFileEnd);
+                return fileName.ReplaceEnd(Generator.CSharpFileExtension, Generator.ProjectOutputFileEnd);
             default:
                 throw new InvalidOperationException();
             }

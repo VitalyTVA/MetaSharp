@@ -232,7 +232,7 @@ namespace DevExpress.Mvvm.DataAnnotations {
             };
             const string IDataErrorInfoName = "System.ComponentModel.IDataErrorInfo";
             Func<string, string, string> getIDataErrorInfoPropertyImplementation = (implementation, name) =>
-                 type.Properties().Any(m => (m.Name == IDataErrorInfoName + "." + name) || (m.DeclaredAccessibility == Accessibility.Public && m.Name == name))
+                 type.Properties().Any(m => (m.Name == IDataErrorInfoName + "." + name) || (m.DeclaredAccessibility == Microsoft.CodeAnalysis.Accessibility.Public && m.Name == name))
                      ? null
                      : implementation;
             var iDataErrorInfoType = model.Compilation.GetTypeByMetadataName(IDataErrorInfoName);
@@ -319,7 +319,7 @@ $@"public {type.Name}Implementation({info.parameters})
                 if(method.Parameters.Length == 1 && method.Parameters.Single().RefKind != RefKind.None)
                     return CompleterError.CreateMethodError(method, Messages.POCO_MethodCannotHaveOutORRefParameters);
             }
-            return (commandInfo?.IsCommand ?? (method.DeclaredAccessibility == Accessibility.Public))
+            return (commandInfo?.IsCommand ?? (method.DeclaredAccessibility == Microsoft.CodeAnalysis.Accessibility.Public))
                 && method.MethodKind == MethodKind.Ordinary
                 && !method.IsStatic
                 && (method.ReturnsVoid || method.ReturnType == taskType || (commandInfo?.IsCommand ?? false))
@@ -408,13 +408,13 @@ public {propertyType} {commandName} {{ get {{ return _{commandName} ?? (_{comman
                     return CompleterError.CreatePropertyError(property, Messages.POCO_PropertyIsNotVirual);
                 if(property.IsReadOnly)
                     return CompleterError.CreatePropertyError(property, Messages.POCO_PropertyHasNoSetter);
-                if(property.GetMethod.DeclaredAccessibility != Accessibility.Public)
+                if(property.GetMethod.DeclaredAccessibility != Microsoft.CodeAnalysis.Accessibility.Public)
                     return CompleterError.CreatePropertyError(property, Messages.POCO_PropertyHasNoPublicGetter);
             }
             return property.IsVirtual
                 && (bindableInfo?.IsBindable ?? true)
-                && property.DeclaredAccessibility == Accessibility.Public
-                && property.GetMethod.DeclaredAccessibility == Accessibility.Public
+                && property.DeclaredAccessibility == Microsoft.CodeAnalysis.Accessibility.Public
+                && property.GetMethod.DeclaredAccessibility == Microsoft.CodeAnalysis.Accessibility.Public
                 && property.IsAutoImplemented() || bindableInfo.Return(bi => bi.IsBindable, () => false);
         }
         struct MethodCallInfo {
