@@ -105,9 +105,9 @@ namespace MetaSharp {
         const string ConditionalConstant_NETCORE = ConditionalConstant + "_NETCORE";
 
         static readonly CSharpParseOptions ParseOptions = CSharpParseOptions.Default.WithPreprocessorSymbols(
-            ConditionalConstant,
+            ConditionalConstant
 #if NETCORE
-            ConditionalConstant_NETCORE
+            , ConditionalConstant_NETCORE
 #endif
             );
 
@@ -129,15 +129,13 @@ namespace MetaSharp {
                 syntaxTrees: trees.Keys
             );
             var metaReferences = compilation.GetMetaReferences(environment.BuildConstants);
-            var references = metaReferences.Values.Where(x => File.Exists(x) && !DefaultReferences.Any(reference => string.Equals(reference.FilePath, x)))
-                    .Select(x => MetadataReference.CreateFromFile(x));
             compilation = compilation
                 .AddSyntaxTrees(
                     compilation
                         .GetAttributeValues<MetaIncludeAttribute, string>(values => values.ToValue<string>())
                         .Select(x => ParseFile(environment, x))
                 )
-                .AddReferences(references);
+                .AddReferences(metaReferences.Values.Select(x => MetadataReference.CreateFromFile(x)));
 
             var replacements = Rewriter.GetReplacements(compilation, trees.Keys);
             replacements
@@ -336,17 +334,13 @@ namespace MetaSharp {
         }
 #if NETCORE
         static Assembly AssemblyResolving(AssemblyLoadContext arg1, AssemblyName args) {
-            if(args.Name == typeof(MetaContext).Assembly.FullName)
-                return typeof(MetaContext).Assembly;
-            return null;
-        }
 #else
         static Assembly CurrentDomain_AssemblyResolve(object sender, ResolveEventArgs args) {
+#endif
             if(args.Name == typeof(MetaContext).Assembly.FullName)
                 return typeof(MetaContext).Assembly;
             return null;
         }
-#endif
     }
 
     public class MethodContext {

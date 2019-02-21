@@ -705,6 +705,19 @@ namespace MetaSharp.HelloWorld {
         }
         [Fact]
         public void Reference() {
+            var references =
+#if NETCORE
+                string.Empty
+#else
+@"[assembly: MetaReference(""bin\\Xunit.Assert.dll"", ReferenceRelativeLocation.TargetPath)]
+[assembly: MetaReference(""WPF\\WindowsBase.dll"", ReferenceRelativeLocation.Framework)]
+[assembly: MetaReference(""WPF\\PresentationCore.dll"", ReferenceRelativeLocation.Framework)]
+[assembly: MetaReference(""System.Windows.Forms.dll"", ReferenceRelativeLocation.Framework)]
+[assembly: MetaReference(""System.Collections.Immutable.dll"")]
+[assembly: MetaReference(""System.Drawing.dll"", ReferenceRelativeLocation.Framework)]"
+#endif
+            ;
+
             var input = @"
 using MetaSharp;
 using Xunit;
@@ -715,12 +728,9 @@ using System.Windows.Forms;
 using System.Drawing;
 using Point = System.Windows.Point;
 
-[assembly: MetaReference(""System.Collections.Immutable.dll"")]
-[assembly: MetaReference(""bin\\Xunit.Assert.dll"", ReferenceRelativeLocation.TargetPath)]
-[assembly: MetaReference(""WPF\\WindowsBase.dll"", ReferenceRelativeLocation.Framework)]
-[assembly: MetaReference(""WPF\\PresentationCore.dll"", ReferenceRelativeLocation.Framework)]
-[assembly: MetaReference(""System.Drawing.dll"", ReferenceRelativeLocation.Framework)]
-[assembly: MetaReference(""System.Windows.Forms.dll"", ReferenceRelativeLocation.Framework)]
+" + references + 
+@"
+
 namespace MetaSharp.HelloWorld {
     public static class HelloWorldGenerator {
         public static string SayHello(MetaContext context) {
@@ -772,7 +782,7 @@ namespace MetaSharp.HelloWorld {
         protected static void AssertMultipleFilesOutput(ImmutableArray<TestFile> input, ImmutableArray<TestFile> output, BuildConstants buildConstants = null, bool ignoreEmptyLines = false) {
             AssertMultipleFilesResult(input, (result, testEnvironment) => {
                 result.Match(errors => {
-                    Assert.False(errors.Any(), string.Join(System.Environment.NewLine, errors.Select(x => $"{x.Id}: {x.Message}")));
+                    Assert.False(errors.Any(), string.Join(System.Environment.NewLine, errors));
                 }, msgs => {
                     Assert.Equal<string>(
                         output
