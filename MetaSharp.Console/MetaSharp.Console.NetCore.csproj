@@ -5,6 +5,7 @@
     <TargetFramework>netcoreapp3.0</TargetFramework>
     <AssemblyName>MetaSharp.Console</AssemblyName>
     <RootNamespace>MetaSharp.Console</RootNamespace>
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
@@ -21,10 +22,6 @@
     <EmbeddedResource Remove="obj_netFW\**" />
     <None Remove="obj\**" />
     <None Remove="obj_netFW\**" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Compile Remove="Properties\AssemblyInfo.cs" />
   </ItemGroup>
 
   <ItemGroup>

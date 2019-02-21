@@ -6,6 +6,7 @@
     <RootNamespace>MetaSharp</RootNamespace>
     <SignAssembly>true</SignAssembly>
     <AssemblyOriginatorKeyFile>..\Key\StrongKey.snk</AssemblyOriginatorKeyFile>
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
@@ -27,6 +28,5 @@
 
   <ItemGroup>
     <Compile Remove="ImmutableStack.cs" />
-    <Compile Remove="Properties\AssemblyInfo.cs" />
   </ItemGroup>
 </Project>
