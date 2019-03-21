@@ -135,7 +135,6 @@ namespace MetaSharp {
             compilation = compilation
                 .AddSyntaxTrees(includedTrees.Select(x => x.Key))
                 .AddReferences(metaReferences.Values.Select(x => MetadataReference.CreateFromFile(x)));
-            trees = trees.AddRange(includedTrees);
 
             var replacements = Rewriter.GetReplacements(compilation, trees.Keys);
             replacements
@@ -146,11 +145,13 @@ namespace MetaSharp {
                     trees = trees.Remove(tree).Add(replacement.New, oldFile);
                 });
 
+            var allTrees = trees.AddRange(includedTrees);
+
             var errors = compilation.GetErrors()
                 .Select(error => {
                     var span = error.Location.GetLineSpan();
                     return error.ToGeneratorError(
-                        file: trees[error.Location.SourceTree],
+                        file: allTrees[error.Location.SourceTree],
                         span: error.Location.GetLineSpan());
                 })
                 .ToImmutableArray();
