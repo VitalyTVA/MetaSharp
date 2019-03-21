@@ -129,13 +129,13 @@ namespace MetaSharp {
                 syntaxTrees: trees.Keys
             );
             var metaReferences = compilation.GetMetaReferences(environment.BuildConstants);
+            var includedTrees = compilation
+                .GetAttributeValues<MetaIncludeAttribute, string>(values => values.ToValue<string>())
+                .Select(x => new KeyValuePair<SyntaxTree, string>(ParseFile(environment, x), "Meta\\" + x)).ToImmutableList();
             compilation = compilation
-                .AddSyntaxTrees(
-                    compilation
-                        .GetAttributeValues<MetaIncludeAttribute, string>(values => values.ToValue<string>())
-                        .Select(x => ParseFile(environment, x))
-                )
+                .AddSyntaxTrees(includedTrees.Select(x => x.Key))
                 .AddReferences(metaReferences.Values.Select(x => MetadataReference.CreateFromFile(x)));
+            trees = trees.AddRange(includedTrees);
 
             var replacements = Rewriter.GetReplacements(compilation, trees.Keys);
             replacements

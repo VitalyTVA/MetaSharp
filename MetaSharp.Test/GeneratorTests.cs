@@ -704,6 +704,36 @@ namespace MetaSharp.HelloWorld {
                 new TestFile(GetOutputFileName(fileName), "Hello World!Hello Again!").YieldToImmutable());
         }
         [Fact]
+        public void IncludeFileWithErrors() {
+            var include2 = @"
+error1 error2 error3
+namespace MetaSharp.HelloWorld {
+    public static class Helper2 { 
+        public static string SayHelloAgain() {
+             return ""Hello Again!"";
+        }
+    }
+}
+";
+            var input = @"
+using MetaSharp;
+[assembly: MetaInclude(""Helper2.cs"")]
+[assembly: System.CLSCompliant(false)]
+namespace MetaSharp.HelloWorld {
+    public static class HelloWorldGenerator {
+        public static string SayHello() => Helper.SayHello() + Helper2.SayHelloAgain();
+    }
+}
+";
+            var fileName = SingleInputFileName;
+            AssertMultipleFilesErrors(
+                ImmutableArray.Create(
+                    new TestFile(fileName, input),
+                    new TestFile("Helper2.cs", include2, isInFlow: false)
+                ),
+                errors => Assert.True(errors.Any()));
+        }
+        [Fact]
         public void Reference() {
             var references =
 #if NETCORE
