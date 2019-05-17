@@ -63,10 +63,10 @@ namespace MetaSharp.Console {
         static FluentCommandLineParser<ApplicationArguments> GetParser() {
             var p = new FluentCommandLineParser<ApplicationArguments>();
             p.Setup(arg => arg.TargetPath)
-                .As("targetPath")
+                .As('t', "targetPath")
                 .SetDefault(string.Empty);
             p.Setup(arg => arg.ProjectPath)
-                .As("projectPath")
+                .As('p', "projectPath")
                 .Required();
             return p;
         }
