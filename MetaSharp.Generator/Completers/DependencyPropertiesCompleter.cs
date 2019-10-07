@@ -177,7 +177,7 @@ $@"static readonly Action<{ownerType}, {propertyType}> set{propertyName};" + Sys
             string setterModifier = overridedPropertyVisibility == null ? (readOnly ? "private " : "") : overridedPropertyVisibility.Item1.ToCSharp(overridedPropertyVisibility.Item2);
             var nonBrowsable = overridedPropertyVisibility != null && overridedPropertyVisibility.Item3;
             string attributes = nonBrowsable ? "[Browsable(false), EditorBrowsable(EditorBrowsableState.Never)]\r\n" : "";
-            string setterAttributes = bindableReadOnly & !nonBrowsable ? "[Browsable(false), EditorBrowsable(EditorBrowsableState.Never)]\r\n    " : string.Empty;
+            string setterAttributes = bindableReadOnly && !nonBrowsable ? "[Browsable(false), EditorBrowsable(EditorBrowsableState.Never)]\r\n    " : string.Empty;
             string keySuffix = readOnly ? "Key" : "";
             return
 $@"{attributes}{getterModifier}{propertyType} {propertyName} {{
@@ -190,11 +190,14 @@ $@"{attributes}{getterModifier}{propertyType} {propertyName} {{
             string getterModifier = overridedPropertyVisibility == null ? "public " : overridedPropertyVisibility.Item2.ToCSharp(MemberVisibility.Private);
             string setterModifier = overridedPropertyVisibility == null ? (readOnly ? "" : "public ") : overridedPropertyVisibility.Item1.ToCSharp(MemberVisibility.Private);
             string keySuffix = readOnly ? "Key" : "";
+            var nonBrowsable = overridedPropertyVisibility != null && overridedPropertyVisibility.Item3;
+            string attributes = nonBrowsable ? "[Browsable(false), EditorBrowsable(EditorBrowsableState.Never)]\r\n" : "";
+            string setterAttributes = setterModifier != "public " ? "" : attributes;
             return
-$@"{getterModifier}static {propertyType} Get{propertyName}({componentType} d) {{
+$@"{attributes}{getterModifier}static {propertyType} Get{propertyName}({componentType} d) {{
     return ({propertyType})d.GetValue({propertyName}Property);
 }}
-{setterModifier}static void Set{propertyName}({componentType} d, {propertyType} value) {{
+{setterAttributes}{setterModifier}static void Set{propertyName}({componentType} d, {propertyType} value) {{
     d.SetValue({propertyName}Property{keySuffix}, value);
 }}
 ";

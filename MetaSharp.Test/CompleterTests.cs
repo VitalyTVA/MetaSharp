@@ -1025,6 +1025,7 @@ namespace MetaSharp.Incomplete {
 using System;
     [MetaCompleteDependencyProperties]
     public partial class DObject {
+        [DPAccessModifier(NonBrowsable = true, SetterVisibility = MemberVisibility.Internal)]
         public static readonly DependencyProperty Prop3Property;
         public static readonly DependencyProperty Prop5Property;
         [DPAccessModifier(MemberVisibility.Internal)]
@@ -1068,11 +1069,11 @@ using System;
 @"namespace MetaSharp.Incomplete {
 using System;
     partial class DObject {
-        public static readonly DependencyProperty Prop3Property;
+        [Browsable(false), EditorBrowsable(EditorBrowsableState.Never)]
         public static string GetProp3(FrameworkElement d) {
             return (string)d.GetValue(Prop3Property);
         }
-        public static void SetProp3(FrameworkElement d, string value) {
+        internal static void SetProp3(FrameworkElement d, string value) {
             d.SetValue(Prop3Property, value);
         }
         static readonly DependencyPropertyKey Prop4PropertyKey;
