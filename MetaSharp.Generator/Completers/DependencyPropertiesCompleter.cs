@@ -1,6 +1,7 @@
 ﻿using MetaSharp.Native;
 using MetaSharp.Utils;
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using System;
 using System.Collections.Generic;
@@ -59,7 +60,7 @@ $@"partial class {type.ToString().Split('.').Last()} {{
                 return new CompleterError(ownerTypeSyntax, Messages.DependecyProperty_IncorrectOwnerType).YieldToImmutable();
             var properties = chain
                 .Take(chain.Length - 1)
-                .Select(property => {
+                .Zip(default(InvocationExpressionSyntax).Yield().Concat(chain), (property, modifier) => {
                     var memberAccess = (MemberAccessExpressionSyntax)property.Expression;
                     var methodName = memberAccess.Name.Identifier.ValueText;
                     var arguments = property.ArgumentList.Arguments;
@@ -67,37 +68,47 @@ $@"partial class {type.ToString().Split('.').Last()} {{
                     if(!methodName.StartsWith("Register") && (methodName != "AddOwner" || arguments.Count <= 3)) // AddOwner completion requires default value argument
                         return null;
 
-                    var addOwner = methodName == "AddOwner";
-                    var readOnly = methodName == "RegisterReadOnly" || methodName == "RegisterAttachedReadOnly";
-                    var attached = methodName == "RegisterAttached" || methodName == "RegisterAttachedReadOnly";
-                    var service = methodName == "RegisterServiceTemplateProperty";
-                    var bindableReadOnly = methodName == "RegisterBindableReadOnly";
+                    var modifierMemberAccess = (MemberAccessExpressionSyntax)modifier?.Expression;
+                    var modifierMethodName = modifierMemberAccess?.Name.Identifier.ValueText;
+                    var modifierArguments = modifier?.ArgumentList.Arguments;
 
+                    if(modifierMethodName != "Category")
+                        modifierMethodName = null;
+                    return new { property, memberAccess, methodName, arguments, modifierMethodName, modifierArguments };
+                })
+                .Where(x => x != null)
+                .Select(p => {
+                    var addOwner = p.methodName == "AddOwner";
+                    var readOnly = p.methodName == "RegisterReadOnly" || p.methodName == "RegisterAttachedReadOnly";
+                    var attached = p.methodName == "RegisterAttached" || p.methodName == "RegisterAttachedReadOnly";
+                    var service = p.methodName == "RegisterServiceTemplateProperty";
+                    var bindableReadOnly = p.methodName == "RegisterBindableReadOnly";
+                    var category = p.modifierMethodName == "Category" ? p.modifierArguments?[0].Expression.ToString() : null;
 
-                    var propertySignature = (memberAccess.Name as GenericNameSyntax)?.TypeArgumentList.Arguments.Select(x => x.ToString()).ToArray();
+                    var propertySignature = (p.memberAccess.Name as GenericNameSyntax)?.TypeArgumentList.Arguments.Select(x => x.ToString()).ToArray();
                     if(propertySignature == null) {
-                        var defaultValueArgument = service ? null : arguments[addOwner || readOnly || bindableReadOnly ? 3 : 2].Expression;
+                        var defaultValueArgument = service ? null : p.arguments[addOwner || readOnly || bindableReadOnly ? 3 : 2].Expression;
                         propertySignature = service
                             ? new[] { "DataTemplate" }
                             : model.GetTypeInfo(defaultValueArgument).Type?.DisplayString(model, defaultValueArgument.GetLocation()).With(propertyType =>
                                 !attached
                                     ? new string[] { propertyType }
-                                    : (arguments[0].Expression as ParenthesizedLambdaExpressionSyntax).With(x => new string[] { x.ParameterList.Parameters.Single().Type.ToString(), propertyType })
+                                    : (p.arguments[0].Expression as ParenthesizedLambdaExpressionSyntax).With(x => new string[] { x.ParameterList.Parameters.Single().Type.ToString(), propertyType })
                             );
                     }
                     if(propertySignature == null) {
-                        var span = memberAccess.Name.LineSpan();
-                        return new CompleterError(memberAccess.SyntaxTree, Messages.DependecyProperty_PropertyTypeMissed, new FileLinePositionSpan(string.Empty, span.EndLinePosition, span.EndLinePosition));
+                        var span = p.memberAccess.Name.LineSpan();
+                        return new CompleterError(p.memberAccess.SyntaxTree, Messages.DependecyProperty_PropertyTypeMissed, new FileLinePositionSpan(string.Empty, span.EndLinePosition, span.EndLinePosition));
                     }
 
-                    var propertyName = GetPropertyName(arguments, attached, readOnly, bindableReadOnly, memberAccess.Name.SyntaxTree);
+                    var propertyName = GetPropertyName(p.arguments, attached, readOnly, bindableReadOnly, p.memberAccess.Name.SyntaxTree);
 
 
                     return propertyName.Select(name => {
                         var overridedPropertyVisibility = GetOverridedPropertyVisibility(type, name);
-                        return GenerateFields(ownerType.DisplayString(model, memberAccess.GetLocation()), propertySignature[0], name, readOnly, bindableReadOnly, overridedPropertyVisibility == null) + (attached
+                        return GenerateFields(ownerType.DisplayString(model, p.memberAccess.GetLocation()), propertySignature[0], name, readOnly, bindableReadOnly, overridedPropertyVisibility == null) + (attached
                         ? GenerateAttachedProperty(propertySignature[0], propertySignature[1], name, readOnly, overridedPropertyVisibility)
-                        : GenerateProperty(propertySignature.Single(), name, readOnly, bindableReadOnly, overridedPropertyVisibility));
+                        : GenerateProperty(propertySignature.Single(), name, readOnly, bindableReadOnly, overridedPropertyVisibility, category));
                     });
                 })
                 .Where(x => x != null)
@@ -172,11 +183,13 @@ $@"static readonly Action<{ownerType}, {propertyType}> set{propertyName};" + Sys
             }
             return propertyField;
         }
-        static string GenerateProperty(string propertyType, string propertyName, bool readOnly, bool bindableReadOnly, Tuple<MemberVisibility, MemberVisibility, bool> overridedPropertyVisibility) {
+        static string GenerateProperty(string propertyType, string propertyName, bool readOnly, bool bindableReadOnly, Tuple<MemberVisibility, MemberVisibility, bool> overridedPropertyVisibility, string category) {
             string getterModifier = overridedPropertyVisibility == null ? "public " : overridedPropertyVisibility.Item2.ToCSharp(MemberVisibility.Private);
             string setterModifier = overridedPropertyVisibility == null ? (readOnly ? "private " : "") : overridedPropertyVisibility.Item1.ToCSharp(overridedPropertyVisibility.Item2);
             var nonBrowsable = overridedPropertyVisibility != null && overridedPropertyVisibility.Item3;
-            string attributes = nonBrowsable ? "[Browsable(false), EditorBrowsable(EditorBrowsableState.Never)]\r\n" : "";
+            string attributes =
+                (nonBrowsable ? "[Browsable(false), EditorBrowsable(EditorBrowsableState.Never)]\r\n" : "") +
+                (string.IsNullOrEmpty(category) ? "" : $"[Category({category})]\r\n");
             string setterAttributes = bindableReadOnly && !nonBrowsable ? "[Browsable(false), EditorBrowsable(EditorBrowsableState.Never)]\r\n    " : string.Empty;
             string keySuffix = readOnly ? "Key" : "";
             return
