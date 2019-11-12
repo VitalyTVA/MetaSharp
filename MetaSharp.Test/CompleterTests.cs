@@ -718,7 +718,7 @@ using System;
             DependencyPropertyRegistrator<DObject>.New()
                 .RegisterAttached((FrameworkElement x) => GetProp3(x), out Prop3Property, string.Empty)
                 .RegisterAttachedReadOnly<UIElement, string>(x => GetProp4(x), out Prop4PropertyKey, out Prop4Property, 5)
-                .Register(x => x.Prop5, out Prop5Property, default(Some)).Category(""1"")
+                .Register(x => x.Prop5, out Prop5Property, default(Some)).Attributes(DXDescription, Category(""1""))
                 .Register(x => x.Prop6, out Prop6Property, (string)GetSome())
                 .AddOwner(x => x.Prop7, out Prop7Property, SomeExternalControl.Prop7Property, (string)GetSome())
             ;
@@ -780,6 +780,7 @@ using System;
             d.SetValue(Prop4PropertyKey, value);
         }
         public static readonly DependencyProperty Prop5Property;
+        [DXDescription(""MetaSharp.Incomplete.DObject,Prop5"")]
         [Category(""1"")]
         public Some Prop5 {
             get { return (Some)GetValue(Prop5Property); }

@@ -60,7 +60,7 @@ $@"partial class {type.ToString().Split('.').Last()} {{
                 return new CompleterError(ownerTypeSyntax, Messages.DependecyProperty_IncorrectOwnerType).YieldToImmutable();
             var properties = chain
                 .Take(chain.Length - 1)
-                .Zip(default(InvocationExpressionSyntax).Yield().Concat(chain), (property, modifier) => {
+                .Zip(default(InvocationExpressionSyntax).Yield().Concat(chain), (property, attributes) => {
                     var memberAccess = (MemberAccessExpressionSyntax)property.Expression;
                     var methodName = memberAccess.Name.Identifier.ValueText;
                     var arguments = property.ArgumentList.Arguments;
@@ -68,13 +68,10 @@ $@"partial class {type.ToString().Split('.').Last()} {{
                     if(!methodName.StartsWith("Register") && (methodName != "AddOwner" || arguments.Count <= 3)) // AddOwner completion requires default value argument
                         return null;
 
-                    var modifierMemberAccess = (MemberAccessExpressionSyntax)modifier?.Expression;
-                    var modifierMethodName = modifierMemberAccess?.Name.Identifier.ValueText;
-                    var modifierArguments = modifier?.ArgumentList.Arguments;
+                    var attributesMemberAccess = (MemberAccessExpressionSyntax)attributes?.Expression;
+                    var attributesArguments = attributesMemberAccess?.Name.Identifier.ValueText == "Attributes" ? attributes?.ArgumentList.Arguments : null;
 
-                    if(modifierMethodName != "Category")
-                        modifierMethodName = null;
-                    return new { property, memberAccess, methodName, arguments, modifierMethodName, modifierArguments };
+                    return new { property, memberAccess, methodName, arguments, attributes = attributesArguments ?? new SeparatedSyntaxList<ArgumentSyntax>() };
                 })
                 .Where(x => x != null)
                 .Select(p => {
@@ -83,7 +80,6 @@ $@"partial class {type.ToString().Split('.').Last()} {{
                     var attached = p.methodName == "RegisterAttached" || p.methodName == "RegisterAttachedReadOnly";
                     var service = p.methodName == "RegisterServiceTemplateProperty";
                     var bindableReadOnly = p.methodName == "RegisterBindableReadOnly";
-                    var category = p.modifierMethodName == "Category" ? p.modifierArguments?[0].Expression.ToString() : null;
 
                     var propertySignature = (p.memberAccess.Name as GenericNameSyntax)?.TypeArgumentList.Arguments.Select(x => x.ToString()).ToArray();
                     if(propertySignature == null) {
@@ -108,7 +104,7 @@ $@"partial class {type.ToString().Split('.').Last()} {{
                         var overridedPropertyVisibility = GetOverridedPropertyVisibility(type, name);
                         return GenerateFields(ownerType.DisplayString(model, p.memberAccess.GetLocation()), propertySignature[0], name, readOnly, bindableReadOnly, overridedPropertyVisibility == null) + (attached
                         ? GenerateAttachedProperty(propertySignature[0], propertySignature[1], name, readOnly, overridedPropertyVisibility)
-                        : GenerateProperty(propertySignature.Single(), name, readOnly, bindableReadOnly, overridedPropertyVisibility, category));
+                        : GenerateProperty(type.ToDisplayString(), propertySignature.Single(), name, readOnly, bindableReadOnly, overridedPropertyVisibility, p.attributes));
                     });
                 })
                 .Where(x => x != null)
@@ -183,17 +179,24 @@ $@"static readonly Action<{ownerType}, {propertyType}> set{propertyName};" + Sys
             }
             return propertyField;
         }
-        static string GenerateProperty(string propertyType, string propertyName, bool readOnly, bool bindableReadOnly, Tuple<MemberVisibility, MemberVisibility, bool> overridedPropertyVisibility, string category) {
+        static string GenerateProperty(string typeFullName, string propertyType, string propertyName, bool readOnly, bool bindableReadOnly, Tuple<MemberVisibility, MemberVisibility, bool> overridedPropertyVisibility, SeparatedSyntaxList<ArgumentSyntax> attributes) {
             string getterModifier = overridedPropertyVisibility == null ? "public " : overridedPropertyVisibility.Item2.ToCSharp(MemberVisibility.Private);
             string setterModifier = overridedPropertyVisibility == null ? (readOnly ? "private " : "") : overridedPropertyVisibility.Item1.ToCSharp(overridedPropertyVisibility.Item2);
             var nonBrowsable = overridedPropertyVisibility != null && overridedPropertyVisibility.Item3;
-            string attributes =
+            var withDXDescription = attributes.Any(x => x.ToString() == "DXDescription");
+            string attributesString =
                 (nonBrowsable ? "[Browsable(false), EditorBrowsable(EditorBrowsableState.Never)]\r\n" : "") +
-                (string.IsNullOrEmpty(category) ? "" : $"[Category({category})]\r\n");
+                (withDXDescription ? $"[DXDescription(\"{typeFullName},{propertyName}\")]\r\n" : "") +
+                string.Concat(attributes.Select(attribute => {
+                    if(attribute.ToString() == "DXDescription") return null;
+                    var attributeExpression = attribute.Expression as InvocationExpressionSyntax;
+                    if(attributeExpression == null) return null;
+                    return "[" + attributeExpression.ToString() + "]\r\n";
+                }));
             string setterAttributes = bindableReadOnly && !nonBrowsable ? "[Browsable(false), EditorBrowsable(EditorBrowsableState.Never)]\r\n    " : string.Empty;
             string keySuffix = readOnly ? "Key" : "";
             return
-$@"{attributes}{getterModifier}{propertyType} {propertyName} {{
+$@"{attributesString}{getterModifier}{propertyType} {propertyName} {{
     get {{ return ({propertyType})GetValue({propertyName}Property); }}
     {setterAttributes}{setterModifier}set {{ SetValue({propertyName}Property{keySuffix}, value); }}
 }}
