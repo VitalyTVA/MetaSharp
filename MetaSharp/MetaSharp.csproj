@@ -45,6 +45,7 @@
     <!-- A reference to the entire .NET Framework is automatically included -->
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="BuildConstants.cs" />
     <Compile Include="Either.cs" />
     <Compile Include="LinqExtensions.cs" />
     <Compile Include="MetaContext.cs" />

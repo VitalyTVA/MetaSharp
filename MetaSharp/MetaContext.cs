@@ -9,19 +9,22 @@ namespace MetaSharp {
     public class MetaContext {
         public string Namespace { get; }
         public IEnumerable<string> Usings { get; }
+        public BuildConstants BuildConstants { get; }
         readonly Func<string, MetaLocation?, OutputFileName> getOutputFileName;
         readonly Func<string, string, MetaError> error;
         readonly Func<IEnumerable<string>, IEnumerable<Attribute>, Either<IEnumerable<MetaError>, IEnumerable<Output>>> complete;
 
         public MetaContext(
-            string @namespace, 
-            IEnumerable<string> usings, 
+            string @namespace,
+            IEnumerable<string> usings,
+            BuildConstants constants,
             Func<string, MetaLocation?, OutputFileName> getOutputFileName, 
             Func<string, string, MetaError> error,
             Func<IEnumerable<string>, IEnumerable<Attribute>, Either<IEnumerable<MetaError>, IEnumerable<Output>>> complete
         ) {
             Namespace = @namespace;
             Usings = usings;
+            BuildConstants = constants;
             this.getOutputFileName = getOutputFileName;
             this.error = error;
             this.complete = complete;

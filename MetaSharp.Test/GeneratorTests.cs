@@ -745,6 +745,36 @@ namespace MetaSharp.HelloWorld {
 ";
             AssertSingleFileOutput(input, GetFullSimpleOutput("Hello World!"), CreateBuildConstants(targetPath: ".."));
         }
+        [Fact]
+        public void Constansts() {
+            var references =
+#if NETCORE
+                string.Empty
+#else
+                @"[assembly: MetaReference(""bin\\Xunit.Assert.dll"", ReferenceRelativeLocation.TargetPath)]
+                  [assembly: MetaReference(""System.Collections.Immutable.dll"")]";
+#endif
+            var input = @"
+using MetaSharp;
+using Xunit;
+using System.Linq;
+using System.Collections.Immutable;"
++ references +
+@"namespace MetaSharp.HelloWorld {
+    public static class HelloWorldGenerator {
+        public static string SayHello(MetaContext context) {
+            Assert.NotNull(context.BuildConstants);
+            Assert.Equal(""obj"", context.BuildConstants.IntermediateOutputPath);
+            Assert.Equal("".."", context.BuildConstants.TargetPath);
+            Assert.Equal(GeneratorMode.MsBuild, context.BuildConstants.GeneratorMode);
+            return ImmutableArray.Create(""Hello World!"").Single();
+        }
+    }
+}
+";
+            AssertSingleFileOutput(input, GetFullSimpleOutput("Hello World!"),
+               CreateBuildConstants(targetPath: "..", generatorMode: GeneratorMode.MsBuild));
+        }
     }
     public class TestFile {
         public readonly string Name, Text;
@@ -759,6 +789,7 @@ namespace MetaSharp.HelloWorld {
         protected const string DefaultIntermediateOutputPath = "obj";
         protected const string DefaultTargetPath = "bin";
         protected const string SingleInputFileName = "file.meta.cs";
+        protected const string DefaultProjectPath = "customPath";
 
         protected class TestEnvironment {
             public readonly Environment Environment;

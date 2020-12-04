@@ -45,6 +45,7 @@ namespace MetaSharp {
             return new MetaContext(
                 method.DeclaringType.Namespace,
                 usings,
+                environment.BuildConstants,
                 (outputFileName, metaLocation) => GetOutputFileName(method, fileName, environment, metaLocation, outputFileName),
                 (id, message) => Generator.CreateError(id, Path.GetFullPath(fileName), message, location.GetLineSpan()),
                 (files, defaultAttributes) => Completer.GetCompletions(compilation, environment, files, x => GetOutputFileName(method, x, environment), defaultAttributes)
