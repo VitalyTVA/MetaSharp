@@ -749,7 +749,7 @@ namespace MetaSharp.HelloWorld {
         public void Constansts() {
             var references =
 #if NETCORE
-                string.Empty
+                string.Empty;
 #else
                 @"[assembly: MetaReference(""bin\\Xunit.Assert.dll"", ReferenceRelativeLocation.TargetPath)]
                   [assembly: MetaReference(""System.Collections.Immutable.dll"")]";
