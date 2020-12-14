@@ -65,7 +65,7 @@ $@"partial class {type.ToString().Split('.').Last()} {{
                     var methodName = memberAccess.Name.Identifier.ValueText;
                     var arguments = property.ArgumentList.Arguments;
 
-                    if(!methodName.StartsWith("Register") && (methodName != "AddOwner" || arguments.Count <= 3)) // AddOwner completion requires default value argument
+                    if(!methodName.StartsWith("Register") && (methodName != "AddOwner" || (arguments.Count <= 3 && !(memberAccess.Name is GenericNameSyntax)))) // AddOwner completion requires default value argument
                         return null;
 
                     var attributesMemberAccess = (MemberAccessExpressionSyntax)attributes?.Expression;
@@ -83,7 +83,7 @@ $@"partial class {type.ToString().Split('.').Last()} {{
 
                     var propertySignature = (p.memberAccess.Name as GenericNameSyntax)?.TypeArgumentList.Arguments.Select(x => x.ToString()).ToArray();
                     if(propertySignature == null) {
-                        var defaultValueArgument = service ? null : p.arguments[addOwner || readOnly || bindableReadOnly ? 3 : 2].Expression;
+                        var defaultValueArgument = service ? null : GetDefaultValueArgument(p.arguments, addOwner, readOnly, bindableReadOnly);
                         propertySignature = service
                             ? new[] { "DataTemplate" }
                             : model.GetTypeInfo(defaultValueArgument).Type?.DisplayString(model, defaultValueArgument.GetLocation()).With(propertyType =>
@@ -97,7 +97,7 @@ $@"partial class {type.ToString().Split('.').Last()} {{
                         return new CompleterError(p.memberAccess.SyntaxTree, Messages.DependecyProperty_PropertyTypeMissed, new FileLinePositionSpan(string.Empty, span.EndLinePosition, span.EndLinePosition));
                     }
 
-                    var propertyName = GetPropertyName(p.arguments, attached, readOnly, bindableReadOnly, p.memberAccess.Name.SyntaxTree);
+                    var propertyName = GetPropertyName(p.arguments, addOwner, attached, readOnly, bindableReadOnly, p.memberAccess.Name.SyntaxTree);
 
 
                     return propertyName.Select(name => {
@@ -138,10 +138,10 @@ $@"partial class {type.ToString().Split('.').Last()} {{
             }
             return Tuple.Create(setterVisibility, getterVisibility, nonBrowsable);
         }
-        static Either<CompleterError, string> GetPropertyName(SeparatedSyntaxList<ArgumentSyntax> arguments, bool attached, bool readOnly, bool bindableReadOnly, SyntaxTree tree) {
+        static Either<CompleterError, string> GetPropertyName(SeparatedSyntaxList<ArgumentSyntax> arguments, bool addOwner, bool attached, bool readOnly, bool bindableReadOnly, SyntaxTree tree) {
             string propertyName;
             if(!attached) {
-                propertyName = ((MemberAccessExpressionSyntax)((SimpleLambdaExpressionSyntax)arguments[0].Expression).Body).Name.ToString();
+                propertyName = GetPropertyName(arguments[0].Expression, addOwner);
             } else {
                 var getterName = ((InvocationExpressionSyntax)((LambdaExpressionSyntax)arguments[0].Expression).Body).Expression.ToString();
                 if(getterName.Length <= "Get".Length || !getterName.StartsWith("Get", StringComparison.Ordinal)) {
@@ -159,8 +159,22 @@ $@"partial class {type.ToString().Split('.').Last()} {{
                 }
                 return null;
             };
-            return (getError(1, bindableReadOnly ? "set" : string.Empty, bindableReadOnly ? "" : "Property" + (readOnly ? "Key" : string.Empty)) ?? (bindableReadOnly || readOnly ? getError(2, string.Empty, "Property") : null))
+            var idx = addOwner && arguments[0].Expression is IdentifierNameSyntax ? 0 : 1;
+            return (getError(idx, bindableReadOnly ? "set" : string.Empty, bindableReadOnly ? "" : "Property" + (readOnly ? "Key" : string.Empty)) ?? (bindableReadOnly || readOnly ? getError(2, string.Empty, "Property") : null))
                 .Return(x => Either<CompleterError, string>.Left(x), () => propertyName);
+        }
+        static string GetPropertyName(ExpressionSyntax expression, bool addOwner) {
+            if(expression is SimpleLambdaExpressionSyntax lambda)
+                return ((MemberAccessExpressionSyntax)lambda.Body).Name.ToString();
+            if(addOwner && expression is IdentifierNameSyntax id)
+                return id.Identifier.ValueText.Replace("Property", string.Empty);
+            return ((InvocationExpressionSyntax)expression).ArgumentList.Arguments[0].Expression.ToString();
+        }
+        static ExpressionSyntax GetDefaultValueArgument(SeparatedSyntaxList<ArgumentSyntax> arguments, bool addOwner, bool readOnly, bool bindableReadOnly) {
+            var idx = addOwner || readOnly || bindableReadOnly ? 3 : 2;
+            if(addOwner && arguments[0].Expression is IdentifierNameSyntax)
+                idx = 2;
+            return arguments[idx].Expression;
         }
         static string GenerateFields(string ownerType, string propertyType, string propertyName, bool readOnly, bool bindableReadOnly, bool generatePropertyField) {
             string propertyField =

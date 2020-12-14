@@ -1207,6 +1207,90 @@ using System;
             );
             //AssertCompiles(input, incomplete, output, additionalClasses);
         }
+        [Fact]
+        public void DependencyProperties_Nameof() {
+            string incomplete =
+@"
+using MetaSharp;
+namespace MetaSharp.Incomplete {
+using System;
+using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Media;
+    [MetaCompleteDependencyProperties]
+    public partial class DObject {
+        static DObject() {
+            DependencyPropertyRegistrator<DObject>.New()
+                .AddOwner<Thickness>(out BorderThicknessProperty, Border.BorderThicknessProperty)
+                .AddOwner(out BorderBrushProperty, Border.BorderBrushProperty, (Brush)Brushes.Red, FrameworkPropertyMetadataOptions.AffectsRender)
+                .AddOwner<Brush>(out BackgroundProperty, Border.BackgroundProperty, (Brush)Brushes.Blue)
+                .Register(nameof(ItemTemplate), out ItemTemplateProperty, default(DataTemplate))
+                .Register<DataTemplate>(nameof(CustomItemTemplate), out CustomItemTemplateProperty, null)
+                .RegisterReadOnly<UIElement>(nameof(SelectedItem), out SelectedItemPropertyKey, out SelectedItemProperty, null)
+                .RegisterReadOnly(nameof(SelectedElement), out SelectedElementPropertyKey, out SelectedElementProperty, default(FrameworkElement))
+            ;
+        }
+    }
+}";
+
+            string output =
+@"namespace MetaSharp.Incomplete {
+using System;
+using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Media;
+    partial class DObject {
+        public static readonly DependencyProperty BorderThicknessProperty;
+        public Thickness BorderThickness {
+            get { return (Thickness)GetValue(BorderThicknessProperty); }
+            set { SetValue(BorderThicknessProperty, value); }
+        }
+        public static readonly DependencyProperty BorderBrushProperty;
+        public Brush BorderBrush {
+            get { return (Brush)GetValue(BorderBrushProperty); }
+            set { SetValue(BorderBrushProperty, value); }
+        }
+        public static readonly DependencyProperty BackgroundProperty;
+        public Brush Background {
+            get { return (Brush)GetValue(BackgroundProperty); }
+            set { SetValue(BackgroundProperty, value); }
+        }
+        public static readonly DependencyProperty ItemTemplateProperty;
+        public DataTemplate ItemTemplate {
+            get { return (DataTemplate)GetValue(ItemTemplateProperty); }
+            set { SetValue(ItemTemplateProperty, value); }
+        }
+        public static readonly DependencyProperty CustomItemTemplateProperty;
+        public DataTemplate CustomItemTemplate {
+            get { return (DataTemplate)GetValue(CustomItemTemplateProperty); }
+            set { SetValue(CustomItemTemplateProperty, value); }
+        }
+        public static readonly DependencyProperty SelectedItemProperty;
+        static readonly DependencyPropertyKey SelectedItemPropertyKey;
+        public UIElement SelectedItem {
+            get { return (UIElement)GetValue(SelectedItemProperty); }
+            private set { SetValue(SelectedItemPropertyKey, value); }
+        }
+        public static readonly DependencyProperty SelectedElementProperty;
+        static readonly DependencyPropertyKey SelectedElementPropertyKey;
+        public FrameworkElement SelectedElement {
+            get { return (FrameworkElement)GetValue(SelectedElementProperty); }
+            private set { SetValue(SelectedElementPropertyKey, value); }
+        }
+    }
+}";
+            var name = "IncompleteDObjects.cs";
+            AssertMultipleFilesOutput(
+                ImmutableArray.Create(
+                    new TestFile(SingleInputFileName, GetInput(@"IncompleteDObjects.cs".Yield())),
+                    new TestFile(name, incomplete, isInFlow: false)
+                ),
+                ImmutableArray.Create(
+                    new TestFile(Path.Combine(DefaultIntermediateOutputPath, "IncompleteDObjects.g.i.cs"), output)
+                ),
+                ignoreEmptyLines: true
+            );
+        }
 #endregion
 
         static string GetInput(IEnumerable<string> protoFiles, string methodAttributes = null, string defaultAttributes = null, string assemblyAttributes = null) {
