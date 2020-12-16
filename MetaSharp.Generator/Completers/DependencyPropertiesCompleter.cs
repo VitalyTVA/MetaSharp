@@ -141,19 +141,19 @@ $@"partial class {type.ToString().Split('.').Last()} {{
         static Either<CompleterError, string> GetPropertyName(SeparatedSyntaxList<ArgumentSyntax> arguments, bool addOwner, bool attached, bool readOnly, bool bindableReadOnly, SyntaxTree tree) {
             string propertyName;
             var expression = arguments[0].Expression;
-            if(!attached) {
-                propertyName = GetPropertyName(expression, addOwner);
-            } else {
-                var getterNameValue = GetAttachedPropertyGetterName(expression);
-                if(getterNameValue.IsLeft())
-                    return getterNameValue;
-                var getterName = getterNameValue.ToRight();
+            var propertyNameResult = GetPropertyName(expression);
+            if(propertyNameResult.IsLeft())
+                return propertyNameResult;
+            propertyName = propertyNameResult.ToRight();
+            if(attached) {
+                var getterName = propertyName;
                 if(getterName.Length <= "Get".Length || !getterName.StartsWith("Get", StringComparison.Ordinal)) {
                     var message = Messages.DependecyProperty_IncorrectAttachedPropertyGetterName.Format(getterName);
                     return new CompleterError(expression, message);
                 }
                 propertyName = getterName.Substring("Get".Length);
-            }
+            } else if(addOwner)
+                propertyName = propertyName.Replace("Property", string.Empty);
 
             Func<int, string, string, CompleterError> getError = (index, prefix, suffix) => {
                 var fieldName = ((IdentifierNameSyntax)arguments[index].Expression).ToString();
@@ -167,26 +167,20 @@ $@"partial class {type.ToString().Split('.').Last()} {{
             return (getError(idx, bindableReadOnly ? "set" : string.Empty, bindableReadOnly ? "" : "Property" + (readOnly ? "Key" : string.Empty)) ?? (bindableReadOnly || readOnly ? getError(2, string.Empty, "Property") : null))
                 .Return(x => Either<CompleterError, string>.Left(x), () => propertyName);
         }
-
-        static Either<CompleterError, string> GetAttachedPropertyGetterName(ExpressionSyntax expression) {
+        static Either<CompleterError, string> GetPropertyName(ExpressionSyntax expression) {
             switch(expression) {
+                case SimpleLambdaExpressionSyntax lambda:
+                    return lambda.Body is MemberAccessExpressionSyntax memberExpresion ? memberExpresion.Name.ToString() : ((InvocationExpressionSyntax)lambda.Body).Expression.ToString();
                 case LambdaExpressionSyntax lambdaExpression:
                     return ((InvocationExpressionSyntax)lambdaExpression.Body).Expression.ToString();
-                case InvocationExpressionSyntax invocationExpression:
-                case IdentifierNameSyntax identifierName:
+                case IdentifierNameSyntax id:
+                    return id.Identifier.ValueText;
                 case LiteralExpressionSyntax literalExpression:
-                    return GetPropertyName(expression, false);
+                    return literalExpression.Token.ValueText;
+                case InvocationExpressionSyntax invocationExpression:
+                    return invocationExpression.ArgumentList.Arguments[0].Expression.ToString();
             }
             return new CompleterError(expression.SyntaxTree, new Message(), expression.LineSpan());
-        }
-        static string GetPropertyName(ExpressionSyntax expression, bool addOwner) {
-            if(expression is SimpleLambdaExpressionSyntax lambda)
-                return ((MemberAccessExpressionSyntax)lambda.Body).Name.ToString();
-            if(addOwner && expression is IdentifierNameSyntax id)
-                return id.Identifier.ValueText.Replace("Property", string.Empty);
-            if(!addOwner && expression is LiteralExpressionSyntax literalExpression)
-                return literalExpression.ToFullString().Replace("\"", string.Empty);
-            return ((InvocationExpressionSyntax)expression).ArgumentList.Arguments[0].Expression.ToString();
         }
         static ExpressionSyntax GetDefaultValueArgument(SeparatedSyntaxList<ArgumentSyntax> arguments, bool addOwner, bool readOnly, bool bindableReadOnly) {
             var idx = addOwner || readOnly || bindableReadOnly ? 3 : 2;
