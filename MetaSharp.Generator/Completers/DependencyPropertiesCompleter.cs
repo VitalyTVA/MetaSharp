@@ -180,7 +180,9 @@ $@"partial class {type.ToString().Split('.').Last()} {{
                 case LiteralExpressionSyntax literalExpression:
                     return literalExpression.Token.ValueText;
                 case InvocationExpressionSyntax invocationExpression:
-                    return invocationExpression.ArgumentList.Arguments[0].Expression.ToString();
+                    if (invocationExpression.ArgumentList.Arguments.Count > 0)
+                        return invocationExpression.ArgumentList.Arguments[0].Expression.ToString();
+                    break;
             }
             return new CompleterError(expression.SyntaxTree, Messages.DependecyProperty_UnsupportedSyntax, expression.LineSpan());
         }

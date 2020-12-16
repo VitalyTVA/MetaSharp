@@ -1322,6 +1322,39 @@ using System.Windows.Media;
                 ignoreEmptyLines: true
             );
         }
+        [Fact]
+        public void DependencyProperties_UnsupportedSyntax() {
+            string incomplete =
+@"
+using MetaSharp;
+namespace MetaSharp.Incomplete {
+using System;
+    [MetaCompleteDependencyProperties]
+    public partial class DObject {
+        const string Prop2Name = 'Prop2';
+        static string GetProp1Name() => 'Prop1';
+        static DObject() {
+            DependencyPropertyRegistrator<DObject>.New()
+                .Register(GetProp1Name(), out Prop1Property, string.Empty)
+                .RegisterReadOnly(DObject.Prop2Name, out Prop2PropertyKey, out Prop2Property, 5)
+            ;
+        }
+    }
+}";
+            var name = "IncompleteDObjects.cs";
+            AssertMultipleFilesErrors(
+                ImmutableArray.Create(
+                    new TestFile(SingleInputFileName, GetInput(@"IncompleteDObjects.cs".Yield())),
+                    new TestFile(name, incomplete, isInFlow: false)
+                ),
+                errors => Assert.Collection(errors,
+                        error => AssertError(error, Path.GetFullPath(name), Messages.DependecyProperty_UnsupportedSyntax.FullId,
+                            "Syntax is not supported.", 11, 27, 11, 41),
+                        error => AssertError(error, Path.GetFullPath(name), Messages.DependecyProperty_UnsupportedSyntax.FullId,
+                            "Syntax is not supported.", 12, 35, 12, 52)
+                    )
+                );
+        }
         #endregion
 
         static string GetInput(IEnumerable<string> protoFiles, string methodAttributes = null, string defaultAttributes = null, string assemblyAttributes = null) {
