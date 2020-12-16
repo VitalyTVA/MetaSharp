@@ -1349,9 +1349,9 @@ using System;
                 ),
                 errors => Assert.Collection(errors,
                         error => AssertError(error, Path.GetFullPath(name), Messages.DependecyProperty_UnsupportedSyntax.FullId,
-                            "Syntax is not supported.", 11, 27, 11, 41),
+                            "Syntax is not supported. Specify property name via string value, nameof() of lambda expression.", 11, 27, 11, 41),
                         error => AssertError(error, Path.GetFullPath(name), Messages.DependecyProperty_UnsupportedSyntax.FullId,
-                            "Syntax is not supported.", 12, 35, 12, 52)
+                            "Syntax is not supported. Specify property name via string value, nameof() of lambda expression.", 12, 35, 12, 52)
                     )
                 );
         }
