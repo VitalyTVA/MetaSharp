@@ -15,6 +15,7 @@ namespace MetaSharp {
         public static readonly Message DependecyProperty_PropertyTypeMissed = new Message("0001", "Either property type should be explicitly specified or default value should be explicitly typed to generate dependency property");
         public static readonly UnformattedMessage DependecyProperty_IncorrectPropertyName = new UnformattedMessage("0002", "Dependency property field for the the property '{0}' should have '{1}' name.");
         public static readonly Message DependecyProperty_IncorrectOwnerType = new Message("0003", "Owner type doesn't match the enclosing type.");
+        public static readonly Message DependecyProperty_UnsupportedSyntax = new Message("0022", "Syntax is not supported. Specify property name via string value, nameof() or lambda expression.");
 
         public static readonly UnformattedMessage POCO_PropertyIsNotVirual = new UnformattedMessage("0004", "Cannot make non-virtual property bindable: {0}.");
         public static readonly UnformattedMessage POCO_PropertyHasNoSetter = new UnformattedMessage("0005", "Cannot make property without setter bindable: {0}.");
