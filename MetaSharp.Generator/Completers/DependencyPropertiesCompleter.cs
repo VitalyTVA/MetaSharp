@@ -170,7 +170,9 @@ $@"partial class {type.ToString().Split('.').Last()} {{
         static Either<CompleterError, string> GetPropertyName(ExpressionSyntax expression) {
             switch(expression) {
                 case SimpleLambdaExpressionSyntax lambda:
-                    return lambda.Body is MemberAccessExpressionSyntax memberExpresion ? memberExpresion.Name.ToString() : ((InvocationExpressionSyntax)lambda.Body).Expression.ToString();
+                    return lambda.Body is MemberAccessExpressionSyntax memberExpresion
+                        ? memberExpresion.Name.ToString()
+                        : ((InvocationExpressionSyntax)lambda.Body).Expression.ToString();
                 case LambdaExpressionSyntax lambdaExpression:
                     return ((InvocationExpressionSyntax)lambdaExpression.Body).Expression.ToString();
                 case IdentifierNameSyntax id:
@@ -180,7 +182,7 @@ $@"partial class {type.ToString().Split('.').Last()} {{
                 case InvocationExpressionSyntax invocationExpression:
                     return invocationExpression.ArgumentList.Arguments[0].Expression.ToString();
             }
-            return new CompleterError(expression.SyntaxTree, new Message(), expression.LineSpan());
+            return new CompleterError(expression.SyntaxTree, Messages.DependecyProperty_UnsupportedSyntax, expression.LineSpan());
         }
         static ExpressionSyntax GetDefaultValueArgument(SeparatedSyntaxList<ArgumentSyntax> arguments, bool addOwner, bool readOnly, bool bindableReadOnly) {
             var idx = addOwner || readOnly || bindableReadOnly ? 3 : 2;
