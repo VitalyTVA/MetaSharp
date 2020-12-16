@@ -690,7 +690,7 @@ namespace MetaSharp.Incomplete {
 
 #endregion
 
-#region dependency properties
+        #region dependency properties
         [Fact]
         public void DependencyProperties() {
             string incomplete =
@@ -1224,10 +1224,14 @@ using System.Windows.Media;
                 .AddOwner<Thickness>(out BorderThicknessProperty, Border.BorderThicknessProperty)
                 .AddOwner(out BorderBrushProperty, Border.BorderBrushProperty, (Brush)Brushes.Red, FrameworkPropertyMetadataOptions.AffectsRender)
                 .AddOwner<Brush>(out BackgroundProperty, Border.BackgroundProperty, (Brush)Brushes.Blue)
+                .Register(""Content"", out ContentProperty, default(object))
                 .Register(nameof(ItemTemplate), out ItemTemplateProperty, default(DataTemplate))
                 .Register<DataTemplate>(nameof(CustomItemTemplate), out CustomItemTemplateProperty, null)
                 .RegisterReadOnly<UIElement>(nameof(SelectedItem), out SelectedItemPropertyKey, out SelectedItemProperty, null)
                 .RegisterReadOnly(nameof(SelectedElement), out SelectedElementPropertyKey, out SelectedElementProperty, default(FrameworkElement))
+                .RegisterAttached<FrameworkElement, Point>(nameof(GetOffset), out OffsetProperty, default(Point))
+                .RegisterAttached<FrameworkElement, double>(nameof(GetScale), out ScaleProperty)
+                .RegisterAttachedReadOnly<FrameworkElement, double>(""GetZoom"", out ZoomPropertyKey, out ZoomProperty)
             ;
         }
     }
@@ -1255,6 +1259,11 @@ using System.Windows.Media;
             get { return (Brush)GetValue(BackgroundProperty); }
             set { SetValue(BackgroundProperty, value); }
         }
+        public static readonly DependencyProperty ContentProperty;
+        public object Content {
+            get { return (object)GetValue(ContentProperty); }
+            set { SetValue(ContentProperty, value); }
+        }
         public static readonly DependencyProperty ItemTemplateProperty;
         public DataTemplate ItemTemplate {
             get { return (DataTemplate)GetValue(ItemTemplateProperty); }
@@ -1277,6 +1286,28 @@ using System.Windows.Media;
             get { return (FrameworkElement)GetValue(SelectedElementProperty); }
             private set { SetValue(SelectedElementPropertyKey, value); }
         }
+        public static readonly DependencyProperty OffsetProperty;
+        public static Point GetOffset(FrameworkElement d) {
+            return (Point)d.GetValue(OffsetProperty);
+        }
+        public static void SetOffset(FrameworkElement d, Point value) {
+            d.SetValue(OffsetProperty, value);
+        }
+        public static readonly DependencyProperty ScaleProperty;
+        public static double GetScale(FrameworkElement d) {
+            return (double)d.GetValue(ScaleProperty);
+        }
+        public static void SetScale(FrameworkElement d, double value) {
+            d.SetValue(ScaleProperty, value);
+        }
+        public static readonly DependencyProperty ZoomProperty;
+        static readonly DependencyPropertyKey ZoomPropertyKey;
+        public static double GetZoom(FrameworkElement d) {
+            return (double)d.GetValue(ZoomProperty);
+        }
+        static void SetZoom(FrameworkElement d, double value) {
+            d.SetValue(ZoomPropertyKey, value);
+        }
     }
 }";
             var name = "IncompleteDObjects.cs";
@@ -1291,7 +1322,7 @@ using System.Windows.Media;
                 ignoreEmptyLines: true
             );
         }
-#endregion
+        #endregion
 
         static string GetInput(IEnumerable<string> protoFiles, string methodAttributes = null, string defaultAttributes = null, string assemblyAttributes = null) {
             var files = protoFiles.Select(x => "@\"" + x + "\"").ConcatStrings(", ");
