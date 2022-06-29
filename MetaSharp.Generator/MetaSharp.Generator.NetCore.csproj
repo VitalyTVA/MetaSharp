@@ -1,11 +1,8 @@
-﻿<Project Sdk="Microsoft.NET.Sdk.WindowsDesktop">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <OutputType>Library</OutputType>
-    <TargetFramework>netcoreapp3.0</TargetFramework>
-    <ApplicationIcon />
-    <StartupObject />
-    <UseWPF>true</UseWPF>
+    <TargetFramework>net6.0</TargetFramework>
     <AssemblyName>MetaSharp.Generator</AssemblyName>
     <RootNamespace>MetaSharp.Generator</RootNamespace>
     <AssemblyOriginatorKeyFile>..\Key\StrongKey.snk</AssemblyOriginatorKeyFile>
